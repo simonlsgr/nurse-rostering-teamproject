@@ -1,0 +1,22 @@
+services:
+  optimization_api_fastapi: # The web server
+    build: .
+    container_name: optimization_api_fastapi
+    ports: # exposing the API on port 80. Change this if you want to use a different port.
+      - "8080:80"
+    depends_on: # Ensuring that the web server starts after the database.
+      - optimization_api_redis
+    command: python3 -m uvicorn api_main:app --host 0.0.0.0 --port 80 --reload
+
+  optimization_api_redis: # The database. We use the official Redis image.
+    image: redis:latest
+    container_name: optimization_api_redis
+
+  optimization_api_worker: # The worker
+    build: .
+    command: # Running this command will make our container a worker instead of a web server.
+      rq worker --with-scheduler --url redis://optimization_api_redis:6379/1
+    depends_on: # Ensuring that the worker starts after the database, as it needs to connect to it.
+      - optimization_api_redis
+    deploy:
+      replicas: 2 # Adding two workers for parallel processing
