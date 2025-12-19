@@ -5,7 +5,7 @@ This file contains the implementation of additional data models for the optimiza
 from datetime import datetime
 from pydantic import BaseModel, HttpUrl, Field
 from uuid import UUID, uuid4
-from solver.dataschema import NurseRosteringInstance, OptimizationParameters, NurseRosteringSolution
+from solver.nurserostering.data_schema import NurseRosteringInstance, OptimizationParameters, NurseRosteringSolution
 
 
 class NurseRosteringJobRequest(BaseModel):

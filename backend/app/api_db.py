@@ -8,7 +8,7 @@ database operations.
 
 import json
 from api_models import NurseRosteringJobStatus, NurseRosteringJobRequest
-from solver.dataschema import NurseRosteringSolution
+from solver.nurserostering.data_schema import NurseRosteringSolution
 from uuid import UUID
 import redis
 from typing import Optional, List
