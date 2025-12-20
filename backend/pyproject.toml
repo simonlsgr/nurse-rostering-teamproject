@@ -1,5 +1,5 @@
 [project]
-name = "solver"
+name = "solvers"
 version = "0.1.0"
 
 [tool.setuptools]
