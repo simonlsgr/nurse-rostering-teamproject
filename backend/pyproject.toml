@@ -1,0 +1,9 @@
+[project]
+name = "solver"
+version = "0.1.0"
+
+[tool.setuptools]
+package-dir = {"" = "app"}
+
+[tool.setuptools.packages.find]
+where = ["app"]

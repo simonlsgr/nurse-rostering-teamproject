@@ -1,11 +1,11 @@
-from nurserostering.output import print_instance_and_solution
-from nurserostering.generate_random_instance import generate_random_instance
-from nurserostering.solver import NurseRosteringModel
-from nurserostering.validation import (
+from solvers.nurserostering.output import print_instance_and_solution
+from solvers.nurserostering.generate_random_instance import generate_random_instance
+from solvers.nurserostering.solver import NurseRosteringModel
+from solvers.nurserostering.validation import (
     assert_solution_is_feasible,
 )
 from datetime import datetime, timedelta
-from nurserostering.data_schema import Nurse, Shift, NurseRosteringInstance
+from solvers.nurserostering.data_schema import Nurse, Shift, NurseRosteringInstance
 
 
 def test_random_instances():

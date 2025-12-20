@@ -4,7 +4,7 @@ This file is responsible for running the optimization job in a separate worker.
 
 from api_config import get_db_connection
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
-from solver.nurserostering.solver import NurseRosteringModel
+from solvers.nurserostering.solver import NurseRosteringModel
 from datetime import datetime
 from uuid import UUID
 from api_db import NurseRosteringJobDbConnection
