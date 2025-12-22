@@ -21,7 +21,7 @@ class ShiftAssignmentModule(abc.ABC):
 
 class NoBlockedShiftsModule(ShiftAssignmentModule):
     """
-    Prohibit assignment to blocked shifts.
+    Prohibit assignment to blocked shifts. 
     """
 
     def enforce_for_nurse(self, model: cp_model.CpModel, nurse_x: NurseDecisionVars):
@@ -43,7 +43,7 @@ class NoBlockedShiftsModule(ShiftAssignmentModule):
 class DemandSatisfactionModule(ShiftAssignmentModule):
     def build(self, instance, model, nurse_shift_vars):
         """
-        Ensure each shift meets its demand.
+        Ensure each shift meets its demand. Similar to 10th constraint CoverRequirementsModule in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf
         """
         for shift in instance.shifts:
             assigned = [
@@ -56,6 +56,9 @@ class DemandSatisfactionModule(ShiftAssignmentModule):
 
 
 class MinTimeBetweenShifts(ShiftAssignmentModule):
+    
+    """2nd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    
     def enforce_for_nurse(self, model: cp_model.CpModel, nurse_x: NurseDecisionVars):
         min_time_between_shifts = nurse_x.nurse.min_time_between_shifts
         for i in range(len(nurse_x.shifts) - 1):
@@ -111,3 +114,43 @@ class PreferStaffModule(ShiftAssignmentModule):
                 for uid in nv._x:
                     expr += instance.staff_weight * nv.is_assigned_to(uid)
         return expr
+
+class LimitWorkTimeModule(ShiftAssignmentModule):
+    """4th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+
+class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
+    """5th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+
+class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
+    """6th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+    
+
+class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
+    """7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+
+class MaxmimumNumberOfWeekendsModule(ShiftAssignmentModule):
+    """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+    
+class DaysOffModule(ShiftAssignmentModule):
+    """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf
+        Possibly already enforced by NoBlockedShiftsModule"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+    
+    
+class CoverRequirementsModule(ShiftAssignmentModule):
+    """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        return 0
+
+
