@@ -51,6 +51,14 @@ class Nurse(BaseModel):
         default=None,
         description="Maximum work time"
     )
+    minimum_consecutive_shifts: Optional[int] = Field(
+        default=None,
+        description="Minimum consecutive shifts"
+    )
+    maximum_consecutive_shifts: Optional[int] = Field(
+        default=None,
+        description="Maximum consecutive shifts"
+    )
 
 
 

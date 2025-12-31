@@ -1,4 +1,6 @@
 import abc
+from datetime import timedelta
+
 from ortools.sat.python import cp_model
 from .data_schema import NurseRosteringInstance, Shift
 from .nurse_vars import NurseDecisionVars
@@ -124,20 +126,58 @@ class LimitWorkTimeModule(ShiftAssignmentModule):
             max_time = nv.nurse.maximum_work_time
             if min_time is None and max_time is None:
                 continue
-            if nv.nurse.staff:
-                working_time = 0
-                for shift, var in nv.iter_shifts():
-                    working_time += (shift.end_time - shift.start_time) * var
-                if min_time is not None:
-                    model.add(working_time >= min_time)
-                if max_time is not None:
-                    model.add(working_time <= max_time)
+            working_time = 0
+            for shift, var in nv.iter_shifts():
+                working_time += (shift.end_time - shift.start_time) * var
+            if min_time is not None:
+                model.add(working_time >= min_time)
+            if max_time is not None:
+                model.add(working_time <= max_time)
         return 0
 
 class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
     """5th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
+        # shifts grouped by date
+        shifts_by_date = {}
+        for shift in instance.shifts:
+            current_date = shift.start_time.date()
+            end_date = shift.end_time.date()
+            while current_date <= end_date:
+                shifts_by_date.setdefault(current_date, []).append(shift.uid)
+                current_date += timedelta(days=1)
+
+        min_date = instance.shifts[0].start_time.date()
+        max_date = instance.shifts[-1].end_time.date()
+
+        all_dates = []
+        current_date = min_date
+        while current_date <= max_date:
+            all_dates.append(current_date)
+            current_date += timedelta(days=1)
+        if not all_dates:
+            return 0
+        for nv in nurse_shift_vars:
+            # decision variable if nurse works at date x
+            max_shifts = nv.nurse.maximum_consecutive_shifts
+            if max_shifts is None:
+                continue
+            work_day = []
+            for date in all_dates:
+                w = model.new_bool_var(f"work_{nv.nurse.uid}_{date.isoformat()}")
+                work_day.append(w)
+                uids = shifts_by_date.get(date, [])
+                vars_for_date = [nv.is_assigned_to(uid) for uid in uids]
+                if not vars_for_date:
+                    model.add(w == 0)
+                else:
+                    model.add_max_equality(w, vars_for_date)
+
+            for i in range(len(work_day)-max_shifts):
+                model.add(sum(work_day[i:i+max_shifts+1]) <= max_shifts)
+
         return 0
+
 
 class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
     """6th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
