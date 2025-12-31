@@ -8,6 +8,7 @@ We define the instance and solution data structures using Pydantic.
 from datetime import datetime, timedelta
 from pydantic import BaseModel, Field, NonNegativeInt, model_validator
 import uuid
+from typing import Optional
 
 # Semantic type aliases for clarity
 NurseUid = int
@@ -42,6 +43,15 @@ class Nurse(BaseModel):
         default=1,
         description="The weight in the objective function for every assigned preference.",
     )
+    minimum_work_time: Optional[int] = Field(
+        default=None,
+        description="Minimum work time"
+    )
+    maximum_work_time: Optional[int] = Field(
+        default=None,
+        description="Maximum work time"
+    )
+
 
 
 class Shift(BaseModel):

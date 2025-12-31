@@ -115,9 +115,23 @@ class PreferStaffModule(ShiftAssignmentModule):
                     expr += instance.staff_weight * nv.is_assigned_to(uid)
         return expr
 
+
 class LimitWorkTimeModule(ShiftAssignmentModule):
     """4th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
+        for nv in nurse_shift_vars:
+            min_time = nv.nurse.minimum_work_time
+            max_time = nv.nurse.maximum_work_time
+            if min_time is None and max_time is None:
+                continue
+            if nv.nurse.staff:
+                working_time = 0
+                for shift, var in nv.iter_shifts():
+                    working_time += (shift.end_time - shift.start_time) * var
+                if min_time is not None:
+                    model.add(working_time >= min_time)
+                if max_time is not None:
+                    model.add(working_time <= max_time)
         return 0
 
 class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
