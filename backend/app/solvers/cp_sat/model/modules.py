@@ -2,7 +2,7 @@ import abc
 from datetime import timedelta
 
 from ortools.sat.python import cp_model
-from .data_schema import NurseRosteringInstance, Shift
+from ...data_schema import NurseRosteringInstance, Shift
 from .nurse_vars import NurseDecisionVars
 
 

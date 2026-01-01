@@ -1,9 +1,9 @@
-from solvers.nurserostering.modules import PreferStaffModule, DemandSatisfactionModule
+from solvers.cp_sat.model.modules import PreferStaffModule, DemandSatisfactionModule
 from cpsat_utils.testing import assert_objective
-from _generate import create_shifts, create_nurse
+from solvers.utils._generate import create_shifts, create_nurse
 
-from solvers.nurserostering.nurse_vars import NurseDecisionVars
-from solvers.nurserostering.data_schema import NurseRosteringInstance
+from solvers.cp_sat.model.nurse_vars import NurseDecisionVars
+from solvers.data_schema import NurseRosteringInstance
 
 from ortools.sat.python import cp_model
 

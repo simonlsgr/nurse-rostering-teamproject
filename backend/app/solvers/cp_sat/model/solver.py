@@ -1,6 +1,6 @@
 from ortools.sat.python import cp_model
 from .nurse_vars import NurseDecisionVars
-from .data_schema import NurseRosteringInstance, NurseRosteringSolution
+from ...data_schema import NurseRosteringInstance, NurseRosteringSolution
 from .modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
