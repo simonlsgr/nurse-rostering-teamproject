@@ -1,5 +1,6 @@
 import abc
 from datetime import timedelta
+from typing import Any
 
 from ortools.sat.python import cp_model
 from ...data_schema import NurseRosteringInstance, Shift
@@ -135,43 +136,61 @@ class LimitWorkTimeModule(ShiftAssignmentModule):
                 model.add(working_time <= max_time)
         return 0
 
+
+def group_shifts_by_date(instance: NurseRosteringInstance) -> tuple[list[Any], dict[Any, Any]]:
+    shifts_by_date = {}
+    for shift in instance.shifts:
+        current_date = shift.start_time.date()
+        end_date = shift.end_time.date()
+        while current_date <= end_date:
+            shifts_by_date.setdefault(current_date, []).append(shift.uid)
+            current_date += timedelta(days=1)
+
+    min_date = instance.shifts[0].start_time.date()
+    max_date = instance.shifts[-1].end_time.date()
+
+    all_dates = []
+    current_date = min_date
+    while current_date <= max_date:
+        all_dates.append(current_date)
+        current_date += timedelta(days=1)
+    return all_dates, shifts_by_date
+
+
+def get_work_day_vars(instance, model, nv, all_dates, shifts_by_date):
+    if not hasattr(instance, "_work_day_vars"):
+        instance._work_day_vars = {}  # nurse_uid -> list[w]
+
+    nurse_uid = nv.nurse.uid
+    if nurse_uid in instance._work_day_vars:
+        return instance._work_day_vars[nurse_uid]
+
+    work_day = []
+    for date in all_dates:
+        w = model.new_bool_var(f"work_{nv.nurse.uid}_{date.isoformat()}")
+        work_day.append(w)
+        uids = shifts_by_date.get(date, [])
+        vars_for_date = [nv.is_assigned_to(uid) for uid in uids]
+        if not vars_for_date:
+            model.add(w == 0)
+        else:
+            model.add_max_equality(w, vars_for_date)
+
+    instance._work_day_vars[nurse_uid] = work_day
+    return work_day
+
+
 class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
     """5th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
-        # shifts grouped by date
-        shifts_by_date = {}
-        for shift in instance.shifts:
-            current_date = shift.start_time.date()
-            end_date = shift.end_time.date()
-            while current_date <= end_date:
-                shifts_by_date.setdefault(current_date, []).append(shift.uid)
-                current_date += timedelta(days=1)
-
-        min_date = instance.shifts[0].start_time.date()
-        max_date = instance.shifts[-1].end_time.date()
-
-        all_dates = []
-        current_date = min_date
-        while current_date <= max_date:
-            all_dates.append(current_date)
-            current_date += timedelta(days=1)
+        all_dates, shifts_by_date = group_shifts_by_date(instance)
         if not all_dates:
             return 0
         for nv in nurse_shift_vars:
-            # decision variable if nurse works at date x
             max_shifts = nv.nurse.maximum_consecutive_shifts
             if max_shifts is None:
                 continue
-            work_day = []
-            for date in all_dates:
-                w = model.new_bool_var(f"work_{nv.nurse.uid}_{date.isoformat()}")
-                work_day.append(w)
-                uids = shifts_by_date.get(date, [])
-                vars_for_date = [nv.is_assigned_to(uid) for uid in uids]
-                if not vars_for_date:
-                    model.add(w == 0)
-                else:
-                    model.add_max_equality(w, vars_for_date)
+            work_day = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
 
             for i in range(len(work_day)-max_shifts):
                 model.add(sum(work_day[i:i+max_shifts+1]) <= max_shifts)
@@ -182,29 +201,56 @@ class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
 class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
     """6th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
+
+        all_dates, shifts_by_date = group_shifts_by_date(instance)
+        if not all_dates:
+            return 0
+        for nv in nurse_shift_vars:
+            min_shifts = nv.nurse.minimum_consecutive_shifts
+            if min_shifts is None:
+                continue
+            work_day = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
+            for s in range(1, min_shifts):
+                for d in range(len(work_day) - (s+1)):
+                    model.add(work_day[d] + work_day[d+s+1] + (s - sum(work_day[d+1:d+s+1])) >= 1)
         return 0
     
 
 class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
     """7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
+        all_dates, shifts_by_date = group_shifts_by_date(instance)
+        if not all_dates:
+            return 0
+        for nv in nurse_shift_vars:
+            min_days_off = nv.nurse.minimum_consecutive_days_off
+            if min_days_off is None:
+                continue
+            work_day = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
+            for s in range(1, min_days_off):
+                for d in range(len(work_day) - (s + 1)):
+                    model.add(1 - work_day[d] + 1 - work_day[d + s + 1] + sum(work_day[d + 1:d + s + 1]) >= 1)
         return 0
 
 class MaxmimumNumberOfWeekendsModule(ShiftAssignmentModule):
     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
         return 0
-    
-class DaysOffModule(ShiftAssignmentModule):
-    """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf
-        Possibly already enforced by NoBlockedShiftsModule"""
-    def build(self, instance, model, nurse_shift_vars):
-        return 0
-    
-    
+
+
+# class DaysOffModule(ShiftAssignmentModule):
+#     """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf
+#         Possibly already enforced by NoBlockedShiftsModule"""
+#     def build(self, instance, model, nurse_shift_vars):
+#
+#         return 0
+# Indeed already enforced by NoBlockedShiftsModule
+
+
 class CoverRequirementsModule(ShiftAssignmentModule):
     """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
+
         return 0
 
 
