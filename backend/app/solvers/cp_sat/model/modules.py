@@ -165,10 +165,10 @@ def get_work_day_vars(instance, model, nv, all_dates, shifts_by_date):
     if nurse_uid in instance._work_day_vars:
         return instance._work_day_vars[nurse_uid]
 
-    work_day = []
+    work_days = []
     for date in all_dates:
         w = model.new_bool_var(f"work_{nv.nurse.uid}_{date.isoformat()}")
-        work_day.append(w)
+        work_days.append(w)
         uids = shifts_by_date.get(date, [])
         vars_for_date = [nv.is_assigned_to(uid) for uid in uids]
         if not vars_for_date:
@@ -176,8 +176,8 @@ def get_work_day_vars(instance, model, nv, all_dates, shifts_by_date):
         else:
             model.add_max_equality(w, vars_for_date)
 
-    instance._work_day_vars[nurse_uid] = work_day
-    return work_day
+    instance._work_day_vars[nurse_uid] = work_days
+    return work_days
 
 
 class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
@@ -209,10 +209,10 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
             min_shifts = nv.nurse.minimum_consecutive_shifts
             if min_shifts is None:
                 continue
-            work_day = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
+            work_days = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
             for s in range(1, min_shifts):
-                for d in range(len(work_day) - (s+1)):
-                    model.add(work_day[d] + work_day[d+s+1] + (s - sum(work_day[d+1:d+s+1])) >= 1)
+                for d in range(len(work_days) - (s+1)):
+                    model.add(work_days[d] + work_days[d+s+1] + (s - sum(work_days[d+1:d+s+1])) >= 1)
         return 0
     
 
@@ -226,15 +226,38 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
             min_days_off = nv.nurse.minimum_consecutive_days_off
             if min_days_off is None:
                 continue
-            work_day = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
+            work_days = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
             for s in range(1, min_days_off):
-                for d in range(len(work_day) - (s + 1)):
-                    model.add(1 - work_day[d] + 1 - work_day[d + s + 1] + sum(work_day[d + 1:d + s + 1]) >= 1)
+                for d in range(len(work_days) - (s + 1)):
+                    model.add(1 - work_days[d] + 1 - work_days[d + s + 1] + sum(work_days[d + 1:d + s + 1]) >= 1)
         return 0
 
-class MaxmimumNumberOfWeekendsModule(ShiftAssignmentModule):
+class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
+        all_dates, shifts_by_date = group_shifts_by_date(instance)
+        if not all_dates:
+            return 0
+        dates_to_index = {date: i for i, date in enumerate(all_dates)}
+        saturdays = [d for d in all_dates if d.weekday() == 5]
+        for nv in nurse_shift_vars:
+            max_weekends = nv.nurse.maximum_weekends
+            if max_weekends is None:
+                continue
+            weekend = []
+            work_days = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
+            for saturday in saturdays:
+                w = model.new_bool_var(f"nurse_{nv.nurse.uid}_works_on_weekend_{saturday.isoformat()}")
+                weekend.append(w)
+                sunday = saturday + timedelta(days=1)
+                index = dates_to_index[saturday]
+                if sunday not in dates_to_index:
+                    model.add(w == work_days[index])
+                else:
+                    model.add(w <= work_days[index] + work_days[index+1])
+                    model.add(work_days[index] + work_days[index + 1] <= 2 * w)
+            model.add(sum(weekend) <= max_weekends)
+
         return 0
 
 
