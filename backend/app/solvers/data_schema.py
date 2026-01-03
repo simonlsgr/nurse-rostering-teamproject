@@ -59,6 +59,14 @@ class Nurse(BaseModel):
         default=None,
         description="Maximum consecutive shifts"
     )
+    minimum_consecutive_days_off: Optional[int] = Field(
+        default=None,
+        description="Minimum consecutive days off"
+    )
+    maximum_weekends: Optional[int] = Field(
+        default=None,
+        description="Maximum weekends"
+    )
 
 
 

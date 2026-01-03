@@ -78,6 +78,48 @@ def assert_min_time_between_shifts(
                     f"Nurse {nurse.uid} assigned to shifts {a.uid} and {b.uid} with insufficient rest."
                 )
 
+def assert_limit_worktime(
+    instance: NurseRosteringInstance, solution: NurseRosteringSolution
+):
+    shifts_by_uid = {s.uid: s for s in instance.shifts}
+    nurses_by_uid = {n.uid: n for n in instance.nurses}
+    nurse_to_shifts = defaultdict(list)
+    for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
+        for nurse_uid in nurse_uids:
+            nurse_to_shifts[nurse_uid].append(shifts_by_uid[shift_uid])
+    for nurse_uid, shifts in nurse_to_shifts:
+        total = sum(s.end_time - s.start_time for s in shifts)
+        nurse = nurses_by_uid[nurse_uid]
+        if total > nurse.maximum_work_time:
+            raise AssertionError(
+                f"Nurse {nurse_uid} works {total}, {nurse.maximum_work_time} allowed"
+            )
+
+
+def assert_maximum_consecutive_shifts(
+    instance: NurseRosteringInstance, solution: NurseRosteringSolution
+):
+    pass
+
+
+def assert_minimum_consecutive_shifts(
+    instance: NurseRosteringInstance, solution: NurseRosteringSolution
+):
+    pass
+
+
+def assert_minimum_consecutive_days_off(
+    instance: NurseRosteringInstance, solution: NurseRosteringSolution
+):
+    pass
+
+
+def assert_maximum_number_of_weekends(
+    instance: NurseRosteringInstance, solution: NurseRosteringSolution
+):
+    pass
+
+
 
 def objective_value(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
