@@ -1,5 +1,5 @@
 from collections import defaultdict
-from solvers.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 
 
 def print_instance_and_solution(

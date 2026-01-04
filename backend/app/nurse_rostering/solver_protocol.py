@@ -1,5 +1,5 @@
 from typing import Protocol
-from solvers.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 
 """
 This is a protocol defining the strucure the model of a solver has to fulfill. Therefore, it is the interface all solvers should implement.

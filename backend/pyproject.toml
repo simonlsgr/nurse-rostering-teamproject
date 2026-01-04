@@ -1,5 +1,5 @@
 [project]
-name = "solvers"
+name = "nurse_rostering"
 version = "0.1.0"
 
 [tool.setuptools]

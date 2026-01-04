@@ -4,7 +4,7 @@ This file is responsible for running the optimization job in a separate worker.
 
 from api_config import get_db_connection
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
-from solvers.cp_sat.solver import NurseRosteringModel
+from nurse_rostering.cp_sat.solver import NurseRosteringModel
 from datetime import datetime
 from uuid import UUID
 from api_db import NurseRosteringJobDbConnection
@@ -45,7 +45,7 @@ def run_optimization_job(
     job_status.status = "Running"
     job_status.started_at = datetime.now()
     db_connection.update_job_status(job_status)
-    solver = NurseRosteringModel(job_request.nurse_rostering_instance, job_request.optimization_parameters)
+    solver = NurseRosteringModel(job_request.nurse_rostering._instance, job_request.optimization_parameters)
     solution = solver.solve(log_callback=print)
     db_connection.set_solution(job_id, solution)
     job_status.status = "Completed"

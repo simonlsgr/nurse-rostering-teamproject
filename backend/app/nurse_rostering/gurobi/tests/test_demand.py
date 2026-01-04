@@ -1,8 +1,8 @@
-from solvers.gurobi.model.modules import DemandSatisfactionModule
-from solvers.gurobi.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.gurobi.model.modules import DemandSatisfactionModule
+from nurse_rostering.gurobi.model.nurse_vars import NurseDecisionVars
 from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
-from solvers.utils._generate import create_shifts, create_nurse
-from solvers.data_schema import NurseRosteringInstance
+from nurse_rostering.utils._generate import create_shifts, create_nurse
+from nurse_rostering.data_schema import NurseRosteringInstance
 import gurobipy as gp
 
 def test_demand_satisfaction_met():

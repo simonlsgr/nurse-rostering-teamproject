@@ -1,9 +1,9 @@
-from solvers.model.modules import MinTimeBetweenShifts
+from nurse_rostering.model.modules import MinTimeBetweenShifts
 from datetime import timedelta
 
-from solvers.model.nurse_vars import NurseDecisionVars
-from solvers.utils._generate import create_shifts, create_nurse
-from solvers.data_schema import NurseRosteringInstance
+from nurse_rostering.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.utils._generate import create_shifts, create_nurse
+from nurse_rostering.data_schema import NurseRosteringInstance
 
 
 from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible

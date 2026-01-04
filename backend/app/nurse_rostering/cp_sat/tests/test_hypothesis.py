@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from hypothesis import given, strategies as st
 from hypothesis.strategies import composite
-from solvers.data_schema import NurseRosteringInstance, Shift, Nurse
-from solvers.cp_sat.solver import NurseRosteringModel
-from solvers.utils.validation import assert_solution_is_feasible
+from nurse_rostering.data_schema import NurseRosteringInstance, Shift, Nurse
+from nurse_rostering.cp_sat.solver import NurseRosteringModel
+from nurse_rostering.utils.validation import assert_solution_is_feasible
 
 
 # --- Helper strategies ---
