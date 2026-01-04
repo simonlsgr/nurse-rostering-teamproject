@@ -4,7 +4,7 @@ This module provides a basic container to manage the variables for a single nurs
 
 from collections.abc import Iterable
 from ortools.sat.python import cp_model
-from ...data_schema import Nurse, Shift, ShiftUid
+from .data_schema import Nurse, Shift, ShiftUid
 
 
 class NurseDecisionVars:
@@ -14,14 +14,14 @@ class NurseDecisionVars:
     Each nurse has one Boolean variable for each shift, indicating whether the nurse is assigned to that shift.
     This class also provides helper methods to iterate over assignments and extract results.
     """
-
-    def __init__(self, nurse: Nurse, shifts: list[Shift], model: cp_model.CpModel):
+                                                          # this is the adapter
+    def __init__(self, nurse: Nurse, shifts: list[Shift], model):
         self.nurse = nurse
         self.shifts = shifts
         self.model = model
         # Create one Boolean decision variable per shift for this nurse
         self._x = {
-            shift.uid: model.new_bool_var(f"assign_{nurse.uid}_{shift.uid}")
+            shift.uid: model.add_var(f"assign_{nurse.uid}_{shift.uid}", "bool")
             for shift in shifts
         }
 
@@ -34,24 +34,24 @@ class NurseDecisionVars:
             raise ValueError(
                 f"Shift UID {shift_uid} not found in nurse {self.nurse.uid} assignments."
             )
-        self.model.add(self._x[shift_uid] == value)
+        self.model.add_constraint(self._x[shift_uid] == value)
 
-    def is_assigned_to(self, shift_uid: ShiftUid) -> cp_model.BoolVarT:
+    def is_assigned_to(self, shift_uid: ShiftUid):
         """
         Return the decision variable for the given shift UID.
         This variable is True if the nurse is assigned to that shift, and False otherwise.
         """
         return self._x[shift_uid]
 
-    def iter_shifts(self) -> Iterable[tuple[Shift, cp_model.BoolVarT]]:
+    def iter_shifts(self):
         """
         Iterate over all (shift, variable) pairs for this nurse.
         """
         for shift in self.shifts:
             yield shift, self.is_assigned_to(shift_uid=shift.uid)
 
-    def extract(self, solver: cp_model.CpSolver) -> list[ShiftUid]:
+    def extract(self) -> list[ShiftUid]:
         """
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
-        return [shift_uid for shift_uid in self._x if solver.value(self._x[shift_uid])]
+        return [shift_uid for shift_uid in self._x if self.model.get_solution_value(self._x[shift_uid])]

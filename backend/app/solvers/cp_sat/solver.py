@@ -1,7 +1,7 @@
 from ortools.sat.python import cp_model
-from .nurse_vars import NurseDecisionVars
+from ...nurse_vars import NurseDecisionVars
 from ...data_schema import NurseRosteringInstance, NurseRosteringSolution
-from .modules import (
+from ...modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
     DemandSatisfactionModule,
@@ -9,7 +9,7 @@ from .modules import (
     MaximizePreferences,
     PreferStaffModule,
 )
-
+from solvers.cp_sat.model.cp_sat_adapter import CpSatAdapter
 
 class NurseRosteringModel:
     """
@@ -17,12 +17,12 @@ class NurseRosteringModel:
     """
 
     def __init__(
-        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None
+        self, instance: NurseRosteringInstance, adapter: CpSatAdapter | None = None
     ):
         self.instance = instance
-        self.model = model or cp_model.CpModel()
+        self.adapter = adapter or CpSatAdapter()
         self.nurse_vars = [
-            NurseDecisionVars(nurse, instance.shifts, self.model)
+            NurseDecisionVars(nurse, instance.shifts, self.adapter)
             for nurse in instance.nurses
         ]
 
@@ -34,11 +34,11 @@ class NurseRosteringModel:
             PreferStaffModule(),
         ]
 
-        objective = sum(
-            module.build(instance, self.model, self.nurse_vars)  # type: ignore
+        objective = self.adapter.sum(
+            module.build(instance, self.adapter, self.nurse_vars)  # type: ignore
             for module in self.modules
         )
-        self.model.minimize(objective)
+        self.adapter.set_objective(objective, "min")
 
     def solve(
         self,
@@ -46,13 +46,13 @@ class NurseRosteringModel:
         max_time_in_seconds: float = 60.0,
         **solver_params,
     ) -> NurseRosteringSolution:
-        solver = cp_model.CpSolver()
+        solver = self.adapter.solver
         solver.parameters.log_search_progress = log_search_progress
         solver.parameters.max_time_in_seconds = max_time_in_seconds
         for key, value in solver_params.items():
             setattr(solver.parameters, key, value)
 
-        status = solver.solve(self.model)
+        status = solver.solve(self.adapter.model)
         if status == cp_model.INFEASIBLE:
             raise ValueError("The model is infeasible.")
         elif status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
@@ -60,7 +60,7 @@ class NurseRosteringModel:
 
         nurses_at_shifts = {}
         for nurse_model in self.nurse_vars:
-            for shift_uid in nurse_model.extract(solver):
+            for shift_uid in nurse_model.extract():
                 nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
 
         return NurseRosteringSolution(
