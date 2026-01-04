@@ -162,7 +162,7 @@ def get_work_day_vars(instance, model, nv, all_dates, shifts_by_date):
     nurse_uid = nv.nurse.uid
     if nurse_uid in instance._work_day_vars:
         return instance._work_day_vars[nurse_uid]
-
+    all_dates.sort(key=lambda s: s.start_time)
     work_days = []
     for date in all_dates:
         w = model.add_var(f"work_{nv.nurse.uid}_{date.isoformat()}", "bool")
@@ -268,10 +268,11 @@ class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
 # Indeed already enforced by NoBlockedShiftsModule
 
 
-class CoverRequirementsModule(ShiftAssignmentModule):
-    """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    def build(self, instance, model, nurse_shift_vars):
-
-        return 0
+# class CoverRequirementsModule(ShiftAssignmentModule):
+#     """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+#     def build(self, instance, model, nurse_shift_vars):
+#
+#         return 0
+# conflicts with demand satisfaction
 
 
