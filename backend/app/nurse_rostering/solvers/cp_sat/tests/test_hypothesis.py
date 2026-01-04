@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from hypothesis import given, strategies as st
 from hypothesis.strategies import composite
 from nurse_rostering.data_schema import NurseRosteringInstance, Shift, Nurse
-from nurse_rostering.cp_sat.solver import NurseRosteringModel
+from nurse_rostering.solvers.cp_sat.solver import NurseRosteringModel
 from nurse_rostering.utils.validation import assert_solution_is_feasible
 
 

@@ -4,7 +4,7 @@ from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
 from ortools.sat.python import cp_model
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.data_schema import NurseRosteringInstance
-from nurse_rostering.cp_sat.cp_sat_adapter import CpSatAdapter
+from nurse_rostering.solvers.cp_sat.cp_sat_adapter import CpSatAdapter
 
 def test_demand_satisfaction_met():
     shifts = create_shifts(1)

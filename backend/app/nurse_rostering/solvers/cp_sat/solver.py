@@ -9,7 +9,7 @@ from ..model.modules import (
     MaximizePreferences,
     PreferStaffModule,
 )
-from nurse_rostering.cp_sat.cp_sat_adapter import CpSatAdapter
+from nurse_rostering.solvers.cp_sat.cp_sat_adapter import CpSatAdapter
 
 class NurseRosteringModel:
     """

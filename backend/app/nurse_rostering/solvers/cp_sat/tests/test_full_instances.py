@@ -1,6 +1,6 @@
 from nurse_rostering.utils.output import print_instance_and_solution
 from nurse_rostering.utils.generate_random_instance import generate_random_instance
-from nurse_rostering.cp_sat.solver import NurseRosteringModel
+from nurse_rostering.solvers.cp_sat.solver import NurseRosteringModel
 from nurse_rostering.utils.validation import (
     assert_solution_is_feasible,
 )
