@@ -1,4 +1,5 @@
-from ortools.sat.python import cp_model
+import gurobipy as gp
+from gurobipy import GRB 
 from ...model.nurse_vars import NurseDecisionVars
 from ...data_schema import NurseRosteringInstance, NurseRosteringSolution
 from ...model.modules import (
@@ -9,18 +10,18 @@ from ...model.modules import (
     MaximizePreferences,
     PreferStaffModule,
 )
-from nurse_rostering.solvers.cp_sat.cp_sat_adapter import CpSatAdapter
+from .gurobi_adapter import GurobiAdapter
 
 class NurseRosteringModel:
     """
-    A compact and extensible solver for the nurse rostering problem using CP-SAT.
+    A compact and extensible solver for the nurse rostering problem using Gurobi.
     """
 
     def __init__(
-        self, instance: NurseRosteringInstance, adapter: CpSatAdapter | None = None
+        self, instance: NurseRosteringInstance, model = None
     ):
         self.instance = instance
-        self.adapter = adapter or CpSatAdapter()
+        self.adapter = model or GurobiAdapter()
         self.nurse_vars = [
             NurseDecisionVars(nurse, instance.shifts, self.adapter)
             for nurse in instance.nurses
@@ -46,16 +47,20 @@ class NurseRosteringModel:
         max_time_in_seconds: float = 60.0,
         **solver_params,
     ) -> NurseRosteringSolution:
-        solver = self.adapter.solver
-        solver.parameters.log_search_progress = log_search_progress
-        solver.parameters.max_time_in_seconds = max_time_in_seconds
-        for key, value in solver_params.items():
-            setattr(solver.parameters, key, value)
 
-        status = solver.solve(self.adapter.model)
-        if status == cp_model.INFEASIBLE:
+        solver = self.adapter.model
+
+        solver.Params.LogToConsole = log_search_progress
+        solver.Params.TimeLimit = max_time_in_seconds
+        
+        for key, value in solver_params.items():
+            setattr(solver.Params, key, value)
+
+        solver.optimize()
+
+        if solver.status == GRB.INFEASIBLE:
             raise ValueError("The model is infeasible.")
-        elif status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        elif solver.SolCount < 1:
             raise ValueError("Solver failed to find a feasible solution.")
 
         nurses_at_shifts = {}
@@ -65,5 +70,5 @@ class NurseRosteringModel:
 
         return NurseRosteringSolution(
             nurses_at_shifts=nurses_at_shifts,
-            objective_value=round(solver.objective_value),
+            objective_value=round(solver.ObjVal),
         )
