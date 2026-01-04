@@ -79,10 +79,8 @@ class MinTimeBetweenShifts(ShiftAssignmentModule):
                 # if there are shifts that are too close to shift_i,
                 # prevent their assignment if shift_i is assigned
                 shift_i_selected = nurse_x.is_assigned_to(shift_i.uid)
-                no_colliding_selected = (
-                    model.sum(nurse_x.is_assigned_to(s.uid) for s in colliding) == 0
-                )
-                model.add_constraint(no_colliding_selected, if_var=shift_i_selected)
+
+                model.add_constraint(model.sum(nurse_x.is_assigned_to(s.uid) for s in colliding) <= ((1 - shift_i_selected) * len(colliding)))
 
     def build(self, instance, model, nurse_shift_vars):
         """
