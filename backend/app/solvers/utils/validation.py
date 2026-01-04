@@ -7,6 +7,8 @@ have a clean specification of what a valid and good solution looks like.
 """
 
 from collections import defaultdict
+from datetime import timedelta
+
 from ..data_schema import NurseRosteringInstance, NurseRosteringSolution
 
 
@@ -78,6 +80,7 @@ def assert_min_time_between_shifts(
                     f"Nurse {nurse.uid} assigned to shifts {a.uid} and {b.uid} with insufficient rest."
                 )
 
+
 def assert_limit_worktime(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
 ):
@@ -92,32 +95,134 @@ def assert_limit_worktime(
         nurse = nurses_by_uid[nurse_uid]
         if total > nurse.maximum_work_time:
             raise AssertionError(
-                f"Nurse {nurse_uid} works {total}, {nurse.maximum_work_time} allowed"
+                f"Nurse {nurse_uid} works: {total}, allowed: {nurse.maximum_work_time}"
             )
 
 
 def assert_maximum_consecutive_shifts(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
 ):
-    pass
+    shifts_by_uid = {s.uid: s for s in instance.shifts}
+    nurses_by_uid = {n.uid: n for n in instance.nurses}
+    nurse_work_days = {}
+    for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
+        for nurse_uid in nurse_uids:
+            start = shifts_by_uid[shift_uid].start_time.date()
+            end = shifts_by_uid[shift_uid].end_time.date()
+            while start <= end:
+                nurse_work_days.setdefault(nurse_uid, set()).add(start)
+                start += timedelta(days=1)
+    for nurse_uid, nurse in nurses_by_uid.items():
+        max_cons = nurse.maximum_consecutive_shifts
+        if max_cons is None:
+            continue
+        nurse_shifts = sorted(nurse_work_days.get(nurse_uid, set()))
+        if not nurse_shifts:
+            continue
+        counter = 1
+        for i in range(len(nurse_shifts)-1):
+            if (nurse_shifts[i+1] - nurse_shifts[i]).days == 1:
+                counter += 1
+                if counter > max_cons:
+                    raise AssertionError(
+                        f"Nurse {nurse_uid} has to many consecutive shifts: {counter}, allowed: {max_cons}"
+                    )
+            else:
+                counter = 1
 
 
 def assert_minimum_consecutive_shifts(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
 ):
-    pass
+    shifts_by_uid = {s.uid: s for s in instance.shifts}
+    nurses_by_uid = {n.uid: n for n in instance.nurses}
+    nurse_work_days = {}
+    for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
+        for nurse_uid in nurse_uids:
+            start = shifts_by_uid[shift_uid].start_time.date()
+            end = shifts_by_uid[shift_uid].end_time.date()
+            while start <= end:
+                nurse_work_days.setdefault(nurse_uid, set()).add(start)
+                start += timedelta(days=1)
+    for nurse_uid, nurse in nurses_by_uid.items():
+        min_cons = nurse.minimum_consecutive_shifts
+        if min_cons is None:
+            continue
+        nurse_shifts = sorted(nurse_work_days.get(nurse_uid, set()))
+        if not nurse_shifts:
+            continue
+        counter = 1
+        for i in range(len(nurse_shifts) - 1):
+            if (nurse_shifts[i + 1] - nurse_shifts[i]).days == 1:
+                counter += 1
+            else:
+                if counter < min_cons:
+                    raise AssertionError(
+                        f"Nurse {nurse_uid} has not enough consecutive shifts: {counter}, allowed: {min_cons}"
+                    )
+                counter = 1
+        if counter < min_cons:
+            raise AssertionError(
+                f"Nurse {nurse_uid} has not enough consecutive shifts: {counter}, allowed: {min_cons}"
+            )
 
 
 def assert_minimum_consecutive_days_off(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
 ):
-    pass
+    shifts_by_uid = {s.uid: s for s in instance.shifts}
+    nurses_by_uid = {n.uid: n for n in instance.nurses}
+    nurse_work_days = {}
+    for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
+        for nurse_uid in nurse_uids:
+            start = shifts_by_uid[shift_uid].start_time.date()
+            end = shifts_by_uid[shift_uid].end_time.date()
+            while start <= end:
+                nurse_work_days.setdefault(nurse_uid, set()).add(start)
+                start += timedelta(days=1)
+    for nurse_uid, nurse in nurses_by_uid.items():
+        min_days_off = nurse.minimum_consecutive_days_off
+        if min_days_off is None:
+            continue
+        nurse_shifts = sorted(nurse_work_days.get(nurse_uid, set()))
+        if not nurse_shifts:
+            continue
+        for i in range(len(nurse_shifts) - 1):
+            days_off = (nurse_shifts[i + 1] - nurse_shifts[i]).days - 1
+            if 1 < days_off < min_days_off:
+                    raise AssertionError(
+                        f"Nurse {nurse_uid} has not enough days off: {days_off}, allowed: {min_days_off}"
+                    )
 
 
 def assert_maximum_number_of_weekends(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
 ):
-    pass
+    shifts_by_uid = {s.uid: s for s in instance.shifts}
+    nurses_by_uid = {n.uid: n for n in instance.nurses}
+    weekends = {}
+    for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
+        for nurse_uid in nurse_uids:
+            start = shifts_by_uid[shift_uid].start_time.date()
+            end = shifts_by_uid[shift_uid].end_time.date()
+            while start <= end:
+                if start.weekday() >= 5:
+                    saturday = start if start.weekday() == 5 else (start- timedelta(days=1))
+                    weekends.setdefault(nurse_uid, set()).add(saturday)
+                start += timedelta(days=1)
+    for nurse_uid, nurse in nurses_by_uid.items():
+        max_weekends = nurse.maximum_weekends
+        if max_weekends is None:
+            continue
+        nurse_weekends = weekends.get(nurse_uid, set())
+        if not nurse_weekends:
+            continue
+        worked_weekends = len(nurse_weekends)
+
+        if worked_weekends > max_weekends:
+            raise AssertionError(
+                f"Nurse {nurse_uid} worked on too many weekends: {worked_weekends}, {max_weekends} allowed"
+            )
 
 
 
@@ -155,6 +260,11 @@ def assert_solution_is_feasible(
     # assert_shift_limits(instance, solution)
     assert_demand_satisfaction(instance, solution)
     assert_min_time_between_shifts(instance, solution)
+    assert_limit_worktime(instance, solution)
+    assert_maximum_consecutive_shifts(instance, solution)
+    assert_minimum_consecutive_shifts(instance, solution)
+    assert_minimum_consecutive_days_off(instance, solution)
+    assert_maximum_number_of_weekends(instance, solution)
     if check_objective:
         obj_val = objective_value(instance, solution)
         if obj_val != solution.objective_value:
