@@ -1,10 +1,10 @@
-from solvers.modules import DemandSatisfactionModule
-from solvers.nurse_vars import NurseDecisionVars
+from solvers.model.modules import DemandSatisfactionModule
+from solvers.model.nurse_vars import NurseDecisionVars
 from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
 from ortools.sat.python import cp_model
 from solvers.utils._generate import create_shifts, create_nurse
 from solvers.data_schema import NurseRosteringInstance
-from solvers.cp_sat.model.cp_sat_adapter import CpSatAdapter
+from solvers.cp_sat.cp_sat_adapter import CpSatAdapter
 
 def test_demand_satisfaction_met():
     shifts = create_shifts(1)

@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-from solvers.model_interface import ModelInterface
+from solvers.model.model_interface import ModelInterface
 
 
 class CpSatAdapter(ModelInterface):

@@ -1,7 +1,7 @@
-from solvers.modules import MinTimeBetweenShifts
+from solvers.model.modules import MinTimeBetweenShifts
 from datetime import timedelta
 
-from solvers.nurse_vars import NurseDecisionVars
+from solvers.model.nurse_vars import NurseDecisionVars
 from solvers.utils._generate import create_shifts, create_nurse
 from solvers.data_schema import NurseRosteringInstance
 

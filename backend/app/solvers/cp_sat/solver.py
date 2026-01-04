@@ -1,7 +1,7 @@
 from ortools.sat.python import cp_model
-from ...nurse_vars import NurseDecisionVars
-from ...data_schema import NurseRosteringInstance, NurseRosteringSolution
-from ...modules import (
+from ..model.nurse_vars import NurseDecisionVars
+from ..data_schema import NurseRosteringInstance, NurseRosteringSolution
+from ..model.modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
     DemandSatisfactionModule,
@@ -9,7 +9,7 @@ from ...modules import (
     MaximizePreferences,
     PreferStaffModule,
 )
-from solvers.cp_sat.model.cp_sat_adapter import CpSatAdapter
+from solvers.cp_sat.cp_sat_adapter import CpSatAdapter
 
 class NurseRosteringModel:
     """

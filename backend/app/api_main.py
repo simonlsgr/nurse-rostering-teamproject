@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
-from solvers.cp_sat.model.solver import NurseRosteringModel
+from solvers.cp_sat.solver import NurseRosteringModel
 from solvers.data_schema import NurseRosteringSolution
 from api_config import get_db_connection, get_task_queue
 from api_tasks import run_optimization_job

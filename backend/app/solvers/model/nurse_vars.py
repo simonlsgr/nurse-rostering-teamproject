@@ -4,7 +4,7 @@ This module provides a basic container to manage the variables for a single nurs
 
 from collections.abc import Iterable
 from ortools.sat.python import cp_model
-from .data_schema import Nurse, Shift, ShiftUid
+from ..data_schema import Nurse, Shift, ShiftUid
 
 
 class NurseDecisionVars:

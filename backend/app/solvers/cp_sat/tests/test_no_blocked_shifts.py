@@ -1,8 +1,8 @@
-from solvers.nurse_vars import NurseDecisionVars
+from solvers.model.nurse_vars import NurseDecisionVars
 from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
 from solvers.utils._generate import create_shifts, create_nurse
 from solvers.data_schema import NurseRosteringInstance
-from solvers.modules import NoBlockedShiftsModule
+from solvers.model.modules import NoBlockedShiftsModule
 
 
 def test_no_blocked_shifts_trivial():
