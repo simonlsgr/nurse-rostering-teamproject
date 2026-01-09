@@ -37,11 +37,8 @@ class GurobiAdapter(ModelInterface):
             raise NotImplementedError("Gurobi adapter only supports int/bool variables")
 
     def add_max_equality(self, expr_lhs, expr_rhs):
+        self.model.addConstr(expr_lhs == max(expr_rhs))
 
-        for v in expr_rhs:
-            self.model.addConstr(expr_lhs >= v)
-
-        self.model.addConstr(expr_lhs <= gp.quicksum(expr_rhs))
 
     def set_objective(self, expr, sense="min"):
 
