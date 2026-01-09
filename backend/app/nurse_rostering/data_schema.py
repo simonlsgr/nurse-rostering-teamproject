@@ -45,11 +45,11 @@ class Nurse(BaseModel):
     )
     minimum_work_time: Optional[int] = Field(
         default=None,
-        description="Minimum work time"
+        description="Minimum work time in minutes"
     )
     maximum_work_time: Optional[int] = Field(
         default=None,
-        description="Maximum work time"
+        description="Maximum work time in minutes"
     )
     minimum_consecutive_shifts: Optional[int] = Field(
         default=None,
