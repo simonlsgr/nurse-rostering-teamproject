@@ -84,15 +84,20 @@ def assert_min_time_between_shifts(
 def assert_limit_worktime(
     instance: NurseRosteringInstance, solution: NurseRosteringSolution
 ):
+    
     shifts_by_uid = {s.uid: s for s in instance.shifts}
     nurses_by_uid = {n.uid: n for n in instance.nurses}
     nurse_to_shifts = defaultdict(list)
     for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
         for nurse_uid in nurse_uids:
             nurse_to_shifts[nurse_uid].append(shifts_by_uid[shift_uid])
-    for nurse_uid, shifts in nurse_to_shifts:
-        total = sum(s.end_time - s.start_time for s in shifts)
+    
+    for nurse_uid, shifts in nurse_to_shifts.items():
+        total = sum(int((s.end_time - s.start_time).total_seconds() // 60) for s in shifts)
         nurse = nurses_by_uid[nurse_uid]
+        if nurse.maximum_work_time is None:
+            continue
+            raise Warning(f"No maximum work time was supplied for nurse {nurse_uid}.")
         if total > nurse.maximum_work_time:
             raise AssertionError(
                 f"Nurse {nurse_uid} works: {total}, allowed: {nurse.maximum_work_time}"
