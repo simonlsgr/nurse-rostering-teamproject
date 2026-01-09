@@ -6,7 +6,7 @@ from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.data_schema import NurseRosteringInstance
 
 
-from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
+from nurse_rostering.solvers.cp_sat.utils.testing import AssertModelFeasible, AssertModelInfeasible
 
 
 def run_min_rest_test(

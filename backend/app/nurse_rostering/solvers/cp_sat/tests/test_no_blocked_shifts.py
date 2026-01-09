@@ -1,5 +1,5 @@
 from nurse_rostering.model.nurse_vars import NurseDecisionVars
-from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
+from nurse_rostering.solvers.cp_sat.utils.testing import AssertModelFeasible, AssertModelInfeasible
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.data_schema import NurseRosteringInstance
 from nurse_rostering.model.modules import NoBlockedShiftsModule

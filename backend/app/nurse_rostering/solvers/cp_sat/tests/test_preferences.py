@@ -1,5 +1,5 @@
 from nurse_rostering.model.modules import MaximizePreferences, DemandSatisfactionModule
-from cpsat_utils.testing import assert_objective
+from nurse_rostering.solvers.cp_sat.utils.testing import assert_objective
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 
 from nurse_rostering.model.nurse_vars import NurseDecisionVars
@@ -7,6 +7,7 @@ from nurse_rostering.data_schema import NurseRosteringInstance
 
 from ortools.sat.python import cp_model
 
+from nurse_rostering.solvers.cp_sat.cp_sat_adapter import CpSatAdapter
 
 def test_maximize_preferences_module():
     """
@@ -18,17 +19,18 @@ def test_maximize_preferences_module():
     nurse = create_nurse("Preferred Nurse", preferred_shifts={shifts[0].uid})
     instance = NurseRosteringInstance(nurses=[nurse], shifts=shifts)
 
-    model = cp_model.CpModel()
-    nurse_vars = NurseDecisionVars(nurse, shifts, model)
-    solver = cp_model.CpSolver()
+    adapter = CpSatAdapter()
+    
+    nurse_vars = NurseDecisionVars(nurse, shifts, adapter)
+    
     pref_mod = MaximizePreferences()
 
-    DemandSatisfactionModule().build(instance, model, [nurse_vars])
+    DemandSatisfactionModule().build(instance, adapter, [nurse_vars])
 
-    model.minimize(pref_mod.build(instance, model, [nurse_vars]))
+    adapter.model.minimize(pref_mod.build(instance, adapter, [nurse_vars]))
 
-    assert_objective(model=model, solver=solver, expected=-1.0)
+    assert_objective(adapter=adapter, expected=-1.0)
 
-    assert solver.value(nurse_vars.is_assigned_to(shifts[0].uid)) == 1, (
+    assert adapter.solver.value(nurse_vars.is_assigned_to(shifts[0].uid)) == 1, (
         "Nurse should be assigned to their preferred shift"
     )
