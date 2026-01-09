@@ -4,44 +4,44 @@ from nurse_rostering.model.model_interface import ModelInterface
 
 class HexalyAdapter(ModelInterface):
     
-    def __init__(self):
-        pass
+    def __init__(self, model):
+        self.model = model
     
-    def add_var(self, name, var_type="bool", lb=None, ub=None, hx_model=None):
+    def add_var(self, name, var_type="bool", lb=None, ub=None):
         
         if var_type == "bool":
-            v = hx_model.bool()
+            v = self.model.bool()
         
         elif var_type == "int":
-            v = hx_model.int(lb, ub)
+            v = self.model.int(lb, ub)
         
         else:  # float
-            v = hx_model.float(lb, ub)
+            v = self.model.float(lb, ub)
             
         return v
     
     
-    def add_constraint(self, expr, if_var=None, hx_model=None):
+    def add_constraint(self, expr, if_var=None):
 
         if if_var is None:
-            hx_model.constraint(expr)
+            self.model.constraint(expr)
             
         else:
             raise NotImplementedError("Hexaly adapter only supports int/bool variables")
         
-    def add_max_equality(self, expr_lhs, expr_rhs, hx_model=None):
+    def add_max_equality(self, expr_lhs, expr_rhs):
 
-        hx_model.constraint(expr_lhs == max(expr_rhs))
+        self.model.constraint(expr_lhs == max(expr_rhs))
         
-    def set_objective(self, expr, sense="min", hx_model=None):
+    def set_objective(self, expr, sense="min"):
         if sense == "min":
-            hx_model.minimize(expr)
+            self.model.minimize(expr)
 
         else:
-            hx_model.maximize(expr)
+            self.model.maximize(expr)
 
-    def sum(self, iterable, hx_model=None):
-        return hx_model.sum(iterable)
+    def sum(self, iterable):
+        return self.model.sum(iterable)
     
-    def get_solution_value(self, var, hx_model=None):
+    def get_solution_value(self, var):
         return var.value
