@@ -45,7 +45,8 @@ class CpSatAdapter(ModelInterface):
             self.model.maximize(expr)
 
     def sum(self, iterable):
-        return sum(iterable)
+        return cp_model.LinearExpr.sum(list(iterable))
+        
 
     def get_solution_value(self, var):
         return self.solver.value(var)
