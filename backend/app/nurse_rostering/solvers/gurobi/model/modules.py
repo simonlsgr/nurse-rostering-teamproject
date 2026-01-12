@@ -3,8 +3,8 @@ from datetime import timedelta
 
 import gurobipy as gp
 from gurobipy import GRB
-from ...data_schema import NurseRosteringInstance, Shift
-from .nurse_vars import NurseDecisionVars
+from nurse_rostering.data_schema import NurseRosteringInstance, Shift
+from nurse_rostering.solvers.gurobi.model.nurse_vars import NurseDecisionVars
 
 
 class ShiftAssignmentModule(abc.ABC):
@@ -17,7 +17,7 @@ class ShiftAssignmentModule(abc.ABC):
     ) -> gp.LinExpr:
         """
         Add constraints and optionally return a sub-objective expression.
-        Each subclass defines one constraint or objective aspect.
+        Eac1h subclass defines one constraint or objective aspect.
         """
         return 0
 

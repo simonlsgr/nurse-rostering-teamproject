@@ -1,8 +1,8 @@
 import gurobipy as gp
 from gurobipy import GRB 
-from .nurse_vars import NurseDecisionVars
-from ...data_schema import NurseRosteringInstance, NurseRosteringSolution
-from .modules import (
+from nurse_rostering.solvers.gurobi.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.solvers.gurobi.model.modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
     DemandSatisfactionModule,

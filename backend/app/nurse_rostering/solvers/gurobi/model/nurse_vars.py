@@ -5,7 +5,7 @@ This module provides a basic container to manage the variables for a single nurs
 import gurobipy as gp
 from gurobipy import GRB, Var
 from collections.abc import Iterable
-from ...data_schema import Nurse, Shift, ShiftUid
+from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
 
 
 class NurseDecisionVars:
