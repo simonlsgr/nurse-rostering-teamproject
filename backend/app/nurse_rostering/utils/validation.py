@@ -7,7 +7,7 @@ have a clean specification of what a valid and good solution looks like.
 """
 
 from collections import defaultdict
-from ..data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 
 
 def assert_consistent_uids(

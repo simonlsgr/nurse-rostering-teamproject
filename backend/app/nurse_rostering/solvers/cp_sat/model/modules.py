@@ -3,7 +3,7 @@ from datetime import timedelta
 from typing import Any
 
 from ortools.sat.python import cp_model
-from ...data_schema import NurseRosteringInstance, Shift
+from nurse_rostering.data_schema import NurseRosteringInstance, Shift
 from .nurse_vars import NurseDecisionVars
 
 

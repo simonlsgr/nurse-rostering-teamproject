@@ -3,7 +3,7 @@ A simple utility to create shifts and nurses for testing purposes.
 """
 
 from datetime import datetime, timedelta
-from solvers.data_schema import Shift, Nurse
+from nurse_rostering.data_schema import Shift, Nurse
 
 
 def create_shifts(k: int, week: int = 0, shift_length: int = 8) -> list[Shift]:

@@ -1,8 +1,8 @@
-from solvers.cp_sat.model.modules import DemandSatisfactionModule
-from solvers.cp_sat.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.cp_sat.model.modules import DemandSatisfactionModule
+from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars
 from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
-from solvers.utils._generate import create_shifts, create_nurse
-from solvers.data_schema import NurseRosteringInstance
+from nurse_rostering.utils._generate import create_shifts, create_nurse
+from nurse_rostering.data_schema import NurseRosteringInstance
 
 
 def test_demand_satisfaction_met():

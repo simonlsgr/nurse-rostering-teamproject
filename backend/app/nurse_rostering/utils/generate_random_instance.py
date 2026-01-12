@@ -4,7 +4,7 @@ This module just provides some basic code for generating random instances of the
 
 import random
 from datetime import datetime, timedelta
-from ..data_schema import Nurse, Shift, NurseRosteringInstance
+from nurse_rostering.data_schema import Nurse, Shift, NurseRosteringInstance
 
 
 class NursePreferenceGenerator:
