@@ -1,7 +1,7 @@
 import hexaly.optimizer
-from nurse_vars import NurseDecisionVars
-from ...data_schema import NurseRosteringInstance, NurseRosteringSolution
-from ..model.modules import (
+from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.solvers.hexaly.model.modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
     DemandSatisfactionModule,
@@ -20,10 +20,7 @@ class NurseRosteringModel:
     ):
         self.instance = instance
         
-        self.nurse_vars = [
-            NurseDecisionVars(nurse, instance.shifts, self.adapter)
-            for nurse in instance.nurses
-        ]
+        
 
         self.modules: list[ShiftAssignmentModule] = [
             NoBlockedShiftsModule(),
@@ -38,21 +35,26 @@ class NurseRosteringModel:
     def solve(
         self,
         log_search_progress: bool = True,
-        max_time_in_seconds: float = 60.0,
+        max_time_in_seconds: int = 60,
         **solver_params,
     ) -> NurseRosteringSolution:
         
         with hexaly.optimizer.HexalyOptimizer() as optimizer:
             
-            self.adapter = model or HexalyAdapter(optimizer.model)
             
             model = optimizer.model
             
-            objective = self.adapter.sum(
-                module.build(self.instance, self.adapter, self.nurse_vars)  # type: ignore
+            self.nurse_vars = [
+                NurseDecisionVars(nurse, self.instance.shifts, model)
+                for nurse in self.instance.nurses
+            ]
+            
+            objective = model.sum(
+                module.build(self.instance, model, self.nurse_vars)  # type: ignore
                 for module in self.modules
             )
-            self.adapter.set_objective(objective, "min")
+            
+            model.minimize(objective)
             
             model.close()
             
@@ -70,7 +72,7 @@ class NurseRosteringModel:
                 for shift_uid in nurse_model.extract():
                     nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
 
-        return NurseRosteringSolution(
-            nurses_at_shifts=nurses_at_shifts,
-            objective_value=round(objective.value),
-        )
+            return NurseRosteringSolution(
+                nurses_at_shifts=nurses_at_shifts,
+                objective_value=objective.value,
+            )
