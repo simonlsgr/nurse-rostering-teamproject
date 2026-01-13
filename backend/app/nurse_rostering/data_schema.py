@@ -29,6 +29,11 @@ class Nurse(BaseModel):
     preferred_shifts: set[ShiftUid] = Field(
         ..., description="List of preferred shift UIDs for the nurse"
     )
+    preferred_off_shifts: set[ShiftUid] = Field(
+        default_factory=set,
+        description="List of preferred off shift UIDs for the nurse",
+    )
+    
     blocked_shifts: set[ShiftUid] = Field(
         ..., description="List of blocked shift UIDs for the nurse"
     )
@@ -41,7 +46,11 @@ class Nurse(BaseModel):
     )
     preferred_shift_weight: NonNegativeInt = Field(
         default=1,
-        description="The weight in the objective function for every assigned preference.",
+        description="The weight in the objective function for every assigned preference. Equivalent to q in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf.",
+    )
+    preferred_off_shift_weight: NonNegativeInt = Field(
+        default=1,
+        description="The weight in the objective function for every assigned preferred off shift. Equivalent to p in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf.",
     )
     minimum_work_time: Optional[int] = Field(
         default=None,
