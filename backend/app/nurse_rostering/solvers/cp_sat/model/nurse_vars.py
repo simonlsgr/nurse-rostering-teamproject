@@ -7,6 +7,19 @@ from ortools.sat.python import cp_model
 from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
 
 
+class PreferredCoverDecisionVars:
+    def __init__(self, shifts: list[Shift], model: cp_model.CpModel):
+        
+        self.total_below_preferred = {
+            shift.uid: model.new_int_var(0, len(shifts), f"total_below_preferred_{shift.uid}")
+            for shift in shifts
+        }
+        self.total_above_preferred = {
+            shift.uid: model.new_int_var(0, len(shifts), f"total_above_preferred_{shift.uid}")
+            for shift in shifts
+        }
+        self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
+
 class NurseDecisionVars:
     """
     A container to create and manage the decision variables for a single nurse.

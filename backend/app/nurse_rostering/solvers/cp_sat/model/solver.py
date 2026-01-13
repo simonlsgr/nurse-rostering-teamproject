@@ -1,13 +1,18 @@
 from ortools.sat.python import cp_model
-from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 from .modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
-    DemandSatisfactionModule,
     MinTimeBetweenShifts,
     MaximizePreferences,
     PreferStaffModule,
+    LimitWorkTimeModule,
+    MaximumConsecutiveShiftsModule,
+    MinimumConsecutiveShiftsModule,
+    MinimumConsecutiveDaysOffModule,
+    MaximumNumberOfWeekendsModule,
+    CoverRequirementsModule,
 )
 
 
@@ -25,17 +30,24 @@ class NurseRosteringModel:
             NurseDecisionVars(nurse, instance.shifts, self.model)
             for nurse in instance.nurses
         ]
+        
+        self.preferred_cover_vars = PreferredCoverDecisionVars(shifts=instance.shifts, model=self.model)
 
         self.modules: list[ShiftAssignmentModule] = [
             NoBlockedShiftsModule(),
-            DemandSatisfactionModule(),
             MinTimeBetweenShifts(),
             MaximizePreferences(),
             PreferStaffModule(),
+            LimitWorkTimeModule(),
+            MaximumConsecutiveShiftsModule(),
+            MinimumConsecutiveShiftsModule(),
+            MinimumConsecutiveDaysOffModule(),
+            MaximumNumberOfWeekendsModule(),
+            CoverRequirementsModule(),
         ]
 
         objective = sum(
-            module.build(instance, self.model, self.nurse_vars)  # type: ignore
+            module.build(instance, self.model, self.nurse_vars, self.preferred_cover_vars)  # type: ignore
             for module in self.modules
         )
         self.model.minimize(objective)

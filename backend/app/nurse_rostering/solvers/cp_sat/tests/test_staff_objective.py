@@ -1,8 +1,8 @@
-from nurse_rostering.solvers.cp_sat.model.modules import PreferStaffModule, DemandSatisfactionModule
+from nurse_rostering.solvers.cp_sat.model.modules import PreferStaffModule, CoverRequirementsModule
 from cpsat_utils.testing import assert_objective
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 
-from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance
 
 from ortools.sat.python import cp_model
@@ -22,9 +22,10 @@ def test_prefer_staff_module():
     model = cp_model.CpModel()
     vars_staff = NurseDecisionVars(staff, shifts, model)
     vars_contractor = NurseDecisionVars(contractor, shifts, model)
+    cover_vars = PreferredCoverDecisionVars(shifts, model)
     solver = cp_model.CpSolver()
     staff_mod = PreferStaffModule()
-    DemandSatisfactionModule().build(instance, model, [vars_staff, vars_contractor])
+    CoverRequirementsModule().build(instance, model, [vars_staff, vars_contractor], cover_vars)
 
     model.minimize(staff_mod.build(instance, model, [vars_staff, vars_contractor]))
     assert_objective(

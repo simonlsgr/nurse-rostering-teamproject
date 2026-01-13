@@ -8,6 +8,11 @@ from nurse_rostering.solvers.hexaly.model.modules import (
     MinTimeBetweenShifts,
     MaximizePreferences,
     PreferStaffModule,
+    LimitWorkTimeModule,
+    MaximumConsecutiveShiftsModule,
+    MinimumConsecutiveShiftsModule,
+    MinimumConsecutiveDaysOffModule,
+    MaximumNumberOfWeekendsModule,
 )
 
 class NurseRosteringModel:
@@ -28,6 +33,11 @@ class NurseRosteringModel:
             MinTimeBetweenShifts(),
             MaximizePreferences(),
             PreferStaffModule(),
+            LimitWorkTimeModule(),
+            MaximumConsecutiveShiftsModule(),
+            MinimumConsecutiveShiftsModule(),
+            MinimumConsecutiveDaysOffModule(),
+            MaximumNumberOfWeekendsModule(),
         ]
 
         

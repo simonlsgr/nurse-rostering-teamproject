@@ -1,8 +1,8 @@
-from nurse_rostering.solvers.cp_sat.model.modules import MaximizePreferences, DemandSatisfactionModule
+from nurse_rostering.solvers.cp_sat.model.modules import MaximizePreferences, CoverRequirementsModule
 from cpsat_utils.testing import assert_objective
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 
-from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance
 
 from ortools.sat.python import cp_model
@@ -20,10 +20,11 @@ def test_maximize_preferences_module():
 
     model = cp_model.CpModel()
     nurse_vars = NurseDecisionVars(nurse, shifts, model)
+    cover_vars = PreferredCoverDecisionVars(shifts, model)
     solver = cp_model.CpSolver()
     pref_mod = MaximizePreferences()
 
-    DemandSatisfactionModule().build(instance, model, [nurse_vars])
+    CoverRequirementsModule().build(instance, model, [nurse_vars], cover_vars)
 
     model.minimize(pref_mod.build(instance, model, [nurse_vars]))
 

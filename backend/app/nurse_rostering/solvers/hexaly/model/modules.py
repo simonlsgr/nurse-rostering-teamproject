@@ -60,9 +60,8 @@ class DemandSatisfactionModule(ShiftAssignmentModule):
 
 
 class MinTimeBetweenShifts(ShiftAssignmentModule):
-    
     """2nd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    
+
     def enforce_for_nurse(self, model: HxModel, nurse_x: NurseDecisionVars):
         min_time_between_shifts = nurse_x.nurse.min_time_between_shifts
         for i in range(len(nurse_x.shifts) - 1):
@@ -77,16 +76,11 @@ class MinTimeBetweenShifts(ShiftAssignmentModule):
                     break
                 colliding.append(shift_j)
             if colliding:
-                # if there are shifts that are too close to shift_i,
-                # prevent their assignment if shift_i is assigned
+                # Ensure that if shift_i is assigned, none of the colliding shifts are assigned
                 shift_i_selected = nurse_x.is_assigned_to(shift_i.uid)
-                no_colliding_selected = (
-                    sum(nurse_x.is_assigned_to(s.uid) for s in colliding) == 0
-                )
-                
-                model.add_constraint(sum(nurse_x.is_assigned_to(s.uid) for s in colliding) <= ((1 - shift_i_selected) * len(colliding))) # use big M constraint to only enforce when shift i is selected
-                # model.iif(shift_i_selected, no_colliding_selected, True)
-                # model.add(no_colliding_selected).only_enforce_if(shift_i_selected)
+                for shift_j in colliding:
+                    shift_j_selected = nurse_x.is_assigned_to(shift_j.uid)
+                    model.add_constraint(shift_i_selected + shift_j_selected <= 1)
 
     def build(self, instance, model, nurse_shift_vars):
         """
