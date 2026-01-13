@@ -67,10 +67,6 @@ class Nurse(BaseModel):
         default=None,
         description="Maximum weekends"
     )
-    blocked_days: Optional[set[datetime]] = Field(
-        default=None,
-        description="Set of days (as datetime.date) that the nurse cannot work",
-    )
     maximum_number_of_shifts_per_type: Optional[dict[str, int]] = Field(
         default=None,
         description="Maximum number of shifts per shift type for the nurse",
