@@ -45,11 +45,11 @@ class Nurse(BaseModel):
     )
     minimum_work_time: Optional[int] = Field(
         default=None,
-        description="Minimum work time"
+        description="Minimum work time minutes"
     )
     maximum_work_time: Optional[int] = Field(
         default=None,
-        description="Maximum work time"
+        description="Maximum work time in minutes"
     )
     minimum_consecutive_shifts: Optional[int] = Field(
         default=None,
@@ -67,6 +67,16 @@ class Nurse(BaseModel):
         default=None,
         description="Maximum weekends"
     )
+    blocked_days: Optional[set[datetime]] = Field(
+        default=None,
+        description="Set of days (as datetime.date) that the nurse cannot work",
+    )
+    maximum_number_of_shifts_per_type: Optional[dict[str, int]] = Field(
+        default=None,
+        description="Maximum number of shifts per shift type for the nurse",
+    )
+    
+    
 
 
 
@@ -85,6 +95,30 @@ class Shift(BaseModel):
     demand: NonNegativeInt = Field(
         ..., description="Number of nurses required for this shift"
     )
+    type: Optional[str] = Field(
+        default=None,
+        description="Optional type/category of the shift (e.g., 'morning', 'night')",
+    )
+    not_followed_by_shift_types: Optional[set[str]] = Field(
+        default=None,
+        description="Set of shift types that can not directly follow this shift",
+    )
+    weight_below_demand: Optional[int] = Field(
+        default=1,
+        description="The weight in the objective function for each understaffed nurse below demand.",
+    )
+    weight_above_demand: Optional[int] = Field(
+        default=1,
+        description="The weight in the objective function for each overstaffed nurse above demand.",
+    )
+    @property
+    def length(self) -> int:
+        """
+        Compute the length of the shift as in minutes.
+        """
+        delta: timedelta = self.end_time - self.start_time
+        return int(delta.total_seconds() // 60)
+    
 
 
 class NurseRosteringInstance(BaseModel):
