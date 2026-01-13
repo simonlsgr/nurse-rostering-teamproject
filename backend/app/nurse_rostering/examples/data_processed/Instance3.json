@@ -1,0 +1,1143 @@
+{
+    "nurses": [
+        {
+            "uid": 4835905056056298450,
+            "name": "A",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [
+                914552451579464135,
+                6645736735346607146,
+                6751394995009767212,
+                1870107326979065465,
+                7906761602083408952
+            ],
+            "blocked_shifts": [
+                1871907592355332232,
+                44736603228555572,
+                1625082589006153326
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 2,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 0
+            }
+        },
+        {
+            "uid": 15762728860362165755,
+            "name": "B",
+            "preferred_shifts": [
+                5756701074350883838,
+                1871907592355332232,
+                4092358774010300264,
+                2941610111035720946,
+                9017073477573758099
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                1847174571538991832,
+                16703987146063364588,
+                7217251720637991930
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 13696204160742281120,
+            "name": "C",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [
+                12418510089341321327
+            ],
+            "blocked_shifts": [
+                13057703960567890464,
+                9017073477573758099,
+                14032237355713187601
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 3,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 9229696088744675453,
+            "name": "D",
+            "preferred_shifts": [
+                7902952283098005662,
+                7906761602083408952,
+                6751394995009767212,
+                3520529702086722302
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                1871907592355332232,
+                44736603228555572,
+                1625082589006153326
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 2,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 0,
+                "L": 5
+            }
+        },
+        {
+            "uid": 7853081644855084914,
+            "name": "E",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                5756701074350883838,
+                5160340284325709080,
+                15860749001399681749
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 0,
+                "L": 0
+            }
+        },
+        {
+            "uid": 1824475625748120216,
+            "name": "F",
+            "preferred_shifts": [
+                13348602584042064691,
+                7902952283098005662,
+                16606527686230622394
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                1871907592355332232,
+                44736603228555572,
+                1625082589006153326
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 3,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 0
+            }
+        },
+        {
+            "uid": 11769611825355312775,
+            "name": "G",
+            "preferred_shifts": [
+                16531288886996126330,
+                9461708599648145384
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                6989238588993849120,
+                13490274037631633514,
+                2941610111035720946
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 2,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 7009352480936379809,
+            "name": "H",
+            "preferred_shifts": [
+                1668619878073977730,
+                5160340284325709080
+            ],
+            "preferred_off_shifts": [
+                7902952283098005662,
+                914552451579464135,
+                1870107326979065465,
+                3520529702086722302
+            ],
+            "blocked_shifts": [
+                13348602584042064691,
+                7906761602083408952,
+                5686051002820217860
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 2,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 10250538595248521712,
+            "name": "I",
+            "preferred_shifts": [
+                1871907592355332232,
+                4092358774010300264,
+                9017073477573758099
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                1847174571538991832,
+                16703987146063364588,
+                7217251720637991930
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 2,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 6473265503418008874,
+            "name": "J",
+            "preferred_shifts": [
+                3320484021704149036,
+                7072259432355220852
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                4092358774010300264,
+                1668619878073977730,
+                12418510089341321327
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 2,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 0
+            }
+        },
+        {
+            "uid": 2685584712049446003,
+            "name": "K",
+            "preferred_shifts": [
+                12742287507360926432,
+                3320484021704149036,
+                16703987146063364588,
+                7072259432355220852,
+                7473977794463812886
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                6989238588993849120,
+                13490274037631633514,
+                2941610111035720946
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 3,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 6,
+            "minimum_consecutive_days_off": 3,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 0
+            }
+        },
+        {
+            "uid": 2507454617027889572,
+            "name": "L",
+            "preferred_shifts": [
+                1871748859327629323
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                6989238588993849120,
+                13490274037631633514,
+                2941610111035720946
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 2,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 6,
+            "minimum_consecutive_days_off": 3,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 0,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 16571566448159574778,
+            "name": "M",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [
+                14757511037716153755,
+                6989238588993849120,
+                1847174571538991832,
+                5160340284325709080,
+                3520529702086722302
+            ],
+            "blocked_shifts": [
+                13057703960567890464,
+                9017073477573758099,
+                14032237355713187601
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 2,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 6,
+            "minimum_consecutive_days_off": 3,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 13033771841380042179,
+            "name": "N",
+            "preferred_shifts": [
+                15860749001399681749,
+                7217251720637991930,
+                3366345103510096246,
+                13490274037631633514
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                7902952283098005662,
+                1871748859327629323,
+                7072259432355220852
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 6,
+            "minimum_consecutive_days_off": 3,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 0,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 15837292304117025225,
+            "name": "O",
+            "preferred_shifts": [
+                11344505459683969244,
+                7473977794463812886,
+                16703987146063364588
+            ],
+            "preferred_off_shifts": [
+                16606527686230622394
+            ],
+            "blocked_shifts": [
+                5756701074350883838,
+                5160340284325709080,
+                15860749001399681749
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 3,
+            "minimum_work_time": 3360,
+            "maximum_work_time": 4320,
+            "minimum_consecutive_shifts": 2,
+            "maximum_consecutive_shifts": 6,
+            "minimum_consecutive_days_off": 3,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 0,
+                "D": 14,
+                "L": 5
+            }
+        },
+        {
+            "uid": 14666493989999166697,
+            "name": "P",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [
+                14080215850056764019,
+                1871748859327629323,
+                7217251720637991930,
+                3366345103510096246
+            ],
+            "blocked_shifts": [
+                4092358774010300264,
+                1668619878073977730,
+                12418510089341321327
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 3,
+            "minimum_work_time": 1200,
+            "maximum_work_time": 2160,
+            "minimum_consecutive_shifts": 1,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 2
+            }
+        },
+        {
+            "uid": 17171236089325504437,
+            "name": "Q",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [
+                5756701074350883838,
+                11344505459683969244,
+                4092358774010300264,
+                2941610111035720946,
+                9017073477573758099
+            ],
+            "blocked_shifts": [
+                1847174571538991832,
+                16703987146063364588,
+                7217251720637991930
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 3,
+            "minimum_work_time": 1200,
+            "maximum_work_time": 2160,
+            "minimum_consecutive_shifts": 1,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 0,
+                "D": 14,
+                "L": 2
+            }
+        },
+        {
+            "uid": 5504069081290591612,
+            "name": "R",
+            "preferred_shifts": [],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                13057703960567890464,
+                9017073477573758099,
+                14032237355713187601
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 1,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 1200,
+            "maximum_work_time": 2160,
+            "minimum_consecutive_shifts": 1,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 0
+            }
+        },
+        {
+            "uid": 9209307856883302625,
+            "name": "S",
+            "preferred_shifts": [
+                1847174571538991832,
+                3520529702086722302,
+                14032237355713187601
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                7902952283098005662,
+                1871748859327629323,
+                7072259432355220852
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 2,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 1200,
+            "maximum_work_time": 2160,
+            "minimum_consecutive_shifts": 1,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 0,
+                "L": 2
+            }
+        },
+        {
+            "uid": 6620615572207583658,
+            "name": "T",
+            "preferred_shifts": [
+                5160340284325709080,
+                6989238588993849120
+            ],
+            "preferred_off_shifts": [],
+            "blocked_shifts": [
+                10733017722050724909,
+                16531288886996126330,
+                6645736735346607146
+            ],
+            "staff": true,
+            "min_time_between_shifts": "PT0S",
+            "preferred_shift_weight": 3,
+            "preferred_off_shift_weight": 1,
+            "minimum_work_time": 1200,
+            "maximum_work_time": 2160,
+            "minimum_consecutive_shifts": 1,
+            "maximum_consecutive_shifts": 5,
+            "minimum_consecutive_days_off": 2,
+            "maximum_weekends": 1,
+            "maximum_number_of_shifts_per_type": {
+                "E": 14,
+                "D": 14,
+                "L": 0
+            }
+        }
+    ],
+    "shifts": [
+        {
+            "uid": 1625082589006153326,
+            "name": "0_E",
+            "start_time": "2018-01-01T00:00:00",
+            "end_time": "2018-01-01T08:00:00",
+            "demand": 2,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 1871907592355332232,
+            "name": "0_D",
+            "start_time": "2018-01-01T00:00:00",
+            "end_time": "2018-01-01T08:00:00",
+            "demand": 3,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 44736603228555572,
+            "name": "0_L",
+            "start_time": "2018-01-01T00:00:00",
+            "end_time": "2018-01-01T08:00:00",
+            "demand": 3,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 14032237355713187601,
+            "name": "1_E",
+            "start_time": "2018-01-02T00:00:00",
+            "end_time": "2018-01-02T08:00:00",
+            "demand": 3,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 9017073477573758099,
+            "name": "1_D",
+            "start_time": "2018-01-02T00:00:00",
+            "end_time": "2018-01-02T08:00:00",
+            "demand": 4,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 13057703960567890464,
+            "name": "1_L",
+            "start_time": "2018-01-02T00:00:00",
+            "end_time": "2018-01-02T08:00:00",
+            "demand": 3,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 1668619878073977730,
+            "name": "2_E",
+            "start_time": "2018-01-03T00:00:00",
+            "end_time": "2018-01-03T08:00:00",
+            "demand": 3,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 4092358774010300264,
+            "name": "2_D",
+            "start_time": "2018-01-03T00:00:00",
+            "end_time": "2018-01-03T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 12418510089341321327,
+            "name": "2_L",
+            "start_time": "2018-01-03T00:00:00",
+            "end_time": "2018-01-03T08:00:00",
+            "demand": 3,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 5160340284325709080,
+            "name": "3_E",
+            "start_time": "2018-01-04T00:00:00",
+            "end_time": "2018-01-04T08:00:00",
+            "demand": 4,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 5756701074350883838,
+            "name": "3_D",
+            "start_time": "2018-01-04T00:00:00",
+            "end_time": "2018-01-04T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 15860749001399681749,
+            "name": "3_L",
+            "start_time": "2018-01-04T00:00:00",
+            "end_time": "2018-01-04T08:00:00",
+            "demand": 2,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 6989238588993849120,
+            "name": "4_E",
+            "start_time": "2018-01-05T00:00:00",
+            "end_time": "2018-01-05T08:00:00",
+            "demand": 2,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 2941610111035720946,
+            "name": "4_D",
+            "start_time": "2018-01-05T00:00:00",
+            "end_time": "2018-01-05T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 13490274037631633514,
+            "name": "4_L",
+            "start_time": "2018-01-05T00:00:00",
+            "end_time": "2018-01-05T08:00:00",
+            "demand": 4,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 14757511037716153755,
+            "name": "5_E",
+            "start_time": "2018-01-06T00:00:00",
+            "end_time": "2018-01-06T08:00:00",
+            "demand": 4,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 11344505459683969244,
+            "name": "5_D",
+            "start_time": "2018-01-06T00:00:00",
+            "end_time": "2018-01-06T08:00:00",
+            "demand": 6,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 3366345103510096246,
+            "name": "5_L",
+            "start_time": "2018-01-06T00:00:00",
+            "end_time": "2018-01-06T08:00:00",
+            "demand": 2,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 1847174571538991832,
+            "name": "6_E",
+            "start_time": "2018-01-07T00:00:00",
+            "end_time": "2018-01-07T08:00:00",
+            "demand": 6,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 16703987146063364588,
+            "name": "6_D",
+            "start_time": "2018-01-07T00:00:00",
+            "end_time": "2018-01-07T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 7217251720637991930,
+            "name": "6_L",
+            "start_time": "2018-01-07T00:00:00",
+            "end_time": "2018-01-07T08:00:00",
+            "demand": 3,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 3520529702086722302,
+            "name": "7_E",
+            "start_time": "2018-01-08T00:00:00",
+            "end_time": "2018-01-08T08:00:00",
+            "demand": 4,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 7473977794463812886,
+            "name": "7_D",
+            "start_time": "2018-01-08T00:00:00",
+            "end_time": "2018-01-08T08:00:00",
+            "demand": 6,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 14080215850056764019,
+            "name": "7_L",
+            "start_time": "2018-01-08T00:00:00",
+            "end_time": "2018-01-08T08:00:00",
+            "demand": 3,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 7902952283098005662,
+            "name": "8_E",
+            "start_time": "2018-01-09T00:00:00",
+            "end_time": "2018-01-09T08:00:00",
+            "demand": 3,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 7072259432355220852,
+            "name": "8_D",
+            "start_time": "2018-01-09T00:00:00",
+            "end_time": "2018-01-09T08:00:00",
+            "demand": 4,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 1871748859327629323,
+            "name": "8_L",
+            "start_time": "2018-01-09T00:00:00",
+            "end_time": "2018-01-09T08:00:00",
+            "demand": 2,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 914552451579464135,
+            "name": "9_E",
+            "start_time": "2018-01-10T00:00:00",
+            "end_time": "2018-01-10T08:00:00",
+            "demand": 4,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 3320484021704149036,
+            "name": "9_D",
+            "start_time": "2018-01-10T00:00:00",
+            "end_time": "2018-01-10T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 7797655149259998158,
+            "name": "9_L",
+            "start_time": "2018-01-10T00:00:00",
+            "end_time": "2018-01-10T08:00:00",
+            "demand": 4,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 1870107326979065465,
+            "name": "10_E",
+            "start_time": "2018-01-11T00:00:00",
+            "end_time": "2018-01-11T08:00:00",
+            "demand": 2,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 12742287507360926432,
+            "name": "10_D",
+            "start_time": "2018-01-11T00:00:00",
+            "end_time": "2018-01-11T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 9461708599648145384,
+            "name": "10_L",
+            "start_time": "2018-01-11T00:00:00",
+            "end_time": "2018-01-11T08:00:00",
+            "demand": 2,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 6645736735346607146,
+            "name": "11_E",
+            "start_time": "2018-01-12T00:00:00",
+            "end_time": "2018-01-12T08:00:00",
+            "demand": 2,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 10733017722050724909,
+            "name": "11_D",
+            "start_time": "2018-01-12T00:00:00",
+            "end_time": "2018-01-12T08:00:00",
+            "demand": 3,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 16531288886996126330,
+            "name": "11_L",
+            "start_time": "2018-01-12T00:00:00",
+            "end_time": "2018-01-12T08:00:00",
+            "demand": 4,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 7906761602083408952,
+            "name": "12_E",
+            "start_time": "2018-01-13T00:00:00",
+            "end_time": "2018-01-13T08:00:00",
+            "demand": 2,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 13348602584042064691,
+            "name": "12_D",
+            "start_time": "2018-01-13T00:00:00",
+            "end_time": "2018-01-13T08:00:00",
+            "demand": 6,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 5686051002820217860,
+            "name": "12_L",
+            "start_time": "2018-01-13T00:00:00",
+            "end_time": "2018-01-13T08:00:00",
+            "demand": 5,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 6751394995009767212,
+            "name": "13_E",
+            "start_time": "2018-01-14T00:00:00",
+            "end_time": "2018-01-14T08:00:00",
+            "demand": 3,
+            "type": "E",
+            "not_followed_by_shift_types": [],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 16606527686230622394,
+            "name": "13_D",
+            "start_time": "2018-01-14T00:00:00",
+            "end_time": "2018-01-14T08:00:00",
+            "demand": 5,
+            "type": "D",
+            "not_followed_by_shift_types": [
+                "E"
+            ],
+            "weight_below_demand": 100,
+            "weight_above_demand": 1
+        },
+        {
+            "uid": 12237859334530092471,
+            "name": "13_L",
+            "start_time": "2018-01-14T00:00:00",
+            "end_time": "2018-01-14T08:00:00",
+            "demand": 0,
+            "type": "L",
+            "not_followed_by_shift_types": [
+                "D",
+                "E"
+            ],
+            "weight_below_demand": 1,
+            "weight_above_demand": 1
+        }
+    ],
+    "staff_weight": 1
+}
