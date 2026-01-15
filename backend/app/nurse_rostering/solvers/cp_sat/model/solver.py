@@ -30,8 +30,6 @@ class NurseRosteringModel:
             NurseDecisionVars(nurse, instance.shifts, self.model)
             for nurse in instance.nurses
         ]
-        
-        self.preferred_cover_vars = PreferredCoverDecisionVars(shifts=instance.shifts, model=self.model)
 
         self.modules: list[ShiftAssignmentModule] = [
             NoBlockedShiftsModule(),

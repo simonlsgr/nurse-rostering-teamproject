@@ -20,6 +20,7 @@ class PreferredCoverDecisionVars:
         }
         self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
 
+
 class NurseDecisionVars:
     """
     A container to create and manage the decision variables for a single nurse.
@@ -68,3 +69,24 @@ class NurseDecisionVars:
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
         return [shift_uid for shift_uid in self._x if solver.value(self._x[shift_uid])]
+
+
+class NurseWorksAtWeekendVars:
+    def __init__(self, nv: NurseDecisionVars, weekends, shifts_by_date, model: cp_model.CpModel):
+        saturday = 0
+        sunday = 1
+        self.nurse = nv.nurse
+        self.model = model
+        self._x = {
+            weekend: model.new_bool_var(f"{self.nurse.uid}_weekend_{weekend[saturday].isoformat()}_{weekend[sunday].isoformat()}") for weekend in weekends
+        }
+        for weekend in weekends:
+            shifts_on_weekend = shifts_by_date.get(weekend[saturday], []) + shifts_by_date.get(weekend[sunday], [])
+            _vars = [nv.is_assigned_to(shift) for shift in shifts_on_weekend]
+            if _vars:
+                model.add_max_equality(self._x[weekend], [nv.is_assigned_to(shift) for shift in shifts_on_weekend])
+            else:
+                model.add(self._x[weekend] == 0)
+
+    def is_assigned_to(self, weekend):
+        return self._x[weekend]

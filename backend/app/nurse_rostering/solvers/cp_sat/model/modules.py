@@ -4,7 +4,7 @@ from typing import Any
 
 from ortools.sat.python import cp_model
 from nurse_rostering.data_schema import NurseRosteringInstance, Shift
-from .nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
+from .nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars, NurseWorksAtWeekendVars
 
 from nurse_rostering.utils.data_utils import group_shifts_by_date
 class ShiftAssignmentModule(abc.ABC):
@@ -13,8 +13,7 @@ class ShiftAssignmentModule(abc.ABC):
         self,
         instance: NurseRosteringInstance,
         model: cp_model.CpModel,
-        nurse_shift_vars: list[NurseDecisionVars],
-        preferred_shift_vars: PreferredCoverDecisionVars = None
+        nurse_shift_vars: list[NurseDecisionVars]
     ) -> cp_model.LinearExprT:
         """
         Add constraints and optionally return a sub-objective expression.
@@ -100,7 +99,7 @@ class MinTimeBetweenShifts(ShiftAssignmentModule):
                 )
                 model.add(no_colliding_selected).only_enforce_if(shift_i_selected)
 
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         """
         Enforce minimum rest time between any two shifts for a nurse.
         """
@@ -110,7 +109,7 @@ class MinTimeBetweenShifts(ShiftAssignmentModule):
 
 
 class MaximizePreferences(ShiftAssignmentModule):
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         """
         Encourage assigning nurses to their preferred shifts.
         Each preference counts negatively toward the minimization objective.
@@ -123,7 +122,7 @@ class MaximizePreferences(ShiftAssignmentModule):
 
 
 class PreferStaffModule(ShiftAssignmentModule):
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         """
         Penalize use of non-staff (contract) nurses in the objective.
         """
@@ -137,7 +136,7 @@ class PreferStaffModule(ShiftAssignmentModule):
 
 class LimitWorkTimeModule(ShiftAssignmentModule):
     """4th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         for nv in nurse_shift_vars:
             min_time = nv.nurse.minimum_work_time
             max_time = nv.nurse.maximum_work_time
@@ -153,35 +152,9 @@ class LimitWorkTimeModule(ShiftAssignmentModule):
         return 0
 
 
-
-
-
-# def get_work_day_vars(instance, model, nv, all_dates, shifts_by_date):
-#     if not hasattr(instance, "_work_day_vars"):
-#         instance._work_day_vars = {}  # nurse_uid -> list[w]
-
-#     nurse_uid = nv.nurse.uid
-#     if nurse_uid in instance._work_day_vars:
-#         return instance._work_day_vars[nurse_uid]
-#     all_dates.sort(key=lambda s: s.start_time)
-#     work_days = []
-#     for date in all_dates:
-#         w = model.new_bool_var(f"work_{nv.nurse.uid}_{date.isoformat()}")
-#         work_days.append(w)
-#         uids = shifts_by_date.get(date, [])
-#         vars_for_date = [nv.is_assigned_to(uid) for uid in uids]
-#         if not vars_for_date:
-#             model.add(w == 0)
-#         else:
-#             model.add_max_equality(w, vars_for_date)
-
-#     instance._work_day_vars[nurse_uid] = work_days
-#     return work_days
-
-
 class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
     """5th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
 
         shifts_by_date = group_shifts_by_date(instance)
         all_dates = sorted(shifts_by_date.keys())
@@ -201,7 +174,7 @@ class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
 
 class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
     """6th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         shifts_by_date = group_shifts_by_date(instance)
         all_dates = sorted(shifts_by_date.keys())
         if not all_dates:
@@ -221,7 +194,7 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
 
 class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
     """7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         shifts_by_date = group_shifts_by_date(instance)
         all_dates = sorted(shifts_by_date.keys())
         if not all_dates:
@@ -239,33 +212,35 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                         nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d + s + 1]])) > 0)
         return 0
 
-# class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
-#     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-#     def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
-#         all_dates, shifts_by_date = group_shifts_by_date(instance)
-#         if not all_dates:
-#             return 0
-#         dates_to_index = {date: i for i, date in enumerate(all_dates)}
-#         saturdays = [d for d in all_dates if d.weekday() == 5]
-#         for nv in nurse_shift_vars:
-#             max_weekends = nv.nurse.maximum_weekends
-#             if max_weekends is None:
-#                 continue
-#             weekend = []
-#             work_days = get_work_day_vars(instance, model, nv, all_dates, shifts_by_date)
-#             for saturday in saturdays:
-#                 w = model.new_bool_var(f"nurse_{nv.nurse.uid}_works_on_weekend_{saturday.isoformat()}")
-#                 weekend.append(w)
-#                 sunday = saturday + timedelta(days=1)
-#                 index = dates_to_index[saturday]
-#                 if sunday not in dates_to_index:
-#                     model.add(w == work_days[index])
-#                 else:
-#                     model.add(w <= work_days[index] + work_days[index+1])
-#                     model.add(work_days[index] + work_days[index + 1] <= 2 * w)
-#             model.add(sum(weekend) <= max_weekends)
 
-#         return 0
+def get_weekends(instance):
+    shifts_by_date = group_shifts_by_date(instance)
+    all_dates = sorted(shifts_by_date.keys())
+    if not all_dates:
+        return 0
+    saturdays = []
+    if all_dates[0].weekday() == 6:
+        saturdays.append(all_dates[0]-timedelta(days=1))
+    saturdays = [d for d in all_dates if d.weekday() == 5]
+    return [(s, s+timedelta(days=1)) for s in saturdays]
+
+
+class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
+    """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        shifts_by_date = group_shifts_by_date(instance)
+        all_weekend_vars = []
+        weekends = get_weekends(instance)
+        for nv in nurse_shift_vars:
+            nurse = nv.nurse
+            max_weekends = nurse.maximum_weekends
+            if max_weekends is None:
+                continue
+            weekend_vars = NurseWorksAtWeekendVars(nv, weekends, shifts_by_date, model)
+            all_weekend_vars.append(weekend_vars)
+            model.add(sum(weekend_vars.is_assigned_to(weekend) for weekend in weekends) <= max_weekends)
+
+        return 0
 
 
 # class DaysOffModule(ShiftAssignmentModule):
@@ -279,22 +254,22 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
 
 class CoverRequirementsModule(ShiftAssignmentModule):
     """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
         shifts_by_date = group_shifts_by_date(instance)
-        
+        preferred_cover_vars = PreferredCoverDecisionVars(shifts=instance.shifts, model=model)
         expr = 0
         for date, shifts in shifts_by_date.items():
             for shift_uid in shifts:
                 assigned_nurses = sum([nv.is_assigned_to(shift_uid) for nv in nurse_shift_vars if shift_uid in nv._x])
                 model.add(
-                    assigned_nurses + preferred_shift_vars.total_above_preferred[shift_uid] - preferred_shift_vars.total_below_preferred[shift_uid]
+                    assigned_nurses + preferred_cover_vars.total_above_preferred[shift_uid] - preferred_cover_vars.total_below_preferred[shift_uid]
                     == 
                     shift_by_uid[shift_uid].demand
                 )
                 
-                expr += shift_by_uid[shift_uid].weight_below_demand * preferred_shift_vars.total_below_preferred[shift_uid]
-                expr += shift_by_uid[shift_uid].weight_above_demand * preferred_shift_vars.total_above_preferred[shift_uid]
+                expr += shift_by_uid[shift_uid].weight_below_demand * preferred_cover_vars.total_below_preferred[shift_uid]
+                expr += shift_by_uid[shift_uid].weight_above_demand * preferred_cover_vars.total_above_preferred[shift_uid]
         
         return expr
 
