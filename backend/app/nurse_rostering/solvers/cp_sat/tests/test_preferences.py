@@ -24,7 +24,7 @@ def test_maximize_preferences_module():
     solver = cp_model.CpSolver()
     pref_mod = MaximizePreferences()
 
-    CoverRequirementsModule().build(instance, model, [nurse_vars], cover_vars)
+    CoverRequirementsModule().build(instance, model, [nurse_vars])
 
     model.minimize(pref_mod.build(instance, model, [nurse_vars]))
 

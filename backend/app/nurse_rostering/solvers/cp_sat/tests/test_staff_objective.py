@@ -25,7 +25,7 @@ def test_prefer_staff_module():
     cover_vars = PreferredCoverDecisionVars(shifts, model)
     solver = cp_model.CpSolver()
     staff_mod = PreferStaffModule()
-    CoverRequirementsModule().build(instance, model, [vars_staff, vars_contractor], cover_vars)
+    CoverRequirementsModule().build(instance, model, [vars_staff, vars_contractor])
 
     model.minimize(staff_mod.build(instance, model, [vars_staff, vars_contractor]))
     assert_objective(

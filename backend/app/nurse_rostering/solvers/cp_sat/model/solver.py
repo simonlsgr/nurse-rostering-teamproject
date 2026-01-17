@@ -44,9 +44,9 @@ class NurseRosteringModel:
             CoverRequirementsModule(),
         ]
 
+        terms = [module.build(instance, self.model, self.nurse_vars) for module in self.modules]
         objective = sum(
-            module.build(instance, self.model, self.nurse_vars, self.preferred_cover_vars)  # type: ignore
-            for module in self.modules
+            term if term is not None else 0 for term in terms
         )
         self.model.minimize(objective)
 
