@@ -168,7 +168,7 @@ class MaximumConsecutiveShiftsModule(ShiftAssignmentModule):
                 shifts_in_range = []
                 for i in range(max_shifts + 1):
                     shifts_in_range += shifts_by_date[all_dates[d + i]]
-                model.add(sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range) <= max_shifts)
+                model.add(sum(nv.is_assigned_to(shift) for shift in shifts_in_range) <= max_shifts)
         return 0
 
 
@@ -188,7 +188,7 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
                     shifts_in_range = []
                     for i in range(d+1, d+s+1):
                         shifts_in_range += shifts_by_date[all_dates[i]]
-                    model.add(sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d]]) + (s - sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range)) + sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d+s+1]]) >= 1)
+                    model.add(sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d]]) + (s - sum(nv.is_assigned_to(shift) for shift in shifts_in_range)) + sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d+s+1]]) >= 1)
         return 0
     
 
@@ -208,8 +208,8 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                     shifts_in_range = []
                     for i in range(d + 1, d + s + 1):
                         shifts_in_range += shifts_by_date[all_dates[i]]
-                    model.add((1 - sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d]])) + sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range) + (1 - sum(
-                        nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d + s + 1]])) >= 1)
+                    model.add((1 - sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d]])) + sum(nv.is_assigned_to(shift) for shift in shifts_in_range) + (1 - sum(
+                        nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d + s + 1]])) >= 1)
         return 0
 
 
