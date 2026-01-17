@@ -45,8 +45,8 @@ def run_optimization_job(
     job_status.status = "Running"
     job_status.started_at = datetime.now()
     db_connection.update_job_status(job_status)
-    solver = NurseRosteringModel(job_request.nurse_rostering_instance, job_request.optimization_parameters)
-    solution = solver.solve(log_callback=print)
+    solver = NurseRosteringModel(job_request.nurse_rostering_instance, None) # find out where to apply the optimization parameters: job_request.optimization_parameters
+    solution = solver.solve() # log_callback=print
     db_connection.set_solution(job_id, solution)
     job_status.status = "Completed"
     job_status.completed_at = datetime.now()
