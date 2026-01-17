@@ -184,11 +184,11 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
             if min_shifts is None:
                 continue
             for s in range(1, min_shifts):
-                shifts_in_range = []
                 for d in range(0, len(all_dates)-(s+1)):
+                    shifts_in_range = []
                     for i in range(d+1, d+s+1):
                         shifts_in_range += shifts_by_date[all_dates[i]]
-                    model.add(sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d]]) + (s - sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range)) + sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d+s+1]]) > 0)
+                    model.add(sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d]]) + (s - sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range)) + sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d+s+1]]) >= 1)
         return 0
     
 
@@ -204,12 +204,12 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
             if min_days_off is None:
                 continue
             for s in range(1, min_days_off):
-                shifts_in_range = []
                 for d in range(0, len(all_dates) - (s + 1)):
+                    shifts_in_range = []
                     for i in range(d + 1, d + s + 1):
                         shifts_in_range += shifts_by_date[all_dates[i]]
-                    model.add((1- sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d]])) + sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range) + (1 - sum(
-                        nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d + s + 1]])) > 0)
+                    model.add((1 - sum(nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d]])) + sum(nv.is_assigned_to(shift.uid) for shift in shifts_in_range) + (1 - sum(
+                        nv.is_assigned_to(shift.uid) for shift in shifts_by_date[all_dates[d + s + 1]])) >= 1)
         return 0
 
 
@@ -243,13 +243,20 @@ class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
         return 0
 
 
-# class DaysOffModule(ShiftAssignmentModule):
-#     """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf
-#         Possibly already enforced by NoBlockedShiftsModule"""
-#     def build(self, instance, model, nurse_shift_vars):
-#
-#         return 0
-# Indeed already enforced by NoBlockedShiftsModule
+class DaysOffModule(ShiftAssignmentModule):
+    """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    def build(self, instance, model, nurse_shift_vars):
+        shifts_by_date = group_shifts_by_date(instance)
+        for nv in nurse_shift_vars:
+            days_off = nv.nurse.days_off
+            if days_off is None:
+                continue
+            for day in days_off:
+                shifts_on_day = shifts_by_date.get(day, [])
+                if not shifts_on_day:
+                    continue
+                model.add(sum(nv.is_assigned_to(shift) for shift in shifts_on_day) == 0)
+        return 0
 
 
 class CoverRequirementsModule(ShiftAssignmentModule):

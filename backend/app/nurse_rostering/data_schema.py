@@ -5,7 +5,7 @@ Note that this is just a random variant of the nurse rostering problem.
 We define the instance and solution data structures using Pydantic.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pydantic import BaseModel, Field, NonNegativeInt, model_validator
 import uuid
 from typing import Optional
@@ -36,6 +36,10 @@ class Nurse(BaseModel):
     
     blocked_shifts: set[ShiftUid] = Field(
         ..., description="List of blocked shift UIDs for the nurse"
+    )
+    days_off: Optional[set[date]] = Field(
+        default=None,
+        description="Days where Nurse can't work"
     )
     staff: bool = Field(
         ...,
