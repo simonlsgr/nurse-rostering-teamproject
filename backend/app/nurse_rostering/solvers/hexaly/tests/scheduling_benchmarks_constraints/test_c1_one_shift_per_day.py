@@ -1,7 +1,7 @@
 import datetime
 
 from nurse_rostering.solvers.hexaly.model.modules import OneShiftPerDayModule
-from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import Shift
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.solvers.hexaly.utils.testing import AssertModelFeasible, AssertModelInfeasible
@@ -9,7 +9,7 @@ from nurse_rostering.data_schema import NurseRosteringInstance
 import hexaly.optimizer as hx
 
 
-def test_one_shift_per_day():
+def test_one_shift_per_day_infeasible():
     shifts = [
         Shift(demand=1, 
               start_time=datetime.datetime(2018, 1, 1, 8, 0), 
@@ -26,10 +26,15 @@ def test_one_shift_per_day():
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
     
     with AssertModelInfeasible() as model:
-        nurse_vars1 = NurseDecisionVars(nurse1, shifts, model)
-        OneShiftPerDayModule().build(instance, model, [nurse_vars1])
-        nurse_vars1.fix(shifts[0].uid, True)
-        nurse_vars1.fix(shifts[1].uid, True)
+        shift_vars1 = ShiftDecisionVars(shifts[0], [nurse1], model)
+        shift_vars2 = ShiftDecisionVars(shifts[1], [nurse1], model)
+        OneShiftPerDayModule().build(instance, model, [shift_vars1, shift_vars2])
+        shift_vars1.fix(nurse1.uid, True)
+        shift_vars2.fix(nurse1.uid, True)
+    
+        
+        
+        
 
 def test_one_shift_per_day_feasible():
     shifts = [
@@ -48,10 +53,11 @@ def test_one_shift_per_day_feasible():
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
     
     with AssertModelFeasible() as model:
-        nurse_vars1 = NurseDecisionVars(nurse1, shifts, model)
-        OneShiftPerDayModule().build(instance, model, [nurse_vars1])
-        nurse_vars1.fix(shifts[0].uid, True)
-        nurse_vars1.fix(shifts[1].uid, True)
+        shift_vars1 = ShiftDecisionVars(shifts[0], [nurse1], model)
+        shift_vars2 = ShiftDecisionVars(shifts[1], [nurse1], model)
+        OneShiftPerDayModule().build(instance, model, [shift_vars1, shift_vars2])
+        shift_vars1.fix(nurse1.uid, True)
+        shift_vars2.fix(nurse1.uid, False)
         
         
 

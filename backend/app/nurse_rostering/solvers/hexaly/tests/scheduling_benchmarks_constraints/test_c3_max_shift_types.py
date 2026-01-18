@@ -1,7 +1,7 @@
 import datetime
 
 from nurse_rostering.solvers.hexaly.model.modules import MaximumShiftTypesModule
-from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import Shift, Nurse
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.solvers.hexaly.utils.testing import AssertModelFeasible, AssertModelInfeasible
@@ -27,8 +27,8 @@ def test_maximum_shift_types_feasible():
     
     nurse1 = Nurse(
         name="n1",
-        max_shift_types={"A": 1, "B": 1},
-        referred_shifts=set(),
+        maximum_number_of_shifts_per_type={"A": 1, "B": 1},
+        preferred_shifts=set(),
         blocked_shifts=set(),
         staff=True,
         min_time_between_shifts=datetime.timedelta(hours=0),
@@ -36,10 +36,12 @@ def test_maximum_shift_types_feasible():
     
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
     with AssertModelFeasible() as model:
-        nurse_vars1 = NurseDecisionVars(nurse1, shifts, model)
-        MaximumShiftTypesModule().build(instance, model, [nurse_vars1])
-        nurse_vars1.fix(shifts[0].uid, True)
-        nurse_vars1.fix(shifts[1].uid, True)
+        shift_vars_1 = ShiftDecisionVars(shifts[0], [nurse1], model)
+        shift_vars_2 = ShiftDecisionVars(shifts[1], [nurse1], model)
+        
+        MaximumShiftTypesModule().build(instance, model, [shift_vars_1, shift_vars_2])
+        shift_vars_1.fix(nurse1.uid, True)
+        shift_vars_2.fix(nurse1.uid, True)
         
     
 def test_maximum_shift_types_infeasible():
@@ -60,8 +62,8 @@ def test_maximum_shift_types_infeasible():
     
     nurse1 = Nurse(
         name="n1",
-        max_shift_types={"A": 1, "B": 0},
-        referred_shifts=set(),
+        maximum_number_of_shifts_per_type={"A": 1, "B": 0},
+        preferred_shifts=set(),
         blocked_shifts=set(),
         staff=True,
         min_time_between_shifts=datetime.timedelta(hours=0),
@@ -70,11 +72,11 @@ def test_maximum_shift_types_infeasible():
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
     
     with AssertModelInfeasible() as model:
-        nurse_vars1 = NurseDecisionVars(nurse1, shifts, model)
-        MaximumShiftTypesModule().build(instance, model, [nurse_vars1])
-        nurse_vars1.fix(shifts[0].uid, True)
-        nurse_vars1.fix(shifts[1].uid, True)
-
+        shift_vars_1 = ShiftDecisionVars(shifts[0], [nurse1], model)
+        shift_vars_2 = ShiftDecisionVars(shifts[1], [nurse1], model)
+        MaximumShiftTypesModule().build(instance, model, [shift_vars_1, shift_vars_2])
+        shift_vars_1.fix(nurse1.uid, True)
+        shift_vars_2.fix(nurse1.uid, True)
 
 
     
