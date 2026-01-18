@@ -4,8 +4,39 @@ This module provides a basic container to manage the variables for a single nurs
 
 from collections.abc import Iterable
 from hexaly.optimizer import HxModel, HxOperator
-from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
+from nurse_rostering.data_schema import Nurse, Shift, ShiftUid, NurseUid
 
+
+
+class ShiftDecisionVars:
+    def __init__(self, shift: Shift, nurses: list[Nurse], model: HxModel):
+        self.shift = shift
+        self.model = model
+        self.nurses = nurses
+        self.number_of_nurses = len(self.nurses)
+        self.nurses_assigned = model.list(self.number_of_nurses)
+        
+    def fix(self, nurse_uid: int, value: bool):
+        nurse_index = -1
+        for idx, nurse in enumerate(self.nurses):
+            if nurse.uid == nurse_uid:
+                nurse_index = idx
+                break
+                
+        if nurse_index < 0 or nurse_index >= self.number_of_nurses:
+            raise ValueError(
+                f"Nurse index {nurse_index} is out of bounds for shift {self.shift.uid}."
+            )
+        self.model.add_constraint(self.model.contains(self.nurses_assigned, nurse_index) == int(value))
+    
+    # def assigns_nurse(self, nurse_index: int):
+    #     return self.model.contains(self.nurses_assigned, nurse_index)
+    
+    def extract(self) -> list[NurseUid]:
+        nurses_assigned_list = list(self.nurses_assigned.value) or []
+        return [nurse.uid for idx, nurse in enumerate(self.nurses) if idx in nurses_assigned_list]
+    
+            
 
 class NurseDecisionVars:
     """
