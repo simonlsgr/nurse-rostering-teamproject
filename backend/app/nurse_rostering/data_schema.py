@@ -146,6 +146,17 @@ class NurseRosteringInstance(BaseModel):
         default=1,
         description="The weight in the objective function for each assigned staff nurse.",
     )
+    
+    @property
+    def planning_horizon_in_days(self) -> int:
+        """
+        Compute the planning horizon in days based on the shifts.
+        """
+        if not self.shifts:
+            return 0
+        start_date = self.shifts[0].start_time.date()
+        end_date = self.shifts[-1].end_time.date()
+        return (end_date - start_date).days + 1
 
     @model_validator(mode="after")
     def validate_shifts_unique_uids(self):
