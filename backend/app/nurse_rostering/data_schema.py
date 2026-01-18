@@ -155,7 +155,7 @@ class NurseRosteringInstance(BaseModel):
         if not self.shifts:
             return 0
         start_date = self.shifts[0].start_time.date()
-        end_date = self.shifts[-1].end_time.date()
+        end_date = self.shifts[-1].start_time.date()
         return (end_date - start_date).days + 1
 
     @model_validator(mode="after")
