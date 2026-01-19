@@ -1,18 +1,20 @@
 import hexaly.optimizer
-from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 from nurse_rostering.solvers.hexaly.model.modules import (
     ShiftAssignmentModule,
-    NoBlockedShiftsModule,
-    DemandSatisfactionModule,
-    MinTimeBetweenShifts,
-    MaximizePreferences,
-    PreferStaffModule,
+    OneShiftPerDayModule,
+    ShiftRotationModule,
+    MaximumShiftTypesModule,
     LimitWorkTimeModule,
     MaximumConsecutiveShiftsModule,
     MinimumConsecutiveShiftsModule,
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
+    DaysOffModule,
+    CoverRequirementsModule,
+    PreferStaffModule,
+    PreferredShiftsModule,
 )
 
 class NurseRosteringModel:
@@ -28,16 +30,18 @@ class NurseRosteringModel:
         
 
         self.modules: list[ShiftAssignmentModule] = [
-            NoBlockedShiftsModule(),
-            DemandSatisfactionModule(),
-            MinTimeBetweenShifts(),
-            MaximizePreferences(),
-            PreferStaffModule(),
+            OneShiftPerDayModule(),
+            ShiftRotationModule(),
+            MaximumShiftTypesModule(),
             LimitWorkTimeModule(),
             MaximumConsecutiveShiftsModule(),
             MinimumConsecutiveShiftsModule(),
             MinimumConsecutiveDaysOffModule(),
             MaximumNumberOfWeekendsModule(),
+            DaysOffModule(),
+            CoverRequirementsModule(),
+            PreferStaffModule(),
+            PreferredShiftsModule(),
         ]
 
         
@@ -54,13 +58,13 @@ class NurseRosteringModel:
             
             model = optimizer.model
             
-            self.nurse_vars = [
-                NurseDecisionVars(nurse, self.instance.shifts, model)
-                for nurse in self.instance.nurses
+            self.shift_vars = [
+                ShiftDecisionVars(shift, self.instance.nurses, model)
+                for shift in self.instance.shifts
             ]
             
             objective = model.sum(
-                module.build(self.instance, model, self.nurse_vars)  # type: ignore
+                module.build(self.instance, model, self.shift_vars)  # type: ignore
                 for module in self.modules
             )
             
@@ -78,9 +82,10 @@ class NurseRosteringModel:
 
 
             nurses_at_shifts = {}
-            for nurse_model in self.nurse_vars:
-                for shift_uid in nurse_model.extract():
-                    nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
+            for shift_var in self.shift_vars:
+                for n_idx, nurse in enumerate(shift_var.nurses):
+                    if n_idx in shift_var.nurses_assigned.value:
+                        nurses_at_shifts.setdefault(shift_var.shift.uid, []).append(nurse.uid)
 
             return NurseRosteringSolution(
                 nurses_at_shifts=nurses_at_shifts,
