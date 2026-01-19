@@ -1,7 +1,7 @@
 import datetime
 
 from nurse_rostering.solvers.hexaly.model.modules import CoverRequirementsModule
-from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import Shift, Nurse
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.solvers.hexaly.utils.testing import AssertModelFeasible, AssertModelInfeasible
@@ -11,10 +11,11 @@ import hexaly.optimizer as hx
 
 def test_cover_requirements_feasible():
     shifts = [
-        Shift(demand=2, 
-              start_time=datetime.datetime(2018, 1, 1, 8, 0), 
-              end_time=datetime.datetime(2018, 1, 1, 16, 0),
-              name="Morning Shift",
+        Shift(
+            demand=3, 
+            start_time=datetime.datetime(2018, 1, 1, 8, 0), 
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
         ),
     ]
     
@@ -35,9 +36,18 @@ def test_cover_requirements_feasible():
     )
     
     instance = NurseRosteringInstance(nurses=[nurse1, nurse2], shifts=shifts)
-    with AssertModelFeasible() as model:
-        nurse_vars1 = NurseDecisionVars(nurse1, shifts, model)
-        nurse_vars2 = NurseDecisionVars(nurse2, shifts, model)
-        CoverRequirementsModule().build(instance, model, [nurse_vars1, nurse_vars2])
-        nurse_vars1.fix(shifts[0].uid, True)
-        nurse_vars2.fix(shifts[0].uid, True)
+    with hx.HexalyOptimizer() as optimizer:
+        model = optimizer.model
+        
+        shift_vars = ShiftDecisionVars(shifts[0], [nurse1, nurse2], model)
+        goal = CoverRequirementsModule().build(instance, model, [shift_vars])
+        
+        model.minimize(goal)
+        
+        model.close()
+        
+        optimizer.solve()
+        
+        assert optimizer.solution.status == hx.HxSolutionStatus.OPTIMAL
+        assert goal.value == 1
+    
