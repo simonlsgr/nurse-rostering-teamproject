@@ -35,7 +35,7 @@ class OneShiftPerDayModule(ShiftAssignmentModule):
             shifts_by_day.setdefault(day, []).append(sv) 
 
         for day, svs in shifts_by_day.items():
-            for nurse_index in range(len(sv.nurses)):
+            for nurse_index in range(len(instance.nurses)):
                 model.add_constraint(
                     sum([model.contains(sv.nurses_assigned, nurse_index) for sv in svs]) <= 1
                 )
@@ -68,7 +68,7 @@ class ShiftRotationModule(ShiftAssignmentModule):
                         model.count(model.intersection(sv.nurses_assigned, other_sv.nurses_assigned)) == 0
                     )
                     
-            
+        return 0
             
 class MaximumShiftTypesModule(ShiftAssignmentModule):
     """3rd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
@@ -87,7 +87,6 @@ class MaximumShiftTypesModule(ShiftAssignmentModule):
             for shift_type, svs in shift_vars_by_type.items():
                 
                 max_shifts = nurse.maximum_number_of_shifts_per_type.get(shift_type) if nurse.maximum_number_of_shifts_per_type else None
-                print(max_shifts)
                 if max_shifts is not None:
                     model.add_constraint(
                         sum([model.contains(sv.nurses_assigned, n_idx) for sv in svs]) <= max_shifts
@@ -370,6 +369,8 @@ class DaysOffModule(ShiftAssignmentModule):
             shifts_by_date.setdefault(date, []).append(sv)
         
         for n_idx, nurse in enumerate(instance.nurses):
+            if nurse.days_off is None:
+                continue
             for day_off in nurse.days_off:
                 if day_off in shifts_by_date:
                     svs = shifts_by_date[day_off]
@@ -385,17 +386,17 @@ class CoverRequirementsModule(ShiftAssignmentModule):
     
     def build(self, instance, model, shift_vars):
         
-        ret = 0
+        expr = 0
         for sv in shift_vars:
             preferred_demand = sv.shift.demand
             
-            ret += model.iif(
+            expr += model.iif(
                 model.count(sv.nurses_assigned) - preferred_demand < 0, # if
                     sv.shift.weight_below_demand * (preferred_demand - model.count(sv.nurses_assigned)),  #then
                     sv.shift.weight_above_demand * (model.count(sv.nurses_assigned) - preferred_demand)  # else
                 )
         
-        return ret
+        return expr
         
 
 class PreferStaffModule(ShiftAssignmentModule):
@@ -409,7 +410,23 @@ class PreferStaffModule(ShiftAssignmentModule):
                 if not nurse.staff:
                     expr += instance.staff_weight * model.contains(sv.nurses_assigned, n_idx)
         return expr                   
-                        
+
+class PreferredShiftsModule(ShiftAssignmentModule):
+    """Part of objective in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    
+    def build(self, instance, model, shift_vars):
+        
+        expr = 0
+        for sv in shift_vars:
+            for n_idx, nurse in enumerate(sv.nurses):
+                if sv.shift.uid in nurse.preferred_shifts:
+                    expr += nurse.preferred_shift_weight * (1- model.contains(sv.nurses_assigned, n_idx))
+                if sv.shift.uid in nurse.preferred_off_shifts:
+                    expr += nurse.preferred_off_shift_weight * model.contains(sv.nurses_assigned, n_idx)
+        
+        return expr
+                
+        
 
         
             
