@@ -71,9 +71,10 @@ class NurseRosteringModel:
         self.model.optimize()
 
         # Handle statuses
-        if self.model.Status in (GRB.INFEASIBLE, GRB.INF_OR_UNBD):
+        status = self.model.Status
+        if status == GRB.INFEASIBLE or status == GRB.INF_OR_UNBD:
             raise ValueError("The model is infeasible.")
-        if self.model.Status not in (GRB.OPTIMAL, GRB.TIME_LIMIT, GRB.SUBOPTIMAL):
+        if status != GRB.OPTIMAL and status != GRB.TIME_LIMIT and status != GRB.SUBOPTIMAL:
             raise ValueError(f"Solver failed (status={self.model.Status}).")
         if self.model.SolCount < 1:
             raise ValueError(f"Solver failed to find a solution.")
