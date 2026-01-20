@@ -84,6 +84,7 @@ def read_instance(file_path: str) -> NurseRosteringInstance:
                 minimum_consecutive_shifts=min_consecutive_shifts,
                 minimum_consecutive_days_off=min_consecutive_days_off,
                 maximum_weekends=max_weekends,
+                days_off=set(),
                 preferred_shifts=set(),
                 blocked_shifts=set(),
                 staff=True,
@@ -92,8 +93,9 @@ def read_instance(file_path: str) -> NurseRosteringInstance:
         )
     
     cover_section = next((section for section in sections if section.startswith("COVER")), None)
-    cover = cover_section.splitlines()[1:-1]
+    cover = cover_section.splitlines()[1:]
     cover = [cover_data.split(",") for cover_data in cover]
+    
     
 
     for shift in shifts_model:
@@ -112,6 +114,8 @@ def read_instance(file_path: str) -> NurseRosteringInstance:
     days_off_section = next((section for section in sections if section.startswith("DAYS_OFF")), None)
     days_off = days_off_section.splitlines()[1:-1]
     days_off = [day_off_data.split(",") for day_off_data in days_off]
+    
+    
     for nurse in nurses_model:
         for day_off_data in days_off:
             nurse_id = day_off_data[0].strip()
@@ -121,6 +125,9 @@ def read_instance(file_path: str) -> NurseRosteringInstance:
                     for shift in shifts_model:
                         if shift.start_time.date() == start_date + datetime.timedelta(days=day_index):
                             nurse.blocked_shifts.add(shift.uid)
+                    
+                    nurse.days_off.add(start_date + datetime.timedelta(days=day_index))
+    
     
     shift_on_requests_section = next((section for section in sections if section.startswith("SHIFT_ON_REQUESTS")), None)
     shift_on_requests = shift_on_requests_section.splitlines()[1:-1]
@@ -178,6 +185,7 @@ if __name__ == "__main__":
         
         instance = read_instance(f"backend/app/nurse_rostering/examples/data/Instance{i}.txt")
         print(f"Instance {i} read with {len(instance.nurses)} nurses and {len(instance.shifts)} shifts.")
+        
         
         with open(f"backend/app/nurse_rostering/examples/data_processed/Instance{i}.json", 'w') as f:
             f.write(instance.model_dump_json(indent=4))
