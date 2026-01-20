@@ -216,7 +216,7 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                         nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d + s + 1]])) >= 1)
         return 0
 
-class MaxmimumNumberOfWeekendsModule(ShiftAssignmentModule):
+class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
         shifts_by_date = group_shifts_by_date(instance)
