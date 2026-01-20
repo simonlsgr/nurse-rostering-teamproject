@@ -5,6 +5,7 @@ from typing import Any
 from ortools.sat.python import cp_model
 from nurse_rostering.data_schema import NurseRosteringInstance, Shift
 from .nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars, NurseWorksAtWeekendVars
+from nurse_rostering.utils.data_utils import get_weekends
 
 from nurse_rostering.utils.data_utils import group_shifts_by_date, get_shift_type_dict
 class ShiftAssignmentModule(abc.ABC):
@@ -212,17 +213,6 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                         nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d + s + 1]])) >= 1)
         return 0
 
-
-def get_weekends(instance):
-    shifts_by_date = group_shifts_by_date(instance)
-    all_dates = sorted(shifts_by_date.keys())
-    if not all_dates:
-        return 0
-    saturdays = []
-    if all_dates[0].weekday() == 6:
-        saturdays.append(all_dates[0]-timedelta(days=1))
-    saturdays = [d for d in all_dates if d.weekday() == 5]
-    return [(s, s+timedelta(days=1)) for s in saturdays]
 
 
 class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):

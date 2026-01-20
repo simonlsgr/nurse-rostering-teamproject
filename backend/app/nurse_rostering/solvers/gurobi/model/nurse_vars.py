@@ -8,6 +8,20 @@ from collections.abc import Iterable
 from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
 
 
+class PreferredCoverDecisionVars:
+    def __init__(self, shifts: list[Shift], model: gp.Model):
+        
+        self.total_below_preferred = {
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=len(shifts), name=f"total_below_preferred_{shift.uid}")
+            for shift in shifts
+        }
+        self.total_above_preferred = {
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=len(shifts), name=f"total_above_preferred_{shift.uid}")
+            for shift in shifts
+        }
+        self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
+
+
 class NurseDecisionVars:
     """
     A container to create and manage the decision variables for a single nurse.
@@ -56,3 +70,28 @@ class NurseDecisionVars:
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
         return [shift_uid for shift_uid in self._x if self._x[shift_uid].X > 0.5]
+
+
+class NurseWorksAtWeekendVars:
+    def __init__(self, nv: NurseDecisionVars, weekends, shifts_by_date, model: gp.Model):
+        saturday = 0
+        sunday = 1
+        self.nurse = nv.nurse
+        self.model = model
+        self._x = {
+            weekend: model.addVar(vtype=GRB.BINARY, name=f"{self.nurse.uid}_weekend_{weekend[saturday].isoformat()}_{weekend[sunday].isoformat()}") for weekend in weekends
+        }
+        for weekend in weekends:
+            shifts_on_weekend = shifts_by_date.get(weekend[saturday], []) + shifts_by_date.get(weekend[sunday], [])
+            _vars = [nv.is_assigned_to(shift) for shift in shifts_on_weekend]
+            if _vars:
+                
+                for shift in shifts_on_weekend:
+                    model.addConstr(self._x[weekend] >= nv.is_assigned_to(shift))
+                model.addConstr(self._x[weekend] <= gp.quicksum(nv.is_assigned_to(shift) for shift in shifts_on_weekend))
+            else:
+                model.addConstr(self._x[weekend] == 0)
+
+    def is_assigned_to(self, weekend):
+        return self._x[weekend]
+    
