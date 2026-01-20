@@ -8,6 +8,20 @@ from gurobipy import GRB
 from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
 
 
+class PreferredCoverDecisionVars:
+    def __init__(self, shifts: list[Shift], model: gp.Model):
+        
+        self.total_below_preferred = {
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=len(shifts), name=f"total_below_preferred_{shift.uid}")
+            for shift in shifts
+        }
+        self.total_above_preferred = {
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=len(shifts), name=f"total_above_preferred_{shift.uid}")
+            for shift in shifts
+        }
+        self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
+
+
 class NurseDecisionVars:
     """
     One binary variable per shift for a nurse: assign_{nurse}_{shift} in {0,1}
@@ -53,26 +67,7 @@ class NurseDecisionVars:
         """
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
-        # After optimize(), Var.X contains the solution value
-        return [uid for uid, var in self._x.items() if var.X > 0.5]
-
-
-
-class PreferredCoverDecisionVars:
-    def __init__(self, shifts: list[Shift], model: gp.Model):
-        # Slack vars per shift: below/above demand (integer >= 0)
-        # Upper bounds are loose but safe: up to number of nurses could be over/under.
-        ub = len(shifts)
-        self.total_below_preferred = {
-            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=ub, name=f"below_{shift.uid}")
-            for shift in shifts
-        }
-        self.total_above_preferred = {
-            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=ub, name=f"above_{shift.uid}")
-            for shift in shifts
-        }
-        self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
-
+        return [shift_uid for shift_uid in self._x if self._x[shift_uid].X > 0.5]
 
 
 class NurseWorksAtWeekendVars:
@@ -82,42 +77,26 @@ class NurseWorksAtWeekendVars:
       weekend_var >= each shift_var
       weekend_var <= sum(shift_vars)
     """
-
     def __init__(self, nv: NurseDecisionVars, weekends, shifts_by_date, model: gp.Model):
         saturday = 0
         sunday = 1
         self.nurse = nv.nurse
         self.model = model
         self._x = {
-            weekend: model.addVar(
-                vtype=GRB.BINARY,
-                name=f"{self.nurse.uid}_weekend_{weekend[saturday].isoformat()}_{weekend[sunday].isoformat()}",
-            )
-            for weekend in weekends
+            weekend: model.addVar(vtype=GRB.BINARY, name=f"{self.nurse.uid}_weekend_{weekend[saturday].isoformat()}_{weekend[sunday].isoformat()}") for weekend in weekends
         }
-
         for weekend in weekends:
-            shifts_on_weekend = shifts_by_date.get(weekend[saturday], []) + shifts_by_date.get(
-                weekend[sunday], []
-            )
-            if not shifts_on_weekend:
-                # Force to 0 if there are no shifts
-                self._x[weekend].LB = 0
-                self._x[weekend].UB = 0
-                continue
-
-            w = self._x[weekend]
-            vars_on_weekend = [nv.is_assigned_to(shift_uid) for shift_uid in shifts_on_weekend]
-
-            # w >= x_i for all i
-            for x in vars_on_weekend:
-                model.addConstr(w >= x, name=f"weekend_ge_{w.VarName}_{x.VarName}")
-
-            # w <= sum(x_i)
-            model.addConstr(
-                w <= gp.quicksum(vars_on_weekend),
-                name=f"weekend_le_sum_{w.VarName}",
-            )
+            shifts_on_weekend = shifts_by_date.get(weekend[saturday], []) + shifts_by_date.get(weekend[sunday], [])
+            _vars = [nv.is_assigned_to(shift) for shift in shifts_on_weekend]
+            if _vars:
+                
+                for shift in shifts_on_weekend:
+                    model.addConstr(self._x[weekend] >= nv.is_assigned_to(shift))
+                model.addConstr(self._x[weekend] <= gp.quicksum(nv.is_assigned_to(shift) for shift in shifts_on_weekend))
+                
+            else:
+                model.addConstr(self._x[weekend] == 0)
 
     def is_assigned_to(self, weekend):
         return self._x[weekend]
+    

@@ -2,7 +2,7 @@ import gurobipy as gp
 from gurobipy import GRB
 
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
-from nurse_rostering.solvers.gurobi.model.nurse_vars import NurseDecisionVars
+from .nurse_vars import NurseDecisionVars
 from .modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
@@ -26,13 +26,10 @@ class NurseRosteringModel:
     def __init__(self, instance: NurseRosteringInstance, model: gp.Model | None = None):
         self.instance = instance
         self.model = model or gp.Model("nurse_rostering")
-
-        # Decision vars: one binary per (nurse, shift)
         self.nurse_vars = [
             NurseDecisionVars(nurse, instance.shifts, self.model) for nurse in instance.nurses
         ]
 
-        # Same module pipeline
         self.modules: list[ShiftAssignmentModule] = [
             NoBlockedShiftsModule(),
             MinTimeBetweenShifts(),
@@ -47,14 +44,11 @@ class NurseRosteringModel:
         ]
 
         # Build constraints + objective expression
-        obj = gp.LinExpr()
-        for module in self.modules:
-            term = module.build(instance, self.model, self.nurse_vars)
-            if term is not None:
-                obj += term
-
-        self.model.ModelSense = GRB.MINIMIZE
-        self.model.setObjective(obj)
+        terms = [module.build(instance, self.model, self.nurse_vars) for module in self.modules]
+        objective = gp.quicksum(
+            term if term is not None else 0 for term in terms
+        )
+        self.model.setObjective(objective, GRB.MINIMIZE)
 
     def solve(
         self,
@@ -77,10 +71,15 @@ class NurseRosteringModel:
         self.model.optimize()
 
         # Handle statuses
-        if self.model.Status in (GRB.INFEASIBLE, GRB.INF_OR_UNBD):
+        status = self.model.Status
+        if status == GRB.INFEASIBLE or status == GRB.INF_OR_UNBD:
             raise ValueError("The model is infeasible.")
-        if self.model.Status not in (GRB.OPTIMAL, GRB.TIME_LIMIT, GRB.SUBOPTIMAL):
+        if status != GRB.OPTIMAL and status != GRB.TIME_LIMIT and status != GRB.SUBOPTIMAL:
             raise ValueError(f"Solver failed (status={self.model.Status}).")
+        if self.model.SolCount < 1:
+            raise ValueError(f"Solver failed to find a solution.")
+            
+
 
         # Extract solution 
         nurses_at_shifts: dict[int, list[int]] = {}
