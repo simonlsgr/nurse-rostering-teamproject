@@ -1,14 +1,20 @@
 import gurobipy as gp
-from gurobipy import GRB 
-from nurse_rostering.solvers.gurobi.model.nurse_vars import NurseDecisionVars
+from gurobipy import GRB
+
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
-from nurse_rostering.solvers.gurobi.model.modules import (
+from nurse_rostering.solvers.gurobi.model.nurse_vars import NurseDecisionVars
+from .modules import (
     ShiftAssignmentModule,
     NoBlockedShiftsModule,
-    DemandSatisfactionModule,
     MinTimeBetweenShifts,
     MaximizePreferences,
     PreferStaffModule,
+    LimitWorkTimeModule,
+    MaximumConsecutiveShiftsModule,
+    MinimumConsecutiveShiftsModule,
+    MinimumConsecutiveDaysOffModule,
+    MaximumNumberOfWeekendsModule,
+    CoverRequirementsModule,
 )
 
 
@@ -17,29 +23,38 @@ class NurseRosteringModel:
     A compact and extensible solver for the nurse rostering problem using Gurobi.
     """
 
-    def __init__(
-        self, instance: NurseRosteringInstance, model: gp.Model | None = None
-    ):
+    def __init__(self, instance: NurseRosteringInstance, model: gp.Model | None = None):
         self.instance = instance
-        self.model = model or gp.Model()
+        self.model = model or gp.Model("nurse_rostering")
+
+        # Decision vars: one binary per (nurse, shift)
         self.nurse_vars = [
-            NurseDecisionVars(nurse, instance.shifts, self.model)
-            for nurse in instance.nurses
+            NurseDecisionVars(nurse, instance.shifts, self.model) for nurse in instance.nurses
         ]
 
+        # Same module pipeline
         self.modules: list[ShiftAssignmentModule] = [
             NoBlockedShiftsModule(),
-            DemandSatisfactionModule(),
             MinTimeBetweenShifts(),
             MaximizePreferences(),
             PreferStaffModule(),
+            LimitWorkTimeModule(),
+            MaximumConsecutiveShiftsModule(),
+            MinimumConsecutiveShiftsModule(),
+            MinimumConsecutiveDaysOffModule(),
+            MaximumNumberOfWeekendsModule(),
+            CoverRequirementsModule(),
         ]
 
-        objective = gp.quicksum(
-            module.build(instance, self.model, self.nurse_vars)  # type: ignore
-            for module in self.modules
-        )
-        self.model.setObjective(objective, GRB.MINIMIZE)
+        # Build constraints + objective expression
+        obj = gp.LinExpr()
+        for module in self.modules:
+            term = module.build(instance, self.model, self.nurse_vars)
+            if term is not None:
+                obj += term
+
+        self.model.ModelSense = GRB.MINIMIZE
+        self.model.setObjective(obj)
 
     def solve(
         self,
@@ -47,28 +62,36 @@ class NurseRosteringModel:
         max_time_in_seconds: float = 60.0,
         **solver_params,
     ) -> NurseRosteringSolution:
+        # Basic params
+        self.model.Params.OutputFlag = 1 if log_search_progress else 0
+        self.model.Params.TimeLimit = float(max_time_in_seconds)
 
-        solver = self.model
-
-        solver.Params.LogToConsole = log_search_progress
-        solver.Params.TimeLimit = max_time_in_seconds
-        
+        # Optional extra params (e.g. MIPGap, Threads, etc.)
         for key, value in solver_params.items():
-            setattr(solver.Params, key, value)
+            try:
+                setattr(self.model.Params, key, value)
+            except Exception:
+                # Ignore unknown params to keep interface flexible
+                pass
 
-        solver.optimize()
+        self.model.optimize()
 
-        if solver.status == GRB.INFEASIBLE:
+        # Handle statuses
+        if self.model.Status in (GRB.INFEASIBLE, GRB.INF_OR_UNBD):
             raise ValueError("The model is infeasible.")
-        elif solver.SolCount < 1:
-            raise ValueError("Solver failed to find a feasible solution.")
+        if self.model.Status not in (GRB.OPTIMAL, GRB.TIME_LIMIT, GRB.SUBOPTIMAL):
+            raise ValueError(f"Solver failed (status={self.model.Status}).")
 
-        nurses_at_shifts = {}
+        # Extract solution 
+        nurses_at_shifts: dict[int, list[int]] = {}
         for nurse_model in self.nurse_vars:
-            for shift_uid in nurse_model.extract(solver):
+            for shift_uid in nurse_model.extract():
                 nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
+
+        # Objective value: Gurobi returns float, we store int like CP-SAT
+        obj_val = self.model.ObjVal if self.model.SolCount > 0 else 0.0
 
         return NurseRosteringSolution(
             nurses_at_shifts=nurses_at_shifts,
-            objective_value=round(solver.ObjVal),
+            objective_value=int(round(obj_val)),
         )

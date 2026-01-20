@@ -2,25 +2,21 @@
 This module provides a basic container to manage the variables for a single nurse in the nurse rostering problem.
 """
 
-import gurobipy as gp
-from gurobipy import GRB, Var
 from collections.abc import Iterable
+import gurobipy as gp
+from gurobipy import GRB
 from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
 
 
 class NurseDecisionVars:
     """
-    A container to create and manage the decision variables for a single nurse.
-
-    Each nurse has one Boolean variable for each shift, indicating whether the nurse is assigned to that shift.
-    This class also provides helper methods to iterate over assignments and extract results.
+    One binary variable per shift for a nurse: assign_{nurse}_{shift} in {0,1}
     """
 
     def __init__(self, nurse: Nurse, shifts: list[Shift], model: gp.Model):
         self.nurse = nurse
         self.shifts = shifts
         self.model = model
-        # Create one Boolean decision variable per shift for this nurse
         self._x = {
             shift.uid: model.addVar(vtype=GRB.BINARY, name=f"assign_{nurse.uid}_{shift.uid}")
             for shift in shifts
@@ -35,24 +31,93 @@ class NurseDecisionVars:
             raise ValueError(
                 f"Shift UID {shift_uid} not found in nurse {self.nurse.uid} assignments."
             )
-        self.model.addConstr(self._x[shift_uid] == value)
+        v = self._x[shift_uid]
+        v.LB = int(value)
+        v.UB = int(value)
 
-    def is_assigned_to(self, shift_uid: ShiftUid) -> Var:
+    def is_assigned_to(self, shift_uid: ShiftUid) -> gp.Var:
         """
         Return the decision variable for the given shift UID.
         This variable is True if the nurse is assigned to that shift, and False otherwise.
         """
         return self._x[shift_uid]
 
-    def iter_shifts(self) -> Iterable[tuple[Shift, Var]]:
+    def iter_shifts(self) -> Iterable[tuple[Shift, gp.Var]]:
         """
         Iterate over all (shift, variable) pairs for this nurse.
         """
         for shift in self.shifts:
-            yield shift, self.is_assigned_to(shift_uid=shift.uid)
+            yield shift, self._x[shift.uid]
 
-    def extract(self, model: gp.Model) -> list[ShiftUid]:
+    def extract(self) -> list[ShiftUid]:
         """
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
-        return [shift_uid for shift_uid in self._x if self._x[shift_uid].X > 0.5]
+        # After optimize(), Var.X contains the solution value
+        return [uid for uid, var in self._x.items() if var.X > 0.5]
+
+
+
+class PreferredCoverDecisionVars:
+    def __init__(self, shifts: list[Shift], model: gp.Model):
+        # Slack vars per shift: below/above demand (integer >= 0)
+        # Upper bounds are loose but safe: up to number of nurses could be over/under.
+        ub = len(shifts)
+        self.total_below_preferred = {
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=ub, name=f"below_{shift.uid}")
+            for shift in shifts
+        }
+        self.total_above_preferred = {
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=ub, name=f"above_{shift.uid}")
+            for shift in shifts
+        }
+        self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
+
+
+
+class NurseWorksAtWeekendVars:
+    """
+    Weekend indicator: 1 if nurse works any shift on Saturday or Sunday.
+    CP-SAT used add_max_equality; in Gurobi we linearize:
+      weekend_var >= each shift_var
+      weekend_var <= sum(shift_vars)
+    """
+
+    def __init__(self, nv: NurseDecisionVars, weekends, shifts_by_date, model: gp.Model):
+        saturday = 0
+        sunday = 1
+        self.nurse = nv.nurse
+        self.model = model
+        self._x = {
+            weekend: model.addVar(
+                vtype=GRB.BINARY,
+                name=f"{self.nurse.uid}_weekend_{weekend[saturday].isoformat()}_{weekend[sunday].isoformat()}",
+            )
+            for weekend in weekends
+        }
+
+        for weekend in weekends:
+            shifts_on_weekend = shifts_by_date.get(weekend[saturday], []) + shifts_by_date.get(
+                weekend[sunday], []
+            )
+            if not shifts_on_weekend:
+                # Force to 0 if there are no shifts
+                self._x[weekend].LB = 0
+                self._x[weekend].UB = 0
+                continue
+
+            w = self._x[weekend]
+            vars_on_weekend = [nv.is_assigned_to(shift_uid) for shift_uid in shifts_on_weekend]
+
+            # w >= x_i for all i
+            for x in vars_on_weekend:
+                model.addConstr(w >= x, name=f"weekend_ge_{w.VarName}_{x.VarName}")
+
+            # w <= sum(x_i)
+            model.addConstr(
+                w <= gp.quicksum(vars_on_weekend),
+                name=f"weekend_le_sum_{w.VarName}",
+            )
+
+    def is_assigned_to(self, weekend):
+        return self._x[weekend]
