@@ -71,6 +71,12 @@ class NurseDecisionVars:
 
 
 class NurseWorksAtWeekendVars:
+    """
+    Weekend indicator: 1 if nurse works any shift on Saturday or Sunday.
+    CP-SAT used add_max_equality; in Gurobi we linearize:
+      weekend_var >= each shift_var
+      weekend_var <= sum(shift_vars)
+    """
     def __init__(self, nv: NurseDecisionVars, weekends, shifts_by_date, model: gp.Model):
         saturday = 0
         sunday = 1
@@ -87,6 +93,7 @@ class NurseWorksAtWeekendVars:
                 for shift in shifts_on_weekend:
                     model.addConstr(self._x[weekend] >= nv.is_assigned_to(shift))
                 model.addConstr(self._x[weekend] <= gp.quicksum(nv.is_assigned_to(shift) for shift in shifts_on_weekend))
+                
             else:
                 model.addConstr(self._x[weekend] == 0)
 
