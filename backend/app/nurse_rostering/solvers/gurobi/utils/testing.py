@@ -6,7 +6,7 @@ from gurobipy import GRB
 class AssertModelFeasible:
 
     def __enter__(self) -> gp.Model:
-        self.model = gp.model()
+        self.model = gp.Model()
         return self.model
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -16,7 +16,7 @@ class AssertModelFeasible:
         self.model.optimize()
         status = self.model.Status
 
-        if status not in (GRB.OPTIMAL) or self.model.SolCount < 1:
+        if status != GRB.OPTIMAL or self.model.SolCount < 1:
             raise RuntimeError(
                 f"Expected feasible, but solver returned status {status}."
             )
@@ -25,7 +25,7 @@ class AssertModelFeasible:
 class AssertModelInfeasible:
 
     def __enter__(self) -> gp.Model:
-        self.model = gp.model()
+        self.model = gp.Model()
         return self.model
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -35,7 +35,7 @@ class AssertModelInfeasible:
         self.model.optimize()
         status = self.model.Status
 
-        if status not in (GRB.INFEASIBLE) or self.model.SolCount > 0:
+        if status != GRB.INFEASIBLE or self.model.SolCount > 0:
             raise RuntimeError(
                 f"Expected infeasible, but solver returned status {status}."
             )
