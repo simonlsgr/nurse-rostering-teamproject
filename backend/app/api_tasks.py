@@ -4,7 +4,9 @@ This file is responsible for running the optimization job in a separate worker.
 
 from api_config import get_db_connection
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
-from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel
+from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel as NurseRosteringModelCPSAT
+from nurse_rostering.solvers.gurobi.model.solver import NurseRosteringModel as NurseRosteringModelGRB
+#TODO: from nurse_rostering.solvers.hexaly.model.solver import NurseRosteringModel as NurseRosteringModelHXLY
 from datetime import datetime
 from uuid import UUID
 from api_db import NurseRosteringJobDbConnection
@@ -38,18 +40,35 @@ def run_optimization_job(
     """
     if db_connection is None:
         db_connection = get_db_connection()
+
     job_status = db_connection.get_status(job_id)
     job_request = db_connection.get_request(job_id)
+
     if job_status is None or job_request is None:
         return  # job got deleted
+    
     job_status.status = "Running"
     job_status.started_at = datetime.now()
     db_connection.update_job_status(job_status)
-    solver = NurseRosteringModel(job_request.nurse_rostering_instance, None) # find out where to apply the optimization parameters: job_request.optimization_parameters
-    solution = solver.solve() # log_callback=print
+
+
+    match job_request:
+        
+        case "gurobi":
+            solver = NurseRosteringModelGRB(job_request.nurse_rostering_instance, None) 
+        # case "hexaly":
+        #    solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
+        case _:
+            solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None) # TODO: find out where to apply the optimization parameters: job_request.optimization_parameters
+
+
+    solution = solver.solve() # TODO: log_callback=print
+
     db_connection.set_solution(job_id, solution)
+
     job_status.status = "Completed"
     job_status.completed_at = datetime.now()
     db_connection.update_job_status(job_status)
+
     send_webhook(job_request, job_status)
 

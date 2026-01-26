@@ -18,6 +18,7 @@ class NurseRosteringJobRequest(BaseModel):
         default_factory=OptimizationParameters,
         description="The optimization parameters.",
     )
+    solver: str = Field(default="cp_sat", description="The solver used to solve the instance.")
     webhook_url: HttpUrl | None = Field(
         default=None, description="The URL to call once the computation is complete."
     )

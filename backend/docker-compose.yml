@@ -20,3 +20,7 @@ services:
       - optimization_api_redis
     deploy:
       replicas: 2 # Adding two workers for parallel processing
+    volumes:
+      - ~/gurobi.lic:/licenses/gurobi.lic:ro
+    environment:
+      GRB_LICENSE_FILE: /licenses/gurobi.lic
