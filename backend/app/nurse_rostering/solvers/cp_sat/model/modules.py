@@ -118,33 +118,20 @@ class MaximizePreferences(ShiftAssignmentModule):
         expr = 0
         for nv in nurse_shift_vars:
             for uid in nv.nurse.preferred_shifts:
-                expr += nv.nurse.preferred_shift_weight * nv.is_assigned_to(uid)
+                expr += nv.nurse.preferred_shift_weight * (1-nv.is_assigned_to(uid))
         return expr
 
 
 class OffPreferences(ShiftAssignmentModule):
     def build(self, instance, model, nurse_shift_vars):
-        """
-        Encourage assigning nurses to their preferred shifts.
-        Each preference counts negatively toward the minimization objective.
-        """
         expr = 0
         for nv in nurse_shift_vars:
-            for uid in [shift.uid for shift in instance.shifts if shift.uid not in nv.nurse.preferred_shifts]:
-                expr += nv.nurse.preferred_off_shift_weight * (1 - nv.is_assigned_to(uid))
-        return expr
-
-
-class PreferStaffModule(ShiftAssignmentModule):
-    def build(self, instance, model, nurse_shift_vars):
-        """
-        Penalize use of non-staff (contract) nurses in the objective.
-        """
-        expr = 0
-        for nv in nurse_shift_vars:
-            if not nv.nurse.staff:
-                for uid in nv._x:
-                    expr += instance.staff_weight * nv.is_assigned_to(uid)
+            off_uids = nv.nurse.preferred_off_shifts
+            if not off_uids:
+                continue
+            for uid in off_uids:
+                if uid in nv._x:
+                    expr += nv.nurse.preferred_off_shift_weight * nv.is_assigned_to(uid)
         return expr
 
 
@@ -220,8 +207,33 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
                         shifts_in_range += shifts_by_date[all_dates[i]]
                     model.add(sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d]]) + (s - sum(nv.is_assigned_to(shift) for shift in shifts_in_range)) + sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d+s+1]]) >= 1)
             if instance.planning_horizon_in_days >= min_shifts:
-                model.add_implication(sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[0]]) >= 1, sum(nv.is_assigned_to(shift) for d in all_dates[:min_shifts] for shift in shifts_by_date[d]) >= min_shifts)
-                model.add_implication(sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[-1]]) >= 1, sum(nv.is_assigned_to(shift) for d in all_dates[-min_shifts:] for shift in shifts_by_date[d]) >= min_shifts)
+
+                lhs_start = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[0]])
+                rhs_start = sum(
+                    nv.is_assigned_to(shift)
+                    for d in all_dates[:min_shifts]
+                    for shift in shifts_by_date[d]
+                )
+
+                worked_start = model.new_bool_var("worked_start_day")
+                model.add(lhs_start >= 1).only_enforce_if(worked_start)
+                model.add(lhs_start == 0).only_enforce_if(worked_start.Not())
+
+                model.add(rhs_start >= min_shifts).only_enforce_if(worked_start)
+
+                lhs_end = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[-1]])
+                rhs_end = sum(
+                    nv.is_assigned_to(shift)
+                    for d in all_dates[-min_shifts:]
+                    for shift in shifts_by_date[d]
+                )
+
+                worked_end = model.new_bool_var("worked_end_day")
+                model.add(lhs_end >= 1).only_enforce_if(worked_end)
+                model.add(lhs_end == 0).only_enforce_if(worked_end.Not())
+
+                model.add(rhs_end >= min_shifts).only_enforce_if(worked_end)
+
         return 0
 
 
@@ -244,8 +256,31 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                     model.add((1 - sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d]])) + sum(nv.is_assigned_to(shift) for shift in shifts_in_range) + (1 - sum(
                         nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d + s + 1]])) >= 1)
             if instance.planning_horizon_in_days >= min_days_off:
-                model.add_implication(sum((1-nv.is_assigned_to(shift)) for shift in shifts_by_date[all_dates[0]]) >= 1, sum((1-nv.is_assigned_to(shift)) for d in all_dates[:min_days_off] for shift in shifts_by_date[d]) >= min_days_off)
-                model.add_implication(sum((1-nv.is_assigned_to(shift)) for shift in shifts_by_date[all_dates[-1]]) >= 1, sum((1-nv.is_assigned_to(shift)) for d in all_dates[-min_days_off:] for shift in shifts_by_date[d]) >= min_days_off)
+                worked_start = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[0]])
+                worked_window_start = sum(
+                    nv.is_assigned_to(shift)
+                    for d in all_dates[:min_days_off]
+                    for shift in shifts_by_date[d]
+                )
+
+                start_day_off = model.new_bool_var("start_day_off")
+                model.add(worked_start == 0).only_enforce_if(start_day_off)
+                model.add(worked_start >= 1).only_enforce_if(start_day_off.Not())
+
+                model.add(worked_window_start == 0).only_enforce_if(start_day_off)
+
+                worked_end = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[-1]])
+                worked_window_end = sum(
+                    nv.is_assigned_to(shift)
+                    for d in all_dates[-min_days_off:]
+                    for shift in shifts_by_date[d]
+                )
+
+                end_day_off = model.new_bool_var("end_day_off")
+                model.add(worked_end == 0).only_enforce_if(end_day_off)
+                model.add(worked_end >= 1).only_enforce_if(end_day_off.Not())
+
+                model.add(worked_window_end == 0).only_enforce_if(end_day_off)
 
         return 0
 
