@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, date
 from pydantic import BaseModel, Field, NonNegativeInt, model_validator
 import uuid
 from typing import Optional
+import enum
 
 # Semantic type aliases for clarity
 NurseUid = int
@@ -19,6 +20,14 @@ def generate_random_uid() -> int:
     # Use uuid4 and convert to an integer (truncated to 64 bits for practical use)
     return uuid.uuid4().int >> 64
 
+
+# create an enum class which has the return status values
+class SolverReturnStatus(str, enum.Enum):
+    OPTIMAL = "OPTIMAL"
+    FEASIBLE = "FEASIBLE"
+    INFEASIBLE = "INFEASIBLE"
+    UNBOUNDED = "UNBOUNDED"
+    INCONSISTENT = "INCONSISTENT"
 
 class Nurse(BaseModel):
     uid: NurseUid = Field(
@@ -200,10 +209,18 @@ class NurseRosteringSolution(BaseModel):
     objective_value: int = Field(
         description="Objective value of the computed solution."
     )
+    return_status: SolverReturnStatus = Field(
+        ..., description="Return status of the solver after attempting to solve the instance."
+    )
+    lower_bound: Optional[int] = Field(
+        default=None,
+        description="Lower bound on the objective value, if available from the solver.",
+    )
     timestamp: datetime = Field(
         default_factory=datetime.now,
         description="Time when the solution was generated. Takes little space and can be extremely useful when investigating issues with the solution. Optimally, also add the revision of the algorithm that generated the solution, e.g., by using a git commit hash.",
     )
+    
     # Validation of the solution will be handled in a separate module.
 
 
