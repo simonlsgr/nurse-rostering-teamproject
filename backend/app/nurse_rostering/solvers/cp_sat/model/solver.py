@@ -13,7 +13,7 @@ from .modules import (
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
     CoverRequirementsModule,
-    OneShiftPerDayModule
+    OneShiftPerDayModule, OffPreferences
 )
 from nurse_rostering.solvers.cp_sat.utils.generalize_return_status import generalize_return_status
 
@@ -45,6 +45,7 @@ class NurseRosteringModel:
             MinimumConsecutiveDaysOffModule(),
             MaximumNumberOfWeekendsModule(),
             CoverRequirementsModule(),
+            OffPreferences(),
         ]
 
         terms = [module.build(instance, self.model, self.nurse_vars) for module in self.modules]
