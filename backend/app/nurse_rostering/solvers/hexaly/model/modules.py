@@ -278,19 +278,20 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
 #             shifts_by_date.setdefault(date, []).append(sv)
         
 #         all_weekends = [date for date in shifts_by_date.keys() if date.weekday() in (5,6)]
-#         weekend_shifts_union = {date: model.union([sv.nurses_assigned for sv in shifts_by_date[date]]) for date in all_weekends}
+#         weekend_shifts_union = {date: [sv.nurses_assigned for sv in shifts_by_date[date]] for date in all_weekends}
 #         # union over two days of the weekend saturday and sunday
+        
 #         weekend_as_one_shift = {}
 #         for date in all_weekends:
 #             if date.weekday() == 5:
 #                 if date + timedelta(days=1) in all_weekends:
-#                     weekend_as_one_shift[date] = model.union([weekend_shifts_union[date], weekend_shifts_union[date + timedelta(days=1)]])
+#                     weekend_as_one_shift[date] = weekend_shifts_union[date] + weekend_shifts_union[date + timedelta(days=1)]
 #                 else:
 #                     weekend_as_one_shift[date] = weekend_shifts_union[date]
 #         for date in all_weekends:
 #             if date.weekday() == 6:
 #                 if (date - timedelta(days=1)) not in all_weekends:
-#                     weekend_as_one_shift[date] = weekend_shifts_union[date]
+#                     weekend_as_one_shift[date-timedelta(days=1)] = weekend_shifts_union[date]
                     
         
         
@@ -300,7 +301,7 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
 #             if max_weekends is None:
 #                 continue
 #             model.add_constraint(
-#                 sum([model.contains(weekend_as_one_shift[date], n_idx) for date in weekend_as_one_shift]) <= max_weekends
+#                 sum([model.contains(model.union(weekend_as_one_shift[date]), n_idx) for date in weekend_as_one_shift]) <= max_weekends
 #             )
 
 #         return 0

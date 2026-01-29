@@ -1,4 +1,5 @@
 import hexaly.optimizer
+from nurse_rostering.solvers.hexaly.utils.generalize_return_status import generalize_return_status
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 from nurse_rostering.solvers.hexaly.model.modules import (
@@ -44,7 +45,8 @@ class NurseRosteringModel:
             PreferredShiftsModule(),
         ]
 
-        
+    def __str__(self) -> str:
+        return "Hexaly Nurse Rostering Model" 
         
     def solve(
         self,
@@ -90,4 +92,6 @@ class NurseRosteringModel:
             return NurseRosteringSolution(
                 nurses_at_shifts=nurses_at_shifts,
                 objective_value=objective.value,
+                return_status=generalize_return_status(optimizer.solution.status),
+                lower_bound=optimizer.solution.get_objective_bound(0)
             )
