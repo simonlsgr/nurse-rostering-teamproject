@@ -13,7 +13,9 @@ from .modules import (
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
     CoverRequirementsModule,
+    OneShiftPerDayModule
 )
+from nurse_rostering.solvers.cp_sat.utils.generalize_return_status import generalize_return_status
 
 
 class NurseRosteringModel:
@@ -32,6 +34,7 @@ class NurseRosteringModel:
         ]
 
         self.modules: list[ShiftAssignmentModule] = [
+            OneShiftPerDayModule(),
             NoBlockedShiftsModule(),
             MinTimeBetweenShifts(),
             MaximizePreferences(),
@@ -76,4 +79,6 @@ class NurseRosteringModel:
         return NurseRosteringSolution(
             nurses_at_shifts=nurses_at_shifts,
             objective_value=round(solver.objective_value),
+            return_status=generalize_return_status(status),
+            lower_bound=round(solver.best_objective_bound),
         )
