@@ -28,6 +28,7 @@ class SolverReturnStatus(str, enum.Enum):
     INFEASIBLE = "INFEASIBLE"
     UNBOUNDED = "UNBOUNDED"
     INCONSISTENT = "INCONSISTENT"
+    UNKNOWN = "UNKNOWN"
 
 class Nurse(BaseModel):
     uid: NurseUid = Field(

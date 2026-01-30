@@ -126,7 +126,7 @@ class LimitWorkTimeModule(ShiftAssignmentModule):
                 continue
             working_time = 0
             for shift, var in nv.iter_shifts():
-                working_time += (shift.end_time - shift.start_time) * var
+                working_time += shift.length * var
             if min_time is not None:
                 model.addConstr(working_time >= min_time)
             if max_time is not None:
@@ -229,7 +229,7 @@ class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
                 continue
             weekend_vars = NurseWorksAtWeekendVars(nv, weekends, shifts_by_date, model)
             all_weekend_vars.append(weekend_vars)
-            model.add(sum(weekend_vars.is_assigned_to(weekend) for weekend in weekends) <= max_weekends)
+            model.addConstr(sum(weekend_vars.is_assigned_to(weekend) for weekend in weekends) <= max_weekends)
 
         return 0
     

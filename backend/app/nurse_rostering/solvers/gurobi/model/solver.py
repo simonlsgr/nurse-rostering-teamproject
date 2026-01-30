@@ -16,6 +16,7 @@ from .modules import (
     MaximumNumberOfWeekendsModule,
     CoverRequirementsModule,
 )
+from nurse_rostering.solvers.gurobi.utils.generalize_return_status import generalize_return_status
 
 
 class NurseRosteringModel:
@@ -93,4 +94,6 @@ class NurseRosteringModel:
         return NurseRosteringSolution(
             nurses_at_shifts=nurses_at_shifts,
             objective_value=int(round(obj_val)),
+            return_status=generalize_return_status(status),
+            lower_bound=round(round(self.model.ObjBound)),
         )
