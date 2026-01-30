@@ -6,7 +6,7 @@ from api_config import get_db_connection
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
 from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel as NurseRosteringModelCPSAT
 from nurse_rostering.solvers.gurobi.model.solver import NurseRosteringModel as NurseRosteringModelGRB
-#TODO: from nurse_rostering.solvers.hexaly.model.solver import NurseRosteringModel as NurseRosteringModelHXLY
+from nurse_rostering.solvers.hexaly.model.solver import NurseRosteringModel as NurseRosteringModelHXLY
 from datetime import datetime
 from uuid import UUID
 from api_db import NurseRosteringJobDbConnection
@@ -56,8 +56,8 @@ def run_optimization_job(
         
         case "gurobi":
             solver = NurseRosteringModelGRB(job_request.nurse_rostering_instance, None) 
-        # case "hexaly":
-        #    solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
+        case "hexaly":
+            solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
         case _:
             solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None) # TODO: find out where to apply the optimization parameters: job_request.optimization_parameters
 

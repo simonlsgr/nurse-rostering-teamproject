@@ -1,4 +1,12 @@
 services:
+
+  hexaly:
+    build:
+      context: ./hexaly_installation
+    container_name: hexaly_installation
+    volumes:
+      - hexaly_data:/opt/hexaly_14_0
+
   optimization_api_fastapi: # The web server
     build: .
     container_name: optimization_api_fastapi
@@ -6,6 +14,9 @@ services:
       - "8080:80"
     depends_on: # Ensuring that the web server starts after the database.
       - optimization_api_redis
+      - hexaly
+    volumes:
+      - hexaly_data:/opt/hexaly_14_0
     command: python3 -m uvicorn api_main:app --host 0.0.0.0 --port 80 --reload
 
   optimization_api_redis: # The database. We use the official Redis image.
@@ -24,3 +35,6 @@ services:
       - ~/gurobi.lic:/licenses/gurobi.lic:ro
     environment:
       GRB_LICENSE_FILE: /licenses/gurobi.lic
+
+volumes:
+  hexaly_data:

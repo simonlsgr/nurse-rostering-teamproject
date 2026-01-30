@@ -8,3 +8,5 @@ __pycache__/
 
 # personal
 notes.md
+# license files
+/backend/hexaly_installation/license.dat
