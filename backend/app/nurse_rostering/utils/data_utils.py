@@ -1,9 +1,10 @@
-from nurse_rostering.data_schema import NurseRosteringInstance
+from nurse_rostering.data_schema import NurseRosteringInstance, ShiftUid
+from datetime import date
 from typing import Any
 from datetime import timedelta
 
 
-def group_shifts_by_date(instance: NurseRosteringInstance) -> dict[Any, list[Any]]:
+def group_shifts_by_date(instance: NurseRosteringInstance) -> dict[date, list[ShiftUid]]:
     shifts_by_date = {}
     for shift in instance.shifts:
         current_date = shift.start_time.date()
@@ -11,7 +12,7 @@ def group_shifts_by_date(instance: NurseRosteringInstance) -> dict[Any, list[Any
     return shifts_by_date
 
 
-def get_shift_type_dict(instance: NurseRosteringInstance) -> dict[Any, list[Any]]:
+def get_shift_type_dict(instance: NurseRosteringInstance) -> dict[ShiftUid, list[str]]:
     shift_type_dict = {}
     for shift in instance.shifts:
         shift_type_dict[shift.uid] = shift.not_followed_by_shift_types
