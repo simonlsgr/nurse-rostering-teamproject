@@ -1,19 +1,36 @@
 from ortools.sat.python import cp_model
 from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+# from .modules import (
+#     ShiftAssignmentModule,
+#     ShiftRotationModule,
+#     MaximumShiftTypesModule,
+#     MaximizePreferences,
+#     PreferStaffModule,
+#     LimitWorkTimeModule,
+#     MaximumConsecutiveShiftsModule,
+#     MinimumConsecutiveShiftsModule,
+#     MinimumConsecutiveDaysOffModule,
+#     MaximumNumberOfWeekendsModule,
+#     CoverRequirementsModule,
+#     OneShiftPerDayModule, 
+#     OffPreferences,
+# )
 from .modules import (
     ShiftAssignmentModule,
-    NoBlockedShiftsModule,
-    MinTimeBetweenShifts,
+    OneShiftPerDayModule,
+    ShiftRotationModule,
+    MaximumShiftTypesModule,
     MaximizePreferences,
+    OffPreferences,
     PreferStaffModule,
     LimitWorkTimeModule,
     MaximumConsecutiveShiftsModule,
     MinimumConsecutiveShiftsModule,
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
+    DaysOffModule,
     CoverRequirementsModule,
-    OneShiftPerDayModule, OffPreferences
 )
 from nurse_rostering.solvers.cp_sat.utils.generalize_return_status import generalize_return_status
 
@@ -34,9 +51,9 @@ class NurseRosteringModel:
         ]
 
         self.modules: list[ShiftAssignmentModule] = [
+            MaximumShiftTypesModule(),
             OneShiftPerDayModule(),
-            NoBlockedShiftsModule(),
-            MinTimeBetweenShifts(),
+            ShiftRotationModule(),
             MaximizePreferences(),
             PreferStaffModule(),
             LimitWorkTimeModule(),
@@ -46,12 +63,13 @@ class NurseRosteringModel:
             MaximumNumberOfWeekendsModule(),
             CoverRequirementsModule(),
             OffPreferences(),
+            DaysOffModule(),
         ]
 
-        terms = [module.build(instance, self.model, self.nurse_vars) for module in self.modules]
         objective = sum(
-            term if term is not None else 0 for term in terms
+            module.build(instance, self.model, self.nurse_vars) for module in self.modules
         )
+        
         self.model.minimize(objective)
 
     def solve(

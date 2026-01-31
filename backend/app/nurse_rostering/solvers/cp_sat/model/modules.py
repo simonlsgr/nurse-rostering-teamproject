@@ -22,26 +22,26 @@ class ShiftAssignmentModule(abc.ABC):
         """
         return 0
 
-class NoBlockedShiftsModule(ShiftAssignmentModule):
-    """
-    Prohibit assignment to blocked shifts. 
-    """
+# class NoBlockedShiftsModule(ShiftAssignmentModule):
+#     """
+#     Prohibit assignment to blocked shifts. 
+#     """
 
-    def enforce_for_nurse(self, model: cp_model.CpModel, nurse_x: NurseDecisionVars):
-        for shift_uid in nurse_x.nurse.blocked_shifts:
-            # prohibit assignment to blocked shifts
-            model.add(nurse_x.is_assigned_to(shift_uid) == 0)
+#     def enforce_for_nurse(self, model: cp_model.CpModel, nurse_x: NurseDecisionVars):
+#         for shift_uid in nurse_x.nurse.blocked_shifts:
+#             # prohibit assignment to blocked shifts
+#             model.add(nurse_x.is_assigned_to(shift_uid) == 0)
 
-    def build(
-        self,
-        instance: NurseRosteringInstance,
-        model: cp_model.CpModel,
-        nurse_shift_vars: list[NurseDecisionVars],
-        preferred_shift_vars: PreferredCoverDecisionVars = None
-    ) -> cp_model.LinearExprT:
-        for nurse_x in nurse_shift_vars:
-            self.enforce_for_nurse(model, nurse_x)
-        return 0
+#     def build(
+#         self,
+#         instance: NurseRosteringInstance,
+#         model: cp_model.CpModel,
+#         nurse_shift_vars: list[NurseDecisionVars],
+#         preferred_shift_vars: PreferredCoverDecisionVars = None
+#     ) -> cp_model.LinearExprT:
+#         for nurse_x in nurse_shift_vars:
+#             self.enforce_for_nurse(model, nurse_x)
+#         return 0
 
 
 # class DemandSatisfactionModule(ShiftAssignmentModule):
@@ -77,7 +77,7 @@ class OneShiftPerDayModule(ShiftAssignmentModule):
 
 
 
-class MinTimeBetweenShifts(ShiftAssignmentModule):
+class ShiftRotationModule(ShiftAssignmentModule):
     
     """2nd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
@@ -107,6 +107,24 @@ class MinTimeBetweenShifts(ShiftAssignmentModule):
                         if _type in types:
                             model.add(nv.is_assigned_to(day_shift) + nv.is_assigned_to(following_shift) <= 1)
         return 0  # no objective contribution
+
+class MaximumShiftTypesModule(ShiftAssignmentModule):
+    
+    """3rd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    
+    def build(self, instance, model, nurse_shift_vars):
+        shift_by_uid = {shift.uid: shift for shift in instance.shifts}
+        shift_type_dict = get_shift_type_dict(instance)
+        
+        for nv in nurse_shift_vars:
+            for type, nb_types in nv.nurse.maximum_number_of_shifts_per_type.items():
+                model.add(
+                    sum(nv.is_assigned_to(shift.uid) for shift in instance.shifts if shift.type == type) <= nb_types
+                )
+        
+        return 0
+                    
+                                
 
 
 class MaximizePreferences(ShiftAssignmentModule):
@@ -215,7 +233,7 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
                     for shift in shifts_by_date[d]
                 )
 
-                worked_start = model.new_bool_var("worked_start_day")
+                worked_start = model.new_bool_var(f"worked_start_day_{nv.nurse.uid}")
                 model.add(lhs_start >= 1).only_enforce_if(worked_start)
                 model.add(lhs_start == 0).only_enforce_if(worked_start.Not())
 
@@ -331,7 +349,7 @@ class CoverRequirementsModule(ShiftAssignmentModule):
             for shift_uid in shifts:
                 assigned_nurses = sum([nv.is_assigned_to(shift_uid) for nv in nurse_shift_vars if shift_uid in nv._x])
                 model.add(
-                    assigned_nurses + preferred_cover_vars.total_above_preferred[shift_uid] - preferred_cover_vars.total_below_preferred[shift_uid]
+                    assigned_nurses - preferred_cover_vars.total_above_preferred[shift_uid] + preferred_cover_vars.total_below_preferred[shift_uid]
                     == 
                     shift_by_uid[shift_uid].demand
                 )
