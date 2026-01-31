@@ -97,7 +97,7 @@ class MaximizePreferences(ShiftAssignmentModule):
         expr = 0
         for nv in nurse_shift_vars:
             for uid in nv.nurse.preferred_shifts:
-                expr += nv.nurse.preferred_shift_weight * nv.is_assigned_to(uid)
+                expr += nv.nurse.preferred_shift_weight * (1-nv.is_assigned_to(uid))
         return expr
     
 class OffPreferences(ShiftAssignmentModule):
