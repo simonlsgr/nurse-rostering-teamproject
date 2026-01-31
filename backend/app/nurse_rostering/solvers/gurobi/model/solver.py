@@ -5,15 +5,18 @@ from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSo
 from .nurse_vars import NurseDecisionVars
 from .modules import (
     ShiftAssignmentModule,
-    NoBlockedShiftsModule,
-    MinTimeBetweenShifts,
+    OneShiftPerDayModule,
+    ShiftRotationModule,
+    MaximumShiftTypesModule,
     MaximizePreferences,
+    OffPreferences,
     PreferStaffModule,
     LimitWorkTimeModule,
     MaximumConsecutiveShiftsModule,
     MinimumConsecutiveShiftsModule,
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
+    DaysOffModule,
     CoverRequirementsModule,
 )
 from nurse_rostering.solvers.gurobi.utils.generalize_return_status import generalize_return_status
@@ -32,8 +35,9 @@ class NurseRosteringModel:
         ]
 
         self.modules: list[ShiftAssignmentModule] = [
-            NoBlockedShiftsModule(),
-            MinTimeBetweenShifts(),
+            MaximumShiftTypesModule(),
+            OneShiftPerDayModule(),
+            ShiftRotationModule(),
             MaximizePreferences(),
             PreferStaffModule(),
             LimitWorkTimeModule(),
@@ -42,6 +46,8 @@ class NurseRosteringModel:
             MinimumConsecutiveDaysOffModule(),
             MaximumNumberOfWeekendsModule(),
             CoverRequirementsModule(),
+            OffPreferences(),
+            DaysOffModule(),
         ]
 
         # Build constraints + objective expression
