@@ -96,20 +96,20 @@ class MaximizePreferences(ShiftAssignmentModule):
         """
         expr = 0
         for nv in nurse_shift_vars:
-            for uid in nv.nurse.preferred_shifts:
-                expr += nv.nurse.preferred_shift_weight * (1-nv.is_assigned_to(uid))
+            for shift_uid in nv.nurse.preferred_shifts:
+                expr += nv.nurse.preferred_shift_weight[shift_uid] * (1-nv.is_assigned_to(shift_uid))
         return expr
     
 class OffPreferences(ShiftAssignmentModule):
     def build(self, instance, model, nurse_shift_vars):
         expr = 0
         for nv in nurse_shift_vars:
-            off_uids = nv.nurse.preferred_off_shifts
-            if not off_uids:
+            shift_off_uids = nv.nurse.preferred_off_shifts
+            if not shift_off_uids:
                 continue
-            for uid in off_uids:
-                if uid in nv._x:
-                    expr += nv.nurse.preferred_off_shift_weight * nv.is_assigned_to(uid)
+            for shift_off_uid in shift_off_uids:
+                if shift_off_uid in nv._x:
+                    expr += nv.nurse.preferred_off_shift_weight[shift_off_uid] * nv.is_assigned_to(shift_off_uid)
         return expr
 
 

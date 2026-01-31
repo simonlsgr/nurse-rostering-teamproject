@@ -58,12 +58,12 @@ class Nurse(BaseModel):
     min_time_between_shifts: timedelta = Field(
         ..., description="Minimum off duty time between two shifts for the same nurse"
     )
-    preferred_shift_weight: NonNegativeInt = Field(
-        default=1,
+    preferred_shift_weight: dict[ShiftUid, NonNegativeInt] = Field(
+        default={},
         description="The weight in the objective function for every assigned preference. Equivalent to q in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf.",
     )
-    preferred_off_shift_weight: NonNegativeInt = Field(
-        default=1,
+    preferred_off_shift_weight: dict[ShiftUid, NonNegativeInt] = Field(
+        default={},
         description="The weight in the objective function for every assigned preferred off shift. Equivalent to p in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf.",
     )
     minimum_work_time: Optional[int] = Field(

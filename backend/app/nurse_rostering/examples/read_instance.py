@@ -143,7 +143,7 @@ def read_instance(file_path: str) -> NurseRosteringInstance:
                 for shift in shifts_model:
                     if shift.name == f"{day}_{shift_type}":
                         nurse.preferred_shifts.add(shift.uid)
-                        nurse.preferred_shift_weight = weight
+                        nurse.preferred_shift_weight[shift.uid] = weight
     
     
     shift_off_requests_section = next((section for section in sections if section.startswith("SHIFT_OFF_REQUESTS")), None)
@@ -159,7 +159,7 @@ def read_instance(file_path: str) -> NurseRosteringInstance:
                 for shift in shifts_model:
                     if shift.name == f"{day}_{shift_type}":
                         nurse.preferred_off_shifts.add(shift.uid)
-                        nurse.preferred_off_shift_weight = weight
+                        nurse.preferred_off_shift_weight[shift.uid] = weight
     
     
                     

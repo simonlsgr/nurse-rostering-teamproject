@@ -421,9 +421,9 @@ class PreferredShiftsModule(ShiftAssignmentModule):
         for sv in shift_vars:
             for n_idx, nurse in enumerate(sv.nurses):
                 if sv.shift.uid in nurse.preferred_shifts:
-                    expr += nurse.preferred_shift_weight * (1- model.contains(sv.nurses_assigned, n_idx))
+                    expr += nurse.preferred_shift_weight[sv.shift.uid] * (1- model.contains(sv.nurses_assigned, n_idx))
                 if sv.shift.uid in nurse.preferred_off_shifts:
-                    expr += nurse.preferred_off_shift_weight * model.contains(sv.nurses_assigned, n_idx)
+                    expr += nurse.preferred_off_shift_weight[sv.shift.uid] * model.contains(sv.nurses_assigned, n_idx)
         
         return expr
                 
