@@ -35,7 +35,7 @@ class AssertModelInfeasible:
         self.model.optimize()
         status = self.model.Status
 
-        if status != GRB.INFEASIBLE or status != GRB.INF_OR_UNBD or self.model.SolCount > 0:
+        if status != GRB.INFEASIBLE or self.model.SolCount > 0:
             raise RuntimeError(
                 f"Expected infeasible, but solver returned status {status}."
             )
