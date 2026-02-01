@@ -1,6 +1,35 @@
 import { projectCompilationEventsSubscribe } from "next/dist/build/swc/generated-native";
 import Link from "next/link";
 
+type ProjectCardProps = {
+  id: number;
+  name: string;
+  nb_nurses: number;
+};
+
+function ProjectCard({ id, name, nb_nurses }: ProjectCardProps ) {
+
+    return (
+      <div 
+        className="border rounded-xl w-full h-30 p-2 mb-4"
+        key={id}
+      >
+        <Link 
+            href={`/projects/${id}`}
+            key={id}
+            className="text-xl"
+        >
+          {name}
+        </Link>
+        
+        <div className="pt-4">
+          <p> ID: {id} </p> 
+          <p> Nurses: {nb_nurses} </p>
+        </div>
+      
+      </div>
+    )
+};
 
 export default function ProjectsView(){
   
@@ -34,25 +63,8 @@ export default function ProjectsView(){
       
           {/* projects list */}
           <div className="overflow-auto">
-            {projects.map((project) => (
-              <div 
-                className="border rounded-xl w-full h-30 p-2 mb-4"
-                key={project.id}
-              >
-                <Link 
-                    href={`/projects/${project.id}`}
-                    key={project.id}
-                    className="text-xl"
-                >
-                  {project.name}
-                </Link>
-                
-                <div className="pt-4">
-                  <p> ID: {project.id} </p> 
-                  <p> Nurses: {project.num_of_nurses} </p>
-                </div>
-              
-              </div>
+            {projects.map((project, idx) => (
+                <ProjectCard key={idx} id={project.id} name={project.name} nb_nurses={project.num_of_nurses}/>
             ))}
           </div>
        
