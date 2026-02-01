@@ -1,8 +1,19 @@
+"use client";
+
 import NurseList from "@/components/rostering/NurseList";
+import { useLoadNurses } from "@/hooks/nurseHooks";
+import { useEffect } from "react";
 
 
-export default async function ProjectPage({ params }: { params: { projectId: string } }){  
+export default function ProjectPage({ params }: { params: { projectId: string } }){  
   
+  const { loadNurses } = useLoadNurses();
+
+
+  useEffect(() => {
+    loadNurses();
+  }, []);
+
 
 
   return (
