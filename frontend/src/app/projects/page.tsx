@@ -1,35 +1,6 @@
-import { projectCompilationEventsSubscribe } from "next/dist/build/swc/generated-native";
-import Link from "next/link";
+import SidebarLeft from "@/components/layout/SidebarLeft";
+import ProjectCard from "@/components/ui/ProjectCard";
 
-type ProjectCardProps = {
-  id: number;
-  name: string;
-  nb_nurses: number;
-};
-
-function ProjectCard({ id, name, nb_nurses }: ProjectCardProps ) {
-
-    return (
-      <div 
-        className="border rounded-xl w-full h-30 p-2 mb-4"
-        key={id}
-      >
-        <Link 
-            href={`/projects/${id}`}
-            key={id}
-            className="text-xl"
-        >
-          {name}
-        </Link>
-        
-        <div className="pt-4">
-          <p> ID: {id} </p> 
-          <p> Nurses: {nb_nurses} </p>
-        </div>
-      
-      </div>
-    )
-};
 
 export default function ProjectsView(){
   
@@ -43,9 +14,7 @@ export default function ProjectsView(){
 
     <div className="flex h-screen gap-2">
       
-      {/* sidebar left*/}
-      <div className="w-[10vw] min-w-[240px] max-w-[320px] hidden">
-      </div>
+      <SidebarLeft />
       
       
       <div className="w-full">

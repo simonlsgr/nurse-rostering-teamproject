@@ -1,11 +1,8 @@
+import NurseList from "@/components/rostering/NurseList";
 
 
 export default async function ProjectPage({ params }: { params: { projectId: string } }){  
   
-  const nurses = [
-    {id: 1, name: "Max Mustermann"},
-    {id: 2, name: "Max Mustermann2"}
-  ]
 
 
   return (
@@ -14,6 +11,10 @@ export default async function ProjectPage({ params }: { params: { projectId: str
       
       {/* sidebar left*/}
       <div className="w-[10vw] min-w-[240px] max-w-[320px] border-r bg-gray-200">
+
+        <NurseList />
+
+
       </div>
       
       
@@ -38,25 +39,6 @@ export default async function ProjectPage({ params }: { params: { projectId: str
       {/* sidebar right */}
       <div className="w-[10vw] min-w-[240px] max-w-[320px] border-l">
 
-
-        <div className="border-b h-[50vh] content-between overflow-auto">
-          <p className="p-2"> All Nurses: </p>
-
-          {nurses.map((nurse) => (
-
-            <div 
-              className="border rounded-lg w-[calc(100%-1rem)] h-20 p-2 mb-2 ml-2 mt-2" 
-              key={nurse.id}
-            >
-              <p className=""> Name: {nurse.name} </p>              
-              <p> ID: {nurse.id} </p> 
-
-
-            </div>
-
-          ))}
-
-        </div>
 
 
       </div>
