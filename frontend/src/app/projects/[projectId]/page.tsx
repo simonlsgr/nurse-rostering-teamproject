@@ -24,7 +24,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
     <div className="flex h-screen gap-2 overflow-hidden">
       
       {/* sidebar left*/}
-      <div className="w-[10vw] min-w-[240px] max-w-[320px] border-r bg-gray-200 h-screen">
+      <div className="w-[20vw] min-w-[240px] max-w-[320px] border-r bg-gray-200 h-screen">
 
         <NurseList />
         
@@ -52,7 +52,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
       </div>
 
       {/* sidebar right */}
-      <div className="w-[10vw] min-w-[240px] max-w-[320px] border-l">
+      <div className="w-[20vw] min-w-[240px] max-w-[320px] border-l">
 
         <SolveButton />
 

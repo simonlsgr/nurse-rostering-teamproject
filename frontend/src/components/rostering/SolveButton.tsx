@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useJsonData } from "@/store/JsonStore";
+import { solve } from "@/app/api/solver";
 
 
 export default function SolveButton() {
@@ -21,14 +22,7 @@ export default function SolveButton() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/solver", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(jsonData),
-      });
-      
-      if (!res.ok) throw new Error("Solver request failed");
-      const data = await res.json();
+      const data = await solve(jsonData)
       setResult(data);
 
     } catch (err: any) {
