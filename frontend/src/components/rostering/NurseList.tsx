@@ -22,12 +22,12 @@ export default function NurseList(){
     );
   };
 
-
+  // filtered by search
   const filteredItems = nurses.filter((nurse) =>
     nurse.name.toLowerCase().includes(query.toLowerCase()) || nurse.id.includes(query)
   );
 
-
+  // sort items by selection
   const sortedItems = [
     ...filteredItems.filter((nurse) => selectedNurses.some(n => n.id === nurse.id)),
     ...filteredItems.filter((nurse) => !selectedNurses.some(n => n.id === nurse.id)),
@@ -41,10 +41,24 @@ export default function NurseList(){
     <div className="border-b h-[50vh] content-between overflow-auto">
       <p className="p-2"> All Nurses: </p>
 
+      <input
+        type="text"
+        placeholder="Search..."
+        value={query}
+        onChange={(s) => setQuery(s.target.value)}
+        className="w-[calc(100%-1rem)] ml-2 p-1 border rounded focus:outline-none"
+      />
+
+
       {sortedItems.map((nurse) => (
-        <AnimatePresence key={nurse.id}>
-          <motion.div layout
-            key={nurse.id} 
+        <AnimatePresence key={nurse.id} mode="popLayout">
+          <motion.div
+            key={nurse.id}
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.17 }}
             className="cursor-pointer select-none"
             onClick={() => toggleItem(nurse)}
           >
