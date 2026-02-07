@@ -1,6 +1,7 @@
 
 
 export type Nurse = {
-  id: number;
+  uuid?: string; // for later
+  id: string;
   name: string;
 };

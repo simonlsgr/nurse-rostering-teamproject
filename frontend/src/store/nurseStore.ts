@@ -22,11 +22,11 @@ export const useNurses = create<NursesState>((set) => ({
 type NurseListSelectionState = {
 
   selectedNurses: Nurse[];
-  setSelectedNurses: (selectedNurses: Nurse[]) => void;
+  setSelectedNurses: (selectedNurses: Nurse[] | ((prev: Nurse[]) => Nurse[])) => void;
 };
 
 export const useNurseListSelection = create<NurseListSelectionState>((set) => ({
 
   selectedNurses: [],
-  setSelectedNurses: (selectedNurses) => set({selectedNurses})
+  setSelectedNurses: (selectedNurses) => set((state) => ({ selectedNurses: typeof(selectedNurses) === "function" ? selectedNurses(state.selectedNurses) : selectedNurses}))
 }));
