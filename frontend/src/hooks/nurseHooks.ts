@@ -4,7 +4,7 @@ import { useNurses } from "@/store/nurseStore";
 
 export function useLoadNurses(){
 
-  const { nurses, setNurses } = useNurses();
+  const { setNurses } = useNurses();
 
   const loadNurses = async() => {
     const data = [

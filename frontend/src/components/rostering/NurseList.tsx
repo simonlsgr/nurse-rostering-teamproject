@@ -1,3 +1,5 @@
+"use client";
+
 import { useNurseListSelection, useNurses } from "@/store/nurseStore";
 import NurseCard from "../ui/NurseCard";
 import { Nurse } from "@/types/nurseVars";

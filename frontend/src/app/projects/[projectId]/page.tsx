@@ -3,11 +3,13 @@
 import NurseList from "@/components/rostering/NurseList";
 import { useLoadNurses } from "@/hooks/nurseHooks";
 import { useEffect } from "react";
-
+import InputJson from "@/components/common/InputJson"
+import SolveButton from "@/components/rostering/SolveButton";
 
 export default function ProjectPage({ params }: { params: { projectId: string } }){  
   
   const { loadNurses } = useLoadNurses();
+
 
 
   useEffect(() => {
@@ -16,15 +18,17 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
 
 
 
+
   return (
 
-    <div className="flex h-screen gap-2">
+    <div className="flex h-screen gap-2 overflow-hidden">
       
       {/* sidebar left*/}
-      <div className="w-[10vw] min-w-[240px] max-w-[320px] border-r bg-gray-200">
+      <div className="w-[10vw] min-w-[240px] max-w-[320px] border-r bg-gray-200 h-screen">
 
         <NurseList />
-
+        
+        <InputJson />
 
       </div>
       
@@ -50,7 +54,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
       {/* sidebar right */}
       <div className="w-[10vw] min-w-[240px] max-w-[320px] border-l">
 
-
+        <SolveButton />
 
       </div>
     
