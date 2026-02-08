@@ -5,6 +5,10 @@ import { useLoadNurses } from "@/hooks/nurseHooks";
 import { useEffect } from "react";
 import InputJson from "@/components/common/InputJson"
 import SolveButton from "@/components/rostering/SolveButton";
+import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs"
+import { MainView } from "@/components/layout/MainView";
+import JobsView from "@/components/layout/JobsView";
+
 
 export default function ProjectPage({ params }: { params: { projectId: string } }){  
   
@@ -41,12 +45,28 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
       
         {/* main view */}
         <div className="p-2">
-      
-          <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
-            Project [id]
-          </h1>
-      
-       
+        
+        <Tabs defaultValue="dashboard">
+        
+          <div className="flex justify-center">
+            <TabsList>
+
+              <TabsTrigger value="dashboard"> Dashboard </TabsTrigger>
+              <TabsTrigger value="jobs"> Jobs </TabsTrigger>
+
+            </TabsList>
+          </div>
+        
+          <TabsContent value="dashboard">
+            <MainView />
+          </TabsContent>
+          
+          <TabsContent value="jobs">
+            <JobsView />        
+          </TabsContent>
+        
+        </Tabs>
+        
         </div>
       
       </div>
