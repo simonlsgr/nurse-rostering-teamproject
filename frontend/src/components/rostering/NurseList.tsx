@@ -1,7 +1,7 @@
 "use client";
 
 import { useNurseListSelection, useNurses } from "@/store/nurseStore";
-import NurseCard from "../ui/NurseCard";
+import NurseCard from "@/components/ui/NurseCard";
 import { Nurse } from "@/types/nurseVars";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";

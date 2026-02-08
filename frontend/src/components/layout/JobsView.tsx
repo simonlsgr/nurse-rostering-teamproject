@@ -1,4 +1,4 @@
-import JobCard from "../ui/JobCard";
+import JobsList from "@/components/rostering/JobsList";
 
 
 
@@ -14,8 +14,7 @@ export default function JobsView(){
         Jobs
       </h1>
 
-      <JobCard name="fefef" />
-
+      <JobsList />
 
 
 
