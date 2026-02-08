@@ -40,7 +40,7 @@ export default function NurseList(){
 
   return (
 
-    <div className="border-b h-[50vh] content-between overflow-auto">
+    <div className="border-b h-[50vh] content-between overflow-auto border-border">
       <p className="p-2"> All Nurses: </p>
 
       <input
@@ -48,8 +48,10 @@ export default function NurseList(){
         placeholder="Search..."
         value={query}
         onChange={(s) => setQuery(s.target.value)}
-        className="w-[calc(100%-1rem)] ml-2 p-1 border rounded focus:outline-none"
+        className="w-[calc(100%-1rem)] ml-2 p-1 border border-gray-300 rounded focus:outline-none"
       />
+
+      <p className="border-b m-2 border-border"></p>
 
 
       {sortedItems.map((nurse) => (

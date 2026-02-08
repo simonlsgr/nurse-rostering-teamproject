@@ -35,7 +35,7 @@ export default function JsonEditor() {
       <p className="pb-2"> Input Instance: </p>
 
       <Textarea
-        className="w-full h-60 p-2 border-black rounded font-mono"
+        className="w-full h-60 p-2 border-gray-300 rounded font-mono"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
