@@ -4,3 +4,8 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function formatDate(input: string | null) {
+  if (!input) return "--";
+  return new Date(input).toLocaleString("de-DE");
+}

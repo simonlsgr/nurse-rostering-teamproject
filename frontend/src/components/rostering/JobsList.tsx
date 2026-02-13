@@ -1,26 +1,38 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import { motion } from "framer-motion";
 import JobCard from "../ui/JobCard";
+import { Job } from "@/types/solverVars";
+import { pollJob } from "@/app/api/solver";
 
 
 export default function JobsList(){
 
+
+
   const categories = ["active", "running"];
 
-  const runningJobs = [
-    { name: "job1" },
-    { name: "job2 "},
+  const runningJobs: Job[] = [
+    { name: "job1",
+      task_id: "9814d6a3-534b-40d3-b6bd-d45df0802e78",
+      status: "Submitted",
+      submitted_at: "2026-02-13T17:29:28.670131",
+      started_at: null,
+      completed_at: null,
+      error: null
+    },
+    { name: "job2",
+      task_id: "9814d6a3-534b-40d3-b6bd-d45df0802e79",
+      status: "Submitted",
+      submitted_at: "2026-02-13T17:29:28.670132",
+      started_at: null,
+      completed_at: null,
+      error: null
+    },
   ];
 
-  const finishedJobs = [
-    { name: "job1" },
-    { name: "job2 "},
-  ];
+  const finishedJobs: Job[] = [];
 
-  const jobs: Record<string, any> = {"active": runningJobs, "running": finishedJobs};
+  const jobs: Record<string, Job[]> = {"active": runningJobs, "running": finishedJobs};
 
 
   const [openLists, setOpenLists] = useState<Record<string, boolean>>({});
@@ -72,7 +84,7 @@ export default function JobsList(){
 
             return (
               
-              <JobCard name={job.name} key={job.name}/>
+              <JobCard job={job} key={job.name}/>
             )
 
           })}
