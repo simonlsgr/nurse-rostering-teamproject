@@ -32,6 +32,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
 
         <NurseList />
         
+        
         <InputJson />
 
       </div>

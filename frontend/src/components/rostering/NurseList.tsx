@@ -40,7 +40,7 @@ export default function NurseList(){
 
   return (
 
-    <div className="border-b h-[50vh] content-between overflow-auto border-border">
+    <div className="border-b h-[50vh] content-between border-border flex flex-col">
       <p className="p-2"> All Nurses: </p>
 
       <input
@@ -53,7 +53,7 @@ export default function NurseList(){
 
       <p className="border-b m-2 border-border"></p>
 
-
+      <div className="overflow-auto flex-1">
       {sortedItems.map((nurse) => (
         <AnimatePresence key={nurse.id} mode="popLayout">
           <motion.div
@@ -70,7 +70,7 @@ export default function NurseList(){
           </motion.div>
         </AnimatePresence>
       ))}
-
+      </div>
 
   </div>
   );
