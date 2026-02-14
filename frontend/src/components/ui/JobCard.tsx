@@ -1,5 +1,6 @@
 import { pollJob } from "@/app/api/solver";
 import { formatDate } from "@/lib/utils";
+import { useJobs } from "@/store/solverStore";
 import { Job } from "@/types/solverVars";
 
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -8,16 +9,18 @@ import { useState } from "react";
 
 type JobCardProps = {
 
-  job: Job
+  jobId: string;
+  bgGray: boolean;
 };
 
 
-export default function JobCard({ job }: JobCardProps ){
+export default function JobCard({ jobId, bgGray }: JobCardProps ){
 
-
+  const { jobs, updateJob } = useJobs();
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const job = jobs[jobId];
 
   const handleGetJob = async () => {
 
@@ -25,7 +28,7 @@ export default function JobCard({ job }: JobCardProps ){
 
     try {
       const data = await pollJob(job.task_id);
-      job = data;
+      updateJob(data);
       setError(null);
       setResult("Refresh successfull");
     } catch (err: any) {
@@ -38,7 +41,7 @@ export default function JobCard({ job }: JobCardProps ){
   return (
 
     <div 
-      className={`cursor-pointer border-l border-border rounded-lg rounded-tl-none w-[calc(100%-1rem)] h-16 p-2 pt-0 mb-2 mt-3 transition-all duration-130 hover:shadow-xs flex justify-between items-center`}
+      className={`cursor-pointer border-l border-border rounded-lg w-[calc(100%-1rem)] h-16 p-2 pt-0 mb-2 mt-3 transition-all duration-130 flex justify-between items-center ${bgGray ? "bg-gray-100 hover:shadow-sm" : "hover:shadow-xs"}`}
     >
       <div>
         <div className="font-semibold max-w-[60px]"> 
@@ -52,7 +55,7 @@ export default function JobCard({ job }: JobCardProps ){
           Submitted @ {formatDate(job.submitted_at)} 
           <div className="border-l border-border "></div>
 
-          Started @ {formatDate(job.started_at)} 
+          Started @ {formatDate(jobs[jobId].started_at)} 
           <div className="border-l border-border "></div>
 
           Completed @ {formatDate(job.completed_at)} 

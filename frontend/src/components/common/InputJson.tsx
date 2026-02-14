@@ -21,7 +21,7 @@ export default function JsonEditor() {
       setError(null);
 
       // TODO: send JSON to backend
-      console.log("Valid JSON:", parsed);
+      
     } catch (e: any) {
       setError(e.message);
       console.error("Invalid JSON:", e);
