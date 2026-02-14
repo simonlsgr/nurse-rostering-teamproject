@@ -21,7 +21,7 @@ export default function JsonEditor() {
       setError(null);
 
       // TODO: send JSON to backend
-      console.log("Valid JSON:", parsed);
+      
     } catch (e: any) {
       setError(e.message);
       console.error("Invalid JSON:", e);
@@ -30,7 +30,7 @@ export default function JsonEditor() {
 
   return (
 
-    <div className="p-2 w-full max-w-lg h-120 overflow-auto">
+    <div className="p-2 w-full max-w-lg overflow-auto">
 
       <p className="pb-2"> Input Instance: </p>
 

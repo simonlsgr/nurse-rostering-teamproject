@@ -1,3 +1,4 @@
+import { Nurse, Shift } from "@/types/nurseVars";
 
 
 export type Job = {
@@ -8,4 +9,17 @@ export type Job = {
   started_at: string | null;
   completed_at: string | null;
   error: string | null;
+};
+
+export type NurseRosteringInstance = {
+  nurses: Nurse[];
+  shifts: Shift[];
+  staff_weight: number;
+};
+
+export type SolverPayload = {
+  nurse_rostering_instance: NurseRosteringInstance;
+  optimization_parameters: any;
+  solver: string;
+  webhook_url?: string;
 };

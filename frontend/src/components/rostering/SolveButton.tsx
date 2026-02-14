@@ -4,12 +4,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useJsonData } from "@/store/JsonStore";
 import { solve } from "@/app/api/solver";
+import { useJobs } from "@/store/solverStore";
+import JobsList from "./JobsList";
 
 
 export default function SolveButton() {
 
 
   const { jsonData } = useJsonData();
+  const { jobs, setJobs } = useJobs();
   
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -24,6 +27,10 @@ export default function SolveButton() {
 
       const data = await solve(jsonData)
       setResult(data);
+      setJobs({
+        ...jobs,
+        [data.task_id]: data
+      })
 
     } catch (err: any) {
       setError(err.message);

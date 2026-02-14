@@ -2,16 +2,20 @@ import { useState } from "react";
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import JobCard from "../ui/JobCard";
 import { Job } from "@/types/solverVars";
-import { pollJob } from "@/app/api/solver";
+import { useJobs } from "@/store/solverStore";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 export default function JobsList(){
+  let grayCard = true;
+  const { jobs } = useJobs();
+  const jobValues = Object.values(jobs);
 
+  const categories = ["active", "completed"];
 
-
-  const categories = ["active", "running"];
-
-  const runningJobs: Job[] = [
+  const runningJobs: Job[] = jobValues.filter((job) => job.status == "Submitted" || job.status == "Started")
+  /* 
+  [
     { name: "job1",
       task_id: "9814d6a3-534b-40d3-b6bd-d45df0802e78",
       status: "Submitted",
@@ -29,10 +33,10 @@ export default function JobsList(){
       error: null
     },
   ];
+ */
+  const finishedJobs: Job[] = jobValues.filter((job) => job.status == "Completed");
 
-  const finishedJobs: Job[] = [];
-
-  const jobs: Record<string, Job[]> = {"active": runningJobs, "running": finishedJobs};
+  const _jobs: Record<string, Job[]> = {"active": runningJobs, "completed": finishedJobs};
 
 
   const [openLists, setOpenLists] = useState<Record<string, boolean>>({});
@@ -47,7 +51,7 @@ export default function JobsList(){
 
   return (
 
-    <div>
+    <div className="">
 
       {categories.map((category) => {
 
@@ -71,20 +75,31 @@ export default function JobsList(){
         <div
         className={`
           left-0 mt-1
-          transition-all duration-300 w-full
-          ${isOpen ? "max-h-60 opacity-100" : "max-h-0"}
-          overflow-hidden
+          transition-all duration-200 w-full border-b border-border overflow-auto
+          ${isOpen ? "max-h-[38vh] opacity-100" : "max-h-0"}
           `}
           >
 
 
           {/* job cards here */}
 
-          {jobs[category].map((job: any) => {
+          {_jobs[category].map((job: any) => {
+            grayCard = !grayCard;
 
             return (
-              
-              <JobCard job={job} key={job.name}/>
+              <AnimatePresence key={job.task_id} mode="popLayout">
+                <motion.div
+                  key={job.task_id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.17 }}
+                  className="cursor-pointer select-none"
+                >
+                  <JobCard jobId={job.task_id} key={job.task_id} bgGray={grayCard}/>
+                </motion.div>
+              </AnimatePresence>
             )
 
           })}
