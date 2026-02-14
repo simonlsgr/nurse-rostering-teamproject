@@ -18,7 +18,7 @@ ShiftUid = int
 
 def generate_random_uid() -> int:
     # Use uuid4 and convert to an integer (truncated to 64 bits for practical use)
-    return uuid.uuid4().int >> 64
+    return uuid.uuid4().int & ((1 << 53) - 1)
 
 
 # create an enum class which has the return status values
