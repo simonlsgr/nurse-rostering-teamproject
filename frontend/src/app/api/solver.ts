@@ -10,7 +10,26 @@ export async function solve(json: unknown) {
     body: JSON.stringify(json),
   });
 
-  if (!res.ok) throw new Error("Solve faileeeed");
+  const data = await res.json();
 
-  return res.json();
+  if (!res.ok) throw new Error(data.error);
+
+  return data;
+}
+
+
+export async function pollJob(jobId: string) {
+
+  const res = await fetch(`/api/solver?taskId=${jobId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.error);
+
+  return data;
 }

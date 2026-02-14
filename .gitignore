@@ -14,3 +14,4 @@ backend/app/nurse_rostering/solvers/hexaly/model/hex.ipynb
 
 # license files
 /backend/hexaly_installation/license.dat
+/backend/hexaly_installation/license.dat*
