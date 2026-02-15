@@ -11,7 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Tooltip } from "@mui/material"
-import { get } from "http";
+import React from "react";
 
 
 
@@ -68,20 +68,6 @@ type InfeasibilityDetails = Record<shiftUid, InfeasibilityReasonByDate>;
 
 type Solution = Record<string, any>;
 
-// REMOVE DEBUG METHOD ONLY
-function serializeInfeasibility(details: InfeasibilityDetails) {
-  const result: Record<string, Record<string, string[]>> = {};
-
-  Object.entries(details).forEach(([shiftUid, reasonsByDate]) => {
-    result[shiftUid] = {};
-
-    Object.entries(reasonsByDate).forEach(([date, reasonSet]) => {
-      result[shiftUid][date] = Array.from(reasonSet);
-    });
-  });
-
-  return result;
-}
 
 
 function NurseTableHeader({table}: {table: ReturnType<typeof useReactTable>}) {
@@ -130,9 +116,23 @@ function NurseTableBody({
           
           const nurseUid = String((row.original as any)?.Nurse ?? "");
           const cellInfeasibility = infeasibilityDetails[Number(nurseUid)]?.[date];
+          const cellInfeasibilityNode = (<div>
+            {[...(cellInfeasibility ?? new Set<String>())].map((reason, index, arr) => {
+              return (
+                <React.Fragment key={reason}>
+                {reason}
+                {index < arr.length - 1 && <br />}
+              </React.Fragment>
+              );
+            })
+            }
+          </div>);
+
+          
+          
           const hasInfeasibility = cellInfeasibility && cellInfeasibility.size > 0;
           return (
-            <Tooltip key={cell.id} title={cellInfeasibility ? cellInfeasibility : ""} placement="top" arrow disableInteractive>
+            <Tooltip key={cell.id} title={hasInfeasibility ? cellInfeasibilityNode : ""} placement="top" arrow disableInteractive>
             <td 
             key={cell.id} 
             className={`border border-gray-200 px-4 py-2 group-hover:bg-gray-200 hover:bg-gray-400! first:sticky first:outline-1 first:outline-gray-200 left-0 ${hasInfeasibility ? "bg-red-600!" : "bg-white"} ${hoveredColumn == cell.column.id ? "bg-gray-200!" : ""}`}
@@ -158,7 +158,7 @@ function NurseTableBody({
                   className="p-2 w-full border-2 border-transparent hover:border-blue-500! focus:border-blue-500! focus:outline-none"
                 >
                   {shift_types.map((type) => (
-                    <option key={type.value} value={type.value}>
+                    <option key={type.value} value={type.value} disabled={getNurseByUid(instance, Number(nurseUid))?.days_off.includes(date) ? true : false}>
                       {type.label}
                     </option>
                   ))}
@@ -294,7 +294,7 @@ function getLastDateOfInstance(instance: Instance) {
 }
 
 
-
+// Helper for calculating consecutive shifts and days off for a nurse, used in feasibility checks
 function getConsecutivesArrayForNurse({instance, solution, nurseUid}: {instance: Instance, solution: Solution, nurseUid: number}) {
   const shiftsByDate: Record<string, shiftUid[]> = {};
 
