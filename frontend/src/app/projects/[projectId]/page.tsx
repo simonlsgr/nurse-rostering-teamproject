@@ -38,7 +38,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
       </div>
       
       
-      <div className="w-full">
+      <div className="w-[70vw]">
       
         {/* topbar */}
         <div className="h-[2vw] min-h-[30px] max-h-[40px] hidden">
