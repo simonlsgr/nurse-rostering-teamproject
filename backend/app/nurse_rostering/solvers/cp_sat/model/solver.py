@@ -1,6 +1,7 @@
 from ortools.sat.python import cp_model
 from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from typing import Any
 # from .modules import (
 #     ShiftAssignmentModule,
 #     ShiftRotationModule,
@@ -41,7 +42,7 @@ class NurseRosteringModel:
     """
 
     def __init__(
-        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None
+        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[Any, Any] | None = None
     ):
         self.instance = instance
         self.model = model or cp_model.CpModel()
@@ -49,6 +50,7 @@ class NurseRosteringModel:
             NurseDecisionVars(nurse, instance.shifts, self.model)
             for nurse in instance.nurses
         ]
+        self.hints = hints
 
         self.modules: list[ShiftAssignmentModule] = [
             MaximumShiftTypesModule(),
@@ -69,6 +71,13 @@ class NurseRosteringModel:
         objective = sum(
             module.build(instance, self.model, self.nurse_vars) for module in self.modules
         )
+
+        if self.hints is not None:
+            for nv in self.nurse_vars:
+                shifts = self.hints.get(nv.nurse.uid, [])
+                for shift in shifts:
+                    self.model.add_hint(nv.is_assigned_to(shift), 1)
+
         
         self.model.minimize(objective)
 
