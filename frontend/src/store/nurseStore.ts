@@ -4,6 +4,20 @@ import { create } from "zustand";
 
 
 
+type NursesState = {
+
+  nurses: Nurse[];
+  setNurses: (nurses: Nurse[]) => void;
+};
+
+
+export const useNurses = create<NursesState>((set) => ({
+
+  nurses: [],
+  setNurses: (nurses) => set(({ nurses }))
+}));
+
+
 // those nurses selected in the NurseList
 type NurseListSelectionState = {
 
