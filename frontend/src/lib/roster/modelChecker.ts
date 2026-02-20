@@ -1,0 +1,296 @@
+import { InfeasibilityDetails, shiftUid } from "@/types/feasibilityHelperVars";
+import { Instance, Solution } from "@/types/nurseVars";
+import React from "react";
+import { getShiftDate, getConsecutivesArrayForNurse, getFirstDateOfInstance, getLastDateOfInstance } from "./dataWrangler";
+
+
+export function addReason(shiftUid: number, date: string, msg: string, newDetails: InfeasibilityDetails) {
+  if (!newDetails[shiftUid]) {
+    newDetails[shiftUid] = {};
+  }
+
+  if (!newDetails[shiftUid][date]) {
+    newDetails[shiftUid][date] = new Set<string>();
+  }
+
+  newDetails[shiftUid][date].add(msg);
+}
+export function calculateObjective(instance: Instance, solution: Solution) {
+  let totalValue = 0;
+
+  instance.nurses.forEach((nurse) => {
+    const nurseId = nurse.uid;
+    Object.keys(solution).forEach((shiftId) => {
+      const assignedNurses = solution[shiftId];
+      if (assignedNurses.includes(nurseId)) {
+        const shift = instance.shifts.find(s => s.uid === Number(shiftId));
+        if (shift) {
+          totalValue += nurse.preferred_off_shift_weight[shift.uid.toString()] || 0;
+
+          totalValue += nurse.staff ? 0 : instance.staff_weight;
+        }
+      } else {
+        const shift = instance.shifts.find(s => s.uid === Number(shiftId));
+        if (shift) {
+          totalValue += nurse.preferred_shift_weight[shift.uid.toString()] || 0;
+        }
+      }
+    });
+  });
+
+  instance.shifts.forEach((shift) => {
+    const assignedNurses = solution[shift.uid] || [];
+    const demand = shift.demand;
+    const assignedCount = assignedNurses.length;
+
+    if (assignedCount < demand) {
+      totalValue += shift.weight_below_demand * (demand - assignedCount);
+    } else if (assignedCount > demand) {
+      totalValue += shift.weight_above_demand * (assignedCount - demand);
+    }
+  });
+
+  return totalValue;
+}export function checkFeasibility(instance: Instance, solution: Solution, setInfeasibilityDetails: React.Dispatch<React.SetStateAction<InfeasibilityDetails>>, setFeasible: React.Dispatch<React.SetStateAction<boolean>>) {
+
+  let isFeasible = true;
+  const newDetails: InfeasibilityDetails = {};
+
+
+
+
+  // work time
+  instance.nurses.forEach((nurse) => {
+    let totalWorkTime = 0;
+    instance.shifts.forEach((shift) => {
+      const assignedNurses = solution[shift.uid] || [];
+      if (assignedNurses.includes(nurse.uid)) {
+        const shiftDuration = (new Date(shift.end_time).getTime() - new Date(shift.start_time).getTime()) / (1000 * 60);
+        totalWorkTime += shiftDuration;
+      }
+    });
+    if (totalWorkTime < nurse.minimum_work_time || totalWorkTime > nurse.maximum_work_time) {
+
+      instance.shifts.forEach((shift) => {
+        const shiftDate = getShiftDate(shift);
+        const assignedNurses = solution[shift.uid] || [];
+        if (!assignedNurses.includes(nurse.uid)) {
+          if (totalWorkTime < nurse.minimum_work_time) {
+            addReason(
+              nurse.uid,
+              shiftDate,
+              `Total work time (${totalWorkTime} mins) is less than minimum required (${nurse.minimum_work_time} mins)`,
+              newDetails
+            );
+          }
+        } else if (totalWorkTime > nurse.maximum_work_time) {
+          addReason(
+            nurse.uid,
+            shiftDate,
+            `Total work time (${totalWorkTime} mins) is more than maximum allowed (${nurse.maximum_work_time} mins)`,
+            newDetails
+          );
+        }
+      });
+
+      isFeasible = false;
+    }
+  });
+
+
+
+  instance.nurses.forEach((nurse) => {
+    const nurseConsecutives = getConsecutivesArrayForNurse({ instance, solution, nurseUid: nurse.uid });
+    // minimum consecutive shifts
+    nurseConsecutives.forEach((consecutive) => {
+      if (consecutive.on &&
+        consecutive.count < nurse.minimum_consecutive_shifts &&
+        getFirstDateOfInstance(instance) !== consecutive.startDate &&
+        getLastDateOfInstance(instance) !== new Date(new Date(consecutive.startDate).getTime() + ((consecutive.count - 1) * 24 * 60 * 60 * 1000)).toISOString().split("T")[0]) {
+        const shiftDate = consecutive.startDate;
+        for (let i = 0; i < consecutive.count; i++) {
+          const currentDate = new Date(new Date(shiftDate).getTime() + (i * 24 * 60 * 60 * 1000)).toISOString().split("T")[0];
+          addReason(
+            nurse.uid,
+            currentDate,
+            `Assigned to ${consecutive.count} consecutive shifts, which is less than minimum required (${nurse.minimum_consecutive_shifts})`,
+            newDetails
+          );
+        }
+        isFeasible = false;
+      }
+
+      // maximum consecutive shifts
+      if (consecutive.on &&
+        consecutive.count > nurse.maximum_consecutive_shifts) {
+        const shiftDate = consecutive.startDate;
+        for (let i = 0; i < consecutive.count; i++) {
+          const currentDate = new Date(new Date(shiftDate).getTime() + (i * 24 * 60 * 60 * 1000)).toISOString().split("T")[0];
+          addReason(
+            nurse.uid,
+            currentDate,
+            `Assigned to ${consecutive.count} consecutive shifts, which is more than maximum allowed (${nurse.maximum_consecutive_shifts})`,
+            newDetails
+          );
+        }
+        isFeasible = false;
+      }
+
+      // minimum days off
+      if (!consecutive.on &&
+        consecutive.count < nurse.minimum_consecutive_days_off &&
+        getFirstDateOfInstance(instance) !== consecutive.startDate &&
+        getLastDateOfInstance(instance) !== new Date(new Date(consecutive.startDate).getTime() + ((consecutive.count - 1) * 24 * 60 * 60 * 1000)).toISOString().split("T")[0]) {
+        const shiftDate = consecutive.startDate;
+        for (let i = 0; i < consecutive.count; i++) {
+          const currentDate = new Date(new Date(shiftDate).getTime() + (i * 24 * 60 * 60 * 1000)).toISOString().split("T")[0];
+          addReason(
+            nurse.uid,
+            currentDate,
+            `Has ${consecutive.count} consecutive days off, which is less than minimum required (${nurse.minimum_consecutive_days_off})`,
+            newDetails
+          );
+        }
+        isFeasible = false;
+      }
+    });
+
+  });
+
+  // shift rotation
+  instance.nurses.forEach((nurse) => {
+    instance.shifts.forEach((shift) => {
+      const assignedNurses = solution[shift.uid] || [];
+      if (assignedNurses.includes(nurse.uid)) {
+        shift.not_followed_by_shift_types.forEach((notAllowedType) => {
+
+          const nextDate = new Date(new Date(shift.start_time).getTime() + (2 * 24 * 60 * 60 * 1000)).toISOString().split("T")[0];
+          const nextShifts = instance.shifts.filter(s => s.start_time.split("T")[0] === nextDate && s.type === notAllowedType);
+          nextShifts.forEach((nextShift) => {
+            const nextAssignedNurses = solution[nextShift.uid] || [];
+            if (nextAssignedNurses.includes(nurse.uid)) {
+              addReason(
+                nurse.uid,
+                nextDate,
+                `Assigned to shift type ${notAllowedType} preceded by ${shift.type} not allowed.`,
+                newDetails
+              );
+              isFeasible = false;
+            }
+          });
+        });
+      }
+    });
+  });
+
+  // maximum number of shift types
+  instance.nurses.forEach((nurse) => {
+    const shiftTypeCounts: Record<string, number> = {};
+    instance.shifts.forEach((shift) => {
+      const assignedNurses = solution[shift.uid] || [];
+      if (assignedNurses.includes(nurse.uid)) {
+        shiftTypeCounts[shift.type] = (shiftTypeCounts[shift.type] || 0) + 1;
+      }
+    });
+    Object.entries(shiftTypeCounts).forEach(([type, count]) => {
+      const maxAllowed = nurse.maximum_number_of_shifts_per_type[type] || 0;
+      if (count > maxAllowed) {
+        instance.shifts.forEach((shift) => {
+          const shiftDate = getShiftDate(shift);
+          const assignedNurses = solution[shift.uid] || [];
+          if (assignedNurses.includes(nurse.uid) && shift.type === type) {
+            addReason(
+              nurse.uid,
+              shiftDate,
+              `Assigned to ${count} shifts of type ${type}, which is more than maximum allowed (${maxAllowed})`,
+              newDetails
+            );
+          }
+        });
+        isFeasible = false;
+      }
+    });
+  });
+
+  // maximum number of weekends
+  instance.nurses.forEach((nurse) => {
+    let weekendCount = 0;
+    let checkedWeekendShiftUids = new Set<shiftUid>();
+    const weekendOnDates: string[] = [];
+    instance.shifts.forEach((shift) => {
+      if (checkedWeekendShiftUids.has(shift.uid)) return;
+      const assignedNurses = solution[shift.uid] || [];
+      if (!assignedNurses.includes(nurse.uid)) return;
+      const shiftDate = getShiftDate(shift);
+      const dateObj = new Date(shiftDate);
+      const isSunday = dateObj.getDay() === 0;
+      const isSaturday = dateObj.getDay() === 6;
+
+      if (isSaturday) {
+        const nextDate = new Date(dateObj.getTime() + (24 * 60 * 60 * 1000)).toISOString().split("T")[0];
+        const nextShifts = instance.shifts.filter(s => s.start_time.split("T")[0] === nextDate);
+        const weekendShifts = instance.shifts.filter(s => s.start_time.split("T")[0] === shiftDate || s.start_time.split("T")[0] === nextDate);
+        weekendOnDates.push(shiftDate);
+        if (nextShifts.some(s => {
+          const assignedNurses = solution[s.uid] || [];
+          return assignedNurses.includes(nurse.uid);
+        })) {
+          weekendOnDates.push(nextDate);
+        }
+        weekendShifts.forEach(s => checkedWeekendShiftUids.add(s.uid));
+        weekendCount++;
+      } else if (isSunday) {
+        const prevDate = new Date(dateObj.getTime() - (24 * 60 * 60 * 1000)).toISOString().split("T")[0];
+        const prevShifts = instance.shifts.filter(s => s.start_time.split("T")[0] === prevDate);
+        const weekendShifts = instance.shifts.filter(s => s.start_time.split("T")[0] === shiftDate || s.start_time.split("T")[0] === prevDate);
+        weekendOnDates.push(shiftDate);
+        if (prevShifts.some(s => {
+          const assignedNurses = solution[s.uid] || [];
+          return assignedNurses.includes(nurse.uid);
+        })) {
+          weekendOnDates.push(prevDate);
+        }
+        weekendShifts.forEach(s => checkedWeekendShiftUids.add(s.uid));
+        weekendCount++;
+      }
+    });
+
+    if (weekendCount > nurse.maximum_weekends) {
+      weekendOnDates.forEach((date) => {
+        addReason(
+          nurse.uid,
+          date,
+          `Assigned to ${weekendCount} weekends, which is more than maximum allowed (${nurse.maximum_weekends})`,
+          newDetails
+        );
+      });
+      isFeasible = false;
+    }
+
+  });
+
+  // blocked days
+  instance.nurses.forEach((nurse) => {
+    nurse.days_off.forEach((dayOff) => {
+      instance.shifts.forEach((shift) => {
+        const shiftDate = getShiftDate(shift);
+        if (shiftDate === dayOff) {
+          const assignedNurses = solution[shift.uid] || [];
+          if (assignedNurses.includes(nurse.uid)) {
+            addReason(
+              nurse.uid,
+              shiftDate,
+              `Assigned to shift on blocked day (${dayOff})`,
+              newDetails
+            );
+            isFeasible = false;
+          }
+        }
+      });
+    });
+  });
+
+  setInfeasibilityDetails(newDetails);
+  setFeasible(isFeasible);
+}
+
