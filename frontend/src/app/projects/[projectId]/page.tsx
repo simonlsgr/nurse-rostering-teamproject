@@ -1,8 +1,9 @@
 "use client";
 
 import NurseList from "@/components/rostering/NurseList";
-import { useLoadNurses } from "@/hooks/nurseHooks";
-import { useEffect } from "react";
+import { useLoadInstance } from "@/hooks/instanceHooks";
+import { useLoadSolution } from "@/hooks/solutionHooks";
+import { use, useEffect } from "react";
 import InputJson from "@/components/common/InputJson"
 import SolveButton from "@/components/rostering/SolveButton";
 import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs"
@@ -12,12 +13,16 @@ import JobsView from "@/components/layout/JobsView";
 
 export default function ProjectPage({ params }: { params: { projectId: string } }){  
   
-  const { loadNurses } = useLoadNurses();
+  const { loadInstance } = useLoadInstance();
+  const { loadSolution } = useLoadSolution();
 
+  useEffect(() => {
+    loadInstance();
+  }, []);
 
 
   useEffect(() => {
-    loadNurses();
+    loadSolution();
   }, []);
 
 

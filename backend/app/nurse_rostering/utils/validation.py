@@ -113,10 +113,7 @@ def assert_maximum_consecutive_shifts(
     for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
         for nurse_uid in nurse_uids:
             start = shifts_by_uid[shift_uid].start_time.date()
-            end = shifts_by_uid[shift_uid].end_time.date()
-            while start <= end:
-                nurse_work_days.setdefault(nurse_uid, set()).add(start)
-                start += timedelta(days=1)
+            nurse_work_days.setdefault(nurse_uid, set()).add(start)
     for nurse_uid, nurse in nurses_by_uid.items():
         max_cons = nurse.maximum_consecutive_shifts
         if max_cons is None:
