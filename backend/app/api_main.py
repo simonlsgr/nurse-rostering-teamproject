@@ -12,6 +12,13 @@ from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel
 from nurse_rostering.data_schema import NurseRosteringSolution
 from api_config import get_db_connection, get_task_queue
 from api_tasks import run_optimization_job
+
+from sqlalchemy.orm import Session
+from postgres.database import get_db
+from postgres.models_db.project import Project
+from postgres.schemas.project import ProjectCreate, ProjectResponse
+from postgres.database import engine, Base
+
 instance1 = """{
     "nurses": [
         {
@@ -483,4 +490,23 @@ def test_hx():
     solution = nurse_rostering_model.solve(max_time_in_seconds=60)
     return dict(solution.model_dump())
 
+
+projects_router = APIRouter(tags=["Projects"])
+
+@projects_router.post("/projects", response_model=ProjectResponse)
+def create_project(
+    project_data: ProjectCreate,
+    db: Session = Depends(get_db),
+):
+    new_project = Project(name=project_data.name)
+
+    db.add(new_project)
+    db.commit()
+    db.refresh(new_project)
+
+    return new_project
+
+Base.metadata.create_all(bind=engine)
+
 app.include_router(nurse_rostering_solver_v0_router, prefix="/nurse_rostering_solver/v0")
+app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
