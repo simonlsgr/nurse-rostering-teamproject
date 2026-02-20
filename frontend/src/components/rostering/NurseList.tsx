@@ -1,6 +1,7 @@
 "use client";
 
-import { useNurseListSelection, useNurses } from "@/store/nurseStore";
+import { useNurseListSelection } from "@/store/nurseStore";
+import { useInstance } from "@/store/instanceStore";
 import NurseCard from "@/components/ui/NurseCard";
 import { Nurse } from "@/types/nurseVars";
 import { useState } from "react";
@@ -12,27 +13,27 @@ export default function NurseList(){
   const [query, setQuery] = useState("");
 
 
-  const { nurses } = useNurses();
+  const { nurses, shifts } = useInstance();
   const { selectedNurses, setSelectedNurses } = useNurseListSelection();
   
 
   const toggleItem = (nurse: Nurse) => {
     setSelectedNurses((prev) =>
-      prev.some(n => n.id === nurse.id)
-        ? prev.filter((n) => n.id !==nurse.id)
+      prev.some(n => n.uid === nurse.uid)
+        ? prev.filter((n) => n.uid !==nurse.uid)
         : [...prev, nurse]
     );
   };
 
   // filtered by search
   const filteredItems = nurses.filter((nurse) =>
-    nurse.name.toLowerCase().includes(query.toLowerCase()) || nurse.id.includes(query)
+    nurse.name.toLowerCase().includes(query.toLowerCase()) || nurse.uid.toString().includes(query)
   );
 
   // sort items by selection
   const sortedItems = [
-    ...filteredItems.filter((nurse) => selectedNurses.some(n => n.id === nurse.id)),
-    ...filteredItems.filter((nurse) => !selectedNurses.some(n => n.id === nurse.id)),
+    ...filteredItems.filter((nurse) => selectedNurses.some(n => n.uid === nurse.uid)),
+    ...filteredItems.filter((nurse) => !selectedNurses.some(n => n.uid === nurse.uid)),
   ];
 
 
@@ -55,9 +56,9 @@ export default function NurseList(){
 
       <div className="overflow-auto flex-1">
       {sortedItems.map((nurse) => (
-        <AnimatePresence key={nurse.id} mode="popLayout">
+        <AnimatePresence key={nurse.uid} mode="popLayout">
           <motion.div
-            key={nurse.id}
+            key={nurse.uid}
             layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -66,7 +67,7 @@ export default function NurseList(){
             className="cursor-pointer select-none"
             onClick={() => toggleItem(nurse)}
           >
-            <NurseCard nurse={nurse} key={nurse.id}/>
+            <NurseCard nurse={nurse} key={nurse.uid}/>
           </motion.div>
         </AnimatePresence>
       ))}

@@ -1,9 +1,10 @@
 'use client';
 
 
-import instanceData from "@/components/layout/Instance2.json";
-import solutionData from "@/components/layout/solution_instance_2.json";
 
+import { Instance, Shift, Nurse, Solution } from "@/types/nurseVars";
+import { useInstance } from "@/store/instanceStore";
+import { useSolution } from "@/store/solutionStore";
 import { use, useEffect, useMemo, useState } from "react";
 import { 
   flexRender,
@@ -17,44 +18,44 @@ import React from "react";
 
 
 
-interface Nurse {
-  uid: number;
-  name: string;
-  preferred_shifts: number[];
-  preferred_off_shifts: number[];
-  blocked_shifts: number[];
-  days_off: string[];
-  staff: boolean;
-  min_time_between_shifts: string;
-  preferred_shift_weight: Record<string, number>;
-  preferred_off_shift_weight: Record<string, number>;
-  minimum_work_time: number;
-  maximum_work_time: number;
-  minimum_consecutive_shifts: number;
-  maximum_consecutive_shifts: number;
-  minimum_consecutive_days_off: number;
-  maximum_weekends: number;
-  maximum_number_of_shifts_per_type: Record<string, number>;
-}
+// interface Nurse {
+//   uid: number;
+//   name: string;
+//   preferred_shifts: number[];
+//   preferred_off_shifts: number[];
+//   blocked_shifts: number[];
+//   days_off: string[];
+//   staff: boolean;
+//   min_time_between_shifts: string;
+//   preferred_shift_weight: Record<string, number>;
+//   preferred_off_shift_weight: Record<string, number>;
+//   minimum_work_time: number;
+//   maximum_work_time: number;
+//   minimum_consecutive_shifts: number;
+//   maximum_consecutive_shifts: number;
+//   minimum_consecutive_days_off: number;
+//   maximum_weekends: number;
+//   maximum_number_of_shifts_per_type: Record<string, number>;
+// }
 
-interface Shift {
-  uid: number;
-  name: string;
-  start_time: string;
-  end_time: string;
-  demand: number;
-  type: string;
-  not_followed_by_shift_types: string[];
-  weight_below_demand: number;
-  weight_above_demand: number;
-}
+// interface Shift {
+//   uid: number;
+//   name: string;
+//   start_time: string;
+//   end_time: string;
+//   demand: number;
+//   type: string;
+//   not_followed_by_shift_types: string[];
+//   weight_below_demand: number;
+//   weight_above_demand: number;
+// }
 
 
-interface Instance {
-  nurses: Nurse[];
-  shifts: Shift[];
-  staff_weight: number;
-}
+// interface Instance {
+//   nurses: Nurse[];
+//   shifts: Shift[];
+//   staff_weight: number;
+// }
 
 interface Consecutives {
   count: number;
@@ -66,7 +67,7 @@ type InfeasibilityReasonByDate = Record<string, Set<string>>;
 type shiftUid = number;
 type InfeasibilityDetails = Record<shiftUid, InfeasibilityReasonByDate>;
 
-type Solution = Record<string, any>;
+
 
 
 
@@ -107,7 +108,7 @@ function NurseTableBody({
   return (
   <tbody>
     {table.getRowModel().rows.map(row => (
-      <tr key={row.id} className="hover:bg-gray-400 group">
+      <tr key={row.id} className="group box-border">
         {row.getVisibleCells().map(cell => {
           const date = cell.column.id;
           const isNurseColumn = date === "nid";
@@ -135,7 +136,7 @@ function NurseTableBody({
             <Tooltip key={cell.id} title={hasInfeasibility ? cellInfeasibilityNode : ""} placement="top" arrow disableInteractive>
             <td 
             key={cell.id} 
-            className={`border border-gray-200 px-4 py-2 group-hover:bg-gray-200 hover:bg-gray-400! first:sticky first:outline-1 first:outline-gray-200 left-0 ${hasInfeasibility ? "bg-red-600!" : "bg-white"} ${hoveredColumn == cell.column.id ? "bg-gray-200!" : ""}`}
+            className={`w-min h-min px-4 py-2 box-border group-hover:border-y-2 hover:bg-gray-400! first:sticky first:outline-1 first:outline-gray-200 left-0 ${hasInfeasibility ? "bg-red-600!" : "bg-white"} ${hoveredColumn == cell.column.id ? "border-x-2" : ""}`}
             onMouseEnter={() => setHoveredColumn(date)}
             onMouseLeave={() => setHoveredColumn(null)}
             >
@@ -155,7 +156,7 @@ function NurseTableBody({
                       return updated;
                     });
                   }}
-                  className="p-2 w-full border-2 border-transparent hover:border-blue-500! focus:border-blue-500! focus:outline-none"
+                  className="p-2 w-full box-border border-2 border-transparent hover:border-blue-500! focus:border-blue-500! focus:outline-none"
                 >
                   {shift_types.map((type) => (
                     <option key={type.value} value={type.value} disabled={getNurseByUid(instance, Number(nurseUid))?.days_off.includes(date) ? true : false}>
@@ -194,6 +195,7 @@ function getShiftTypes(instance: Instance) {
 
 function NurseTable({tableData, setTableData, instance, infeasibilityDetails}:{tableData: any[], setTableData: React.Dispatch<React.SetStateAction<any[]>>, instance: Instance, infeasibilityDetails: InfeasibilityDetails}) {
 
+  console.log("Rendering NurseTable with data:", tableData);
   const dates = getDatesFromTableData(tableData);
 
   const shift_types = getShiftTypes(instance);
@@ -368,20 +370,56 @@ function getConsecutivesArrayForNurse({instance, solution, nurseUid}: {instance:
 
 export function MainView(){
   
-  const [instance, setInstance] = useState<Instance>(instanceData as unknown as Instance);
-  const [solution, setSolution] = useState<Solution>(solutionData as Solution);
+  const nurses = useInstance((s) => s.nurses);
+  const shifts = useInstance((s) => s.shifts);
+  const instance = useMemo(
+    () => ({ nurses, shifts, staff_weight: 1 } as Instance),
+    [nurses, shifts]
+  );
+
+  const solutionId = useSolution((s) => s.solutionId);
+  const solution = useSolution((s) => s.solution);
+  const setSolution = useSolution((s) => s.setSolution);
+
+  console.log("Solid"+solutionId);
+
   const [infeasibilityDetails, setInfeasibilityDetails] = useState<InfeasibilityDetails>({});
 
-  const testData = instanceSolutionToTableData({instance, solution});
+  const tableDataFromSolution = useMemo(
+    () => instanceSolutionToTableData({ instance, solution }),
+    [instance, solutionId]
+  );
 
-  const [data, setData] = useState(testData);
-  updateSolutionToView();
+  const [data, setData] = useState<any[]>([]);
+  const isRehydratingRef = React.useRef(false);
+
+  useEffect(() => {
+    // when a new solution is selected externally, rehydrate the UI from it
+    if (instance.nurses.length === 0 || instance.shifts.length === 0) return;
+
+    isRehydratingRef.current = true;
+    setData(tableDataFromSolution);
+  }, [tableDataFromSolution, instance.nurses, instance.shifts]);
+
+  useEffect(() => {
+
+    if (isRehydratingRef.current) {
+      isRehydratingRef.current = false;
+      return;
+    }
+
+    updateSolutionToView();
+  }, [data]);
 
   const [feasible, setFeasible] = useState(true);
   const [solutionValue, setSolutionValue] = useState(0);
-  calculateObjective();
+  useEffect(() => {
+    calculateObjective();
+  }, [solution]);
 
-  checkFeasibility();
+  useEffect(() => {
+    checkFeasibility();
+  }, [solution]);
 
   return (
     <div className="flex flex-col p-4 gap-4 h-full w-full">
@@ -417,7 +455,7 @@ export function MainView(){
 
   
   function checkFeasibility() {
-    useEffect(() => {
+    
       console.log("Recalculating feasibility...");
       let isFeasible = true;
       const newDetails: InfeasibilityDetails = {};
@@ -661,7 +699,6 @@ export function MainView(){
       console.log(newDetails);
       setInfeasibilityDetails(newDetails);
       setFeasible(isFeasible);
-    }, [solution]);
   }
 
   function addReason (shiftUid: number, date: string, msg: string, newDetails: InfeasibilityDetails) {
@@ -675,9 +712,9 @@ export function MainView(){
 
     newDetails[shiftUid][date].add(msg);
   }
-
+  
   function calculateObjective() {
-    useEffect(() => {
+    
       let totalValue = 0;
 
       instance.nurses.forEach((nurse) => {
@@ -713,29 +750,27 @@ export function MainView(){
       });
 
       setSolutionValue(totalValue);
-    }, [solution]);
   }
-
+  
   function updateSolutionToView() {
-    useEffect(() => {
-      const newSolution: Solution = {};
-      data.forEach((nurseSchedule) => {
-        const nuid = nurseSchedule["Nurse"];
-        Object.keys(nurseSchedule).forEach((date) => {
-          if (date === "Nurse") return;
-          const shiftType = nurseSchedule[date];
-          if (shiftType && shiftType !== "None") {
-            const shift = instance.shifts.find(s => s.type === shiftType && s.start_time.split("T")[0] === date);
-            if (shift) {
-              if (!newSolution[shift.uid]) {
-                newSolution[shift.uid] = [];
-              }
-              newSolution[shift.uid].push(Number(nuid));
-            }
-          }
-        });
-      });
-      setSolution(newSolution);
-    }, [data]);
+    
+    const newSolution: Solution = {};
+    for (const nurseSchedule of data) {
+      const nuid = Number(nurseSchedule["Nurse"]);
+      for (const [date, shiftType] of Object.entries(nurseSchedule)) {
+        if (date === "Nurse") continue;
+        if (!shiftType) continue;
+  
+        const shift = instance.shifts.find(
+          (s) => s.type === shiftType && s.start_time.split("T")[0] === date
+        );
+        if (!shift) continue;
+  
+        (newSolution[shift.uid] ??= []).push(nuid);
+      }
+    }
+  
+    setSolution(newSolution);
+    
   }
 }
