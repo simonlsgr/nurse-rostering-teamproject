@@ -506,7 +506,7 @@ def create_project(
 
     return new_project
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine) # for dev-purposes, change this later
 
 app.include_router(nurse_rostering_solver_v0_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
