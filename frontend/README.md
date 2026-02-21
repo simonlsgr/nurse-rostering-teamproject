@@ -2,6 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+#### Environment Configuration
+To connect with the FastAPI, you have to provide a URL in an environment file. To do so, follow these steps:
+1. In this folder (frontend/), create a .env file (touch .env)
+2. copy the contents from the .env.example file.
+3. That is it. The URL in the example file is the URL of the FastAPI
+
+
+
+
 First, run the development server:
 
 ```bash
