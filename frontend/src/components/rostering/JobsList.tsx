@@ -12,32 +12,9 @@ export default function JobsList(){
   const jobValues = Object.values(jobs);
 
   const categories = ["active", "completed"];
-
   const runningJobs: Job[] = jobValues.filter((job) => job.status == "Submitted" || job.status == "Started")
-  /* 
-  [
-    { name: "job1",
-      task_id: "9814d6a3-534b-40d3-b6bd-d45df0802e78",
-      status: "Submitted",
-      submitted_at: "2026-02-13T17:29:28.670131",
-      started_at: null,
-      completed_at: null,
-      error: null
-    },
-    { name: "job2",
-      task_id: "9814d6a3-534b-40d3-b6bd-d45df0802e79",
-      status: "Submitted",
-      submitted_at: "2026-02-13T17:29:28.670132",
-      started_at: null,
-      completed_at: null,
-      error: null
-    },
-  ];
- */
   const finishedJobs: Job[] = jobValues.filter((job) => job.status == "Completed");
-
   const _jobs: Record<string, Job[]> = {"active": runningJobs, "completed": finishedJobs};
-
 
   const [openLists, setOpenLists] = useState<Record<string, boolean>>({});
 

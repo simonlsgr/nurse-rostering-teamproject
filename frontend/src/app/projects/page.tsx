@@ -2,25 +2,54 @@
 
 import SidebarLeft from "@/components/layout/SidebarLeft";
 import ProjectCard from "@/components/ui/ProjectCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import SearchIcon from '@mui/icons-material/Search';
+import { getAllProjects } from "../api/project";
+import { Project } from "@/types/projectVars";
 
 
 export default function ProjectsView(){
   
   const [query, setQuery] = useState("");
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
-  const projects = [
+/*   const projects = [
     { id: "1", name: "Project A", num_of_nurses: 21 },
     { id: "2", name: "Project B", num_of_nurses: 32 },
   ];
-
+ */
   // filtered by search
   const filteredItems = projects.filter((project) =>
     project.name.toLowerCase().includes(query.toLowerCase()) || project.id.includes(query)
   );
+
+
+  const loadAllProjects = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllProjects();
+      setProjects(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  useEffect(() => {
+
+    loadAllProjects();
+
+  }, [])
+
+
 
   return (
 
@@ -70,7 +99,7 @@ export default function ProjectsView(){
                   transition={{ duration: 0.17 }}
                   className="cursor-pointer select-none"
                 >
-                  <ProjectCard key={idx} id={project.id} name={project.name} nb_nurses={project.num_of_nurses}/>
+                  <ProjectCard key={idx} id={project.id} name={project.name} created_at={project.last_modified} last_modified={project.last_modified}/>
                 </motion.div>
               </AnimatePresence>
 

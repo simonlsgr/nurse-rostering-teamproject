@@ -1,17 +1,13 @@
 import Link from "next/link";
+import { formatDate } from "@/lib/utils";
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { Project } from "@/types/projectVars";
 
 
 
-type ProjectCardProps = {
-  id: string;
-  name: string;
-  nb_nurses: number;
-};
-
-export default function ProjectCard({ id, name, nb_nurses }: ProjectCardProps ) {
+export default function ProjectCard({ id, name, created_at, last_modified }: Project ) {
 
   return (
     <div 
@@ -26,8 +22,8 @@ export default function ProjectCard({ id, name, nb_nurses }: ProjectCardProps ) 
         {name}
       
       <div className="pt-1 text-base">
-        <p> ID: {id} </p> 
-        <p> Nurses: {nb_nurses} </p>
+        <p> Created: {formatDate(created_at)} </p> 
+        <p> Last Modified: {formatDate(last_modified)} </p>
       </div>
     
       </Link>

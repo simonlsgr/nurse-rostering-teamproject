@@ -1,0 +1,11 @@
+
+
+
+export type Project = {
+
+  id: string;
+  name: string;
+  created_at: string
+  last_modified: string;
+
+};
