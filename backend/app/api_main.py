@@ -3,7 +3,7 @@
 This file contains the main FastAPI application.
 For a larger project, we would move the routes to separate files, but for this example, we keep everything in one file.
 """
-
+from typing import List
 from uuid import UUID
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +17,7 @@ from api_tasks import run_optimization_job
 from sqlalchemy.orm import Session
 from postgres.database import get_db
 from postgres.models_db.project import Project
-from postgres.schemas.project import ProjectCreate, ProjectResponse
+from postgres.schemas_pydantic.project import ProjectCreate, ProjectResponse
 from postgres.database import engine, Base
 
 
@@ -107,9 +107,9 @@ def test_hx():
     return dict(solution.model_dump())
 
 
-projects_router = APIRouter(tags=["Projects"])
+projects_router = APIRouter(tags=["Projects"], prefix="/projects")
 
-@projects_router.post("/projects", response_model=ProjectResponse)
+@projects_router.post("", response_model=ProjectResponse)
 def create_project(
     project_data: ProjectCreate,
     db: Session = Depends(get_db),
@@ -122,7 +122,25 @@ def create_project(
 
     return new_project
 
+@projects_router.get("", response_model=List[ProjectResponse])
+def list_projects(db: Session = Depends(get_db)):
+    projects = db.query(Project).all()
+    return projects
+
+
+@projects_router.get("/{project_id}", response_model=ProjectResponse)
+def get_project(project_id: str, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+
+
+
+
 Base.metadata.create_all(bind=engine) # for dev-purposes, change this later
+
 
 app.include_router(nurse_rostering_solver_v0_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
