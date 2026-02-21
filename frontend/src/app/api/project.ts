@@ -1,14 +1,14 @@
 import { Project } from "@/types/projectVars";
 
 
-export async function createProject(project: Project) {
+export async function createProject(name: string) {
 
   const res = await fetch("/api/projects", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(project),
+    body: JSON.stringify({name}),
   });
 
   const data = await res.json();
