@@ -2,21 +2,7 @@ from ortools.sat.python import cp_model
 from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
 from typing import Any
-# from .modules import (
-#     ShiftAssignmentModule,
-#     ShiftRotationModule,
-#     MaximumShiftTypesModule,
-#     MaximizePreferences,
-#     PreferStaffModule,
-#     LimitWorkTimeModule,
-#     MaximumConsecutiveShiftsModule,
-#     MinimumConsecutiveShiftsModule,
-#     MinimumConsecutiveDaysOffModule,
-#     MaximumNumberOfWeekendsModule,
-#     CoverRequirementsModule,
-#     OneShiftPerDayModule, 
-#     OffPreferences,
-# )
+
 from .modules import (
     ShiftAssignmentModule,
     OneShiftPerDayModule,
@@ -94,10 +80,14 @@ class NurseRosteringModel:
             setattr(solver.parameters, key, value)
 
         status = solver.solve(self.model)
-        if status == cp_model.INFEASIBLE:
-            raise ValueError("The model is infeasible.")
-        elif status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-            raise ValueError("Solver failed to find a feasible solution.")
+        
+        if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            return NurseRosteringSolution(
+                nurses_at_shifts={},
+                objective_value=-1,
+                return_status=generalize_return_status(status),
+                lower_bound=-1,
+            )
 
         nurses_at_shifts = {}
         for nurse_model in self.nurse_vars:
