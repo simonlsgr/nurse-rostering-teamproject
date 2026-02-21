@@ -20,7 +20,7 @@ services:
       - hexaly_data:/opt/hexaly_14_0
     command: python3 -m uvicorn api_main:app --host 0.0.0.0 --port 80 --reload
     environment:
-      DATABASE_URL: postgresql://rostering_frontend:nurse@optimization_api_postgres:5432/nurse_rostering
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@optimization_api_postgres:5432/${POSTGRES_DB}
 
   optimization_api_redis: # The database. We use the official Redis image.
     image: redis:latest
@@ -38,15 +38,15 @@ services:
       - ~/gurobi.lic:/licenses/gurobi.lic:ro
     environment:
       GRB_LICENSE_FILE: /licenses/gurobi.lic
-      DATABASE_URL: postgresql://rostering_frontend:nurse@optimization_api_postgres:5432/nurse_rostering
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@optimization_api_postgres:5432/${POSTGRES_DB}
 
   optimization_api_postgres:
     image: postgres:16
     container_name: optimization_api_postgres
     environment:
-      POSTGRES_USER: rostering_frontend
-      POSTGRES_PASSWORD: nurse
-      POSTGRES_DB: nurse_rostering
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

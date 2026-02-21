@@ -1,0 +1,6 @@
+# development tests
+app/nurse_rostering/solvers/hexaly/model/hex.ipynb
+
+# license files
+hexaly_installation/license.dat
+hexaly_installation/license.dat*
