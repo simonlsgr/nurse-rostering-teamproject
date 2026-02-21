@@ -77,29 +77,29 @@ class NurseRosteringModel:
 
         self.model.optimize()
 
-        # Handle statuses
+        
         status = self.model.Status
-        if status == GRB.INFEASIBLE or status == GRB.INF_OR_UNBD:
-            raise ValueError("The model is infeasible.")
-        if status != GRB.OPTIMAL and status != GRB.TIME_LIMIT and status != GRB.SUBOPTIMAL:
-            raise ValueError(f"Solver failed (status={self.model.Status}).")
         if self.model.SolCount < 1:
-            raise ValueError(f"Solver failed to find a solution.")
+            return NurseRosteringSolution(
+                nurses_at_shifts={},
+                objective_value=-1,
+                return_status=generalize_return_status(status, self.model.SolCount),
+                lower_bound=-1,
+            )
+            
             
 
 
-        # Extract solution 
         nurses_at_shifts: dict[int, list[int]] = {}
         for nurse_model in self.nurse_vars:
             for shift_uid in nurse_model.extract():
                 nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
 
-        # Objective value: Gurobi returns float, we store int like CP-SAT
-        obj_val = self.model.ObjVal if self.model.SolCount > 0 else 0.0
+        obj_val = self.model.ObjVal
 
         return NurseRosteringSolution(
             nurses_at_shifts=nurses_at_shifts,
             objective_value=int(round(obj_val)),
-            return_status=generalize_return_status(status),
+            return_status=generalize_return_status(status, self.model.SolCount),
             lower_bound=round(round(self.model.ObjBound)),
         )

@@ -9,4 +9,4 @@ def generalize_return_status(hexaly_status: hx.HxSolutionStatus):
     elif hexaly_status == hx.HxSolutionStatus.INFEASIBLE:
         return SolverReturnStatus.INFEASIBLE
     elif hexaly_status == hx.HxSolutionStatus.INCONSISTENT:
-        return SolverReturnStatus.INCONSISTENT
+        return SolverReturnStatus.MODEL_INVALID

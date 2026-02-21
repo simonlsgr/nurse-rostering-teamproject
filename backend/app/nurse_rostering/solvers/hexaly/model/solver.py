@@ -82,7 +82,14 @@ class NurseRosteringModel:
 
             optimizer.solve()
 
-
+            if optimizer.solution.status in (hexaly.optimizer.HxSolutionStatus.INFEASIBLE, hexaly.optimizer.HxSolutionStatus.INCONSISTENT):
+                return NurseRosteringSolution(
+                    nurses_at_shifts={},
+                    objective_value=-1,
+                    return_status=generalize_return_status(optimizer.solution.status),
+                    lower_bound=-1
+                )
+                
             nurses_at_shifts = {}
             for shift_var in self.shift_vars:
                 for n_idx, nurse in enumerate(shift_var.nurses):
