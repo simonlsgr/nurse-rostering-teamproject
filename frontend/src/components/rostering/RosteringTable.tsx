@@ -62,7 +62,9 @@ export function NurseTableBody({
 
             const nurseUid = String((row.original as any)?.Nurse ?? "");
             const cellInfeasibility = infeasibilityDetails[Number(nurseUid)]?.[date];
-            const cellInfeasibilityNode = (<div>
+            const isOffDay = getNurseByUid(instance, Number(nurseUid))?.days_off.includes(date);
+            const tooltipNode = (<div>
+              {isOffDay && <div>A shift cannot be assigned on an "offday".</div>}
               {[...(cellInfeasibility ?? new Set<String>())].map((reason, index, arr) => {
                 return (
                   <React.Fragment key={reason}>
@@ -77,7 +79,7 @@ export function NurseTableBody({
 
             const hasInfeasibility = cellInfeasibility && cellInfeasibility.size > 0;
             return (
-              <Tooltip key={cell.id} title={hasInfeasibility ? cellInfeasibilityNode : ""} placement="top" arrow disableInteractive>
+              <Tooltip key={cell.id} title={hasInfeasibility || isOffDay ? tooltipNode : ""} placement="top" arrow disableInteractive>
                 <td
                   key={cell.id}
                   className={`border-1 group-hover:border-y-black border-transparent first:sticky first:z-1 left-0 hover:not-first:bg-gray-400 
@@ -106,7 +108,7 @@ export function NurseTableBody({
                       className="p-4 w-full focus:outline-none z-[0] background-none appearance-none text-center cursor-pointer"
                     >
                       {shift_types.map((type) => (
-                        <option className="cursor-pointer" key={type.value} value={type.value} disabled={getNurseByUid(instance, Number(nurseUid))?.days_off.includes(date) ? true : false}>
+                        <option className="cursor-pointer" key={type.value} value={type.value} disabled={isOffDay}>
                           {type.label}
                         </option>
                       ))}
