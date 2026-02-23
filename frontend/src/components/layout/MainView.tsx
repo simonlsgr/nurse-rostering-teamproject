@@ -98,11 +98,11 @@ export function MainView(){
   return (
     <div className="flex flex-col p-4 gap-4 h-full w-full">
       
-        <Tooltip title="test" disableInteractive>
-          <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
-            Project [id]
-          </h1>
-        </Tooltip>
+        
+      <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
+        Project [id]
+      </h1>
+        
       
       <div className="p-4 flex flex-col gap-4 w-full h-[100vh] overflow-y-scroll">
         <div className="flex gap-4">
