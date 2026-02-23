@@ -1,6 +1,6 @@
 import { InfeasibilityDetails } from "@/types/feasibilityHelperVars";
 import { Instance } from "@/types/nurseVars";
-import { Tooltip } from "@mui/material";
+import { Tooltip, Select, MenuItem, NativeSelect } from "@mui/material";
 import { useReactTable, flexRender, getCoreRowModel } from "@tanstack/react-table";
 
 import { getNurseByUid } from "@/lib/roster/dataWrangler";
@@ -8,13 +8,25 @@ import React, { useMemo, useState } from "react";
 import { getDatesFromTableData, getShiftTypes } from "@/lib/roster/dataWrangler";
 
 
-export function NurseTableHeader({ table }: { table: ReturnType<typeof useReactTable>; }) {
+export function NurseTableHeader({ 
+  table,
+  hoveredColumn,
+  setHoveredColumn
+}: {
+  table: ReturnType<typeof useReactTable>;
+  hoveredColumn: string | null;
+  setHoveredColumn: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
   return (
     <thead className="bg-gray-200">
       {table.getHeaderGroups().map(hg => (
-        <tr key={hg.id} className="position-sticky top-0 ">
+        <tr key={hg.id} className="position-sticky top-0">
           {hg.headers.map(h => (
-            <th key={h.id} className="outline px-4 py-2 sticky top-0 first:z-1 first:left-0  bg-gray-200">
+            <th 
+            key={h.id} 
+            className={`p-2 sticky top-0 first:z-3 first:left-0 border-1 border-white  bg-gray-200 z-[2] select-none
+              ${hoveredColumn == h.column.id ? "not-first:border-x-black" : "border-x-white"}
+            `}>
               {flexRender(h.column.columnDef.header, h.getContext())}
             </th>
           ))}
@@ -38,10 +50,11 @@ export function NurseTableBody({
   infeasibilityDetails: InfeasibilityDetails;
 }) {
   return (
-    <tbody>
-      {table.getRowModel().rows.map(row => (
-        <tr key={row.id} className="group box-border">
+    <tbody className="">
+      {table.getRowModel().rows.map((row, row_index) => (
+        <tr key={row.id} className={`group`}>
           {row.getVisibleCells().map(cell => {
+            
             const date = cell.column.id;
             const isNurseColumn = date === "nid";
             const cellValue = String(cell.getValue() ?? "");
@@ -67,12 +80,15 @@ export function NurseTableBody({
               <Tooltip key={cell.id} title={hasInfeasibility ? cellInfeasibilityNode : ""} placement="top" arrow disableInteractive>
                 <td
                   key={cell.id}
-                  className={`w-min h-min px-4 py-2 box-border group-hover:border-y-2 hover:bg-gray-400! first:sticky first:outline-1 first:outline-gray-200 left-0 ${hasInfeasibility ? "bg-red-600!" : "bg-white"} ${hoveredColumn == cell.column.id ? "border-x-2" : ""}`}
+                  className={`border-1 group-hover:border-y-black border-transparent first:sticky first:z-1 left-0 hover:not-first:bg-gray-400 
+                    ${hasInfeasibility ? "bg-red-600!" : row_index % 2 == 0 ? "bg-gray-200" : "bg-white"}
+                    
+                    ${hoveredColumn == cell.column.id ? "not-first:border-x-black" : row_index % 2 == 0 ? "border-x-white" : "border-x-gray-200"} `}
                   onMouseEnter={() => setHoveredColumn(date)}
                   onMouseLeave={() => setHoveredColumn(null)}
                 >
                   {isNurseColumn ? (
-                    getNurseByUid(instance, Number(nurseUid))?.name || "Unknown Nurse"
+                    <p className="text-center cursor-default select-none">{getNurseByUid(instance, Number(nurseUid))?.name || "Unknown Nurse"}</p>
                   ) : (
                     <select
                       name={`shift-${nurseUid}-${date}`}
@@ -87,10 +103,10 @@ export function NurseTableBody({
                           return updated;
                         });
                       } }
-                      className="p-2 w-full box-border border-2 border-transparent hover:border-blue-500! focus:border-blue-500! focus:outline-none"
+                      className="p-4 w-full focus:outline-none z-[0] background-none appearance-none text-center cursor-pointer"
                     >
                       {shift_types.map((type) => (
-                        <option key={type.value} value={type.value} disabled={getNurseByUid(instance, Number(nurseUid))?.days_off.includes(date) ? true : false}>
+                        <option className="cursor-pointer" key={type.value} value={type.value} disabled={getNurseByUid(instance, Number(nurseUid))?.days_off.includes(date) ? true : false}>
                           {type.label}
                         </option>
                       ))}
@@ -144,8 +160,8 @@ export function NurseTable({
 
   return (
     <div className="overflow-x-auto max-h-[40vh]">
-      <table className="border-border border overflow-x-hidden">
-        <NurseTableHeader table={table} />
+      <table className="border-separate border-spacing-0 overflow-x-hidden">
+        <NurseTableHeader table={table} hoveredColumn={hoveredColumn} setHoveredColumn={setHoveredColumn}/>
         <NurseTableBody table={table} setTableData={setTableData} shift_types={shift_types} instance={instance} hoveredColumn={hoveredColumn} setHoveredColumn={setHoveredColumn} infeasibilityDetails={infeasibilityDetails} />
       </table>
     </div>
