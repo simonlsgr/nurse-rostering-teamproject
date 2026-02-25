@@ -41,8 +41,12 @@ export function getNurseByUid(instance: Instance, uid: number) {
 }
 
 
-function getShiftByUid({ instance, shiftuid }: { instance: Instance; shiftuid: number; }) {
+export function getShiftByUid({ instance, shiftuid }: { instance: Instance; shiftuid: number; }) {
   return instance.shifts.find((shift) => { shift.uid === shiftuid; });
+}
+
+export function getShiftByDateAndType({ instance, date, type }: { instance: Instance; date: string; type: string; }) {
+  return instance.shifts.find((shift) => shift.start_time.split("T")[0] === date && shift.type === type);
 }
 
 
