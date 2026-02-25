@@ -3,11 +3,11 @@ import { Instance, Nurse, Solution } from "@/types/nurseVars";
 import { useInstance } from "@/store/instanceStore";
 import { useFixedVars } from "@/store/fixedVarsStore"
 import { use, useEffect, useMemo, useState } from "react";
-import React from "react";
 import { InfeasibilityDetails } from "src/types/feasibilityHelperVars";
-import { NurseTable } from "../rostering/RosteringTable";
+import { NurseTable } from "@/components/rostering/RosteringTable";
 import { instanceSolutionToTableData } from "@/lib/roster/dataWrangler";
-import { calculateObjective, checkFeasibility } from "@/lib/roster/modelChecker";
+import { checkMaxConstraintsFeasibility } from "@/lib/roster/modelChecker";
+import { getShiftByDateAndType } from "@/lib/roster/dataWrangler";
 
 export function VariableFixer() {
 
@@ -24,19 +24,47 @@ export function VariableFixer() {
 
     const fixedVariableTableData = useMemo(
         () => instanceSolutionToTableData({ instance, solution: fixedVariables }),
-        [instance, fixedVariables]
+        [instance]
     );
 
     const [fixedVariableData, setFixedVariableData] = useState<any[]>([]);
     useEffect(() => {
-        console.log(fixedVariableData);
         setFixedVariableData(fixedVariableTableData);
-    }, [fixedVariableTableData, instance.nurses, instance.shifts]);
-    
+    }, [fixedVariableTableData, instance]);
 
-
+    const [feasible, setFeasible] = useState(true);
     const [infeasibilityDetails, setInfeasibilityDetails] = useState<InfeasibilityDetails>({});
 
+    useEffect(() => {
+        checkMaxConstraintsFeasibility(instance, fixedVariables, setInfeasibilityDetails, setFeasible);
+    }, [instance, fixedVariables]);
+
+
+    useEffect(() => {
+        setFixedVariableDataToSolution(fixedVariableData, instance);
+    }, [fixedVariableData, instance]);
+
+    function setFixedVariableDataToSolution(data: any[], instance: Instance) {
+        const solution: Solution = {};
+        data.forEach((row) => {
+            const nurseUid = parseInt(row["Nurse"]);
+            Object.keys(row).forEach((key) => {
+                if (key !== "Nurse" && row[key]) {
+                    
+                    const shift = getShiftByDateAndType({ instance, date: key, type: row[key] });
+                    if (shift) {
+                        if (!solution[shift.uid]) {
+                            solution[shift.uid] = [];
+                        }
+                        solution[shift.uid].push(nurseUid);
+                    }
+                }
+            });
+        });
+        setFixedVariables(solution);
+    }
+
+    
 
     return (
         <div className="flex flex-col gap-4">
@@ -46,12 +74,14 @@ export function VariableFixer() {
             </div>
             <button
                 onClick={() => {
-                    alert(JSON.stringify(fixedVariableData, null, 2));
+                    console.log(setFixedVariableDataToSolution(fixedVariableData, instance));
                     }}
                 className="w-min px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
                 Show Fixed Variables
             </button>
+            <p>{feasible ? "feasible" : "infeasible"}</p>
+            <p>{JSON.stringify(fixedVariables)}</p>
         </div>
     )
 }
