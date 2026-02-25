@@ -53,23 +53,50 @@ export function calculateObjective(instance: Instance, solution: Solution) {
   return totalValue;
 }
 
-export function checkMaxConstraintsFeasibility(instance: Instance, solution: Solution) {
+export function checkMaxConstraintsFeasibility(
+  instance: Instance, 
+  solution: Solution, 
+  setInfeasibilityDetails: React.Dispatch<React.SetStateAction<InfeasibilityDetails>>, 
+  setFeasible: React.Dispatch<React.SetStateAction<boolean>>
+) {
+  
+  const newDetails: InfeasibilityDetails = {};
+
+  const feasibilityResults = [
+    checkMaximumWorktime(instance, solution, newDetails),
+    checkMaximumConsecutivesOnly(instance, solution, newDetails),
+    checkShiftRotation(instance, solution, newDetails),
+    checkMaximumShiftsPerType(instance, solution, newDetails),
+    checkMaximumWeekends(instance, solution, newDetails),
+    checkBlockedDays(instance, solution, newDetails)
+  ];
+
+  const isFeasible = feasibilityResults.every(Boolean);
+
+  setInfeasibilityDetails(newDetails);
+  setFeasible(isFeasible);
 }
 
-export function checkFeasibility(instance: Instance, solution: Solution, setInfeasibilityDetails: React.Dispatch<React.SetStateAction<InfeasibilityDetails>>, setFeasible: React.Dispatch<React.SetStateAction<boolean>>) {
+export function checkFeasibility(
+  instance: Instance, 
+  solution: Solution, 
+  setInfeasibilityDetails: React.Dispatch<React.SetStateAction<InfeasibilityDetails>>, 
+  setFeasible: React.Dispatch<React.SetStateAction<boolean>>
+) {
 
-  let isFeasible = true;
+  
   let newDetails: InfeasibilityDetails = {};
 
-  // console.log(checkConsecutives(instance, solution, newDetails));
-  isFeasible = (
-    checkLimitedWorktime(instance, solution, newDetails) && 
-    checkConsecutives(instance, solution, newDetails) &&
-    checkShiftRotation(instance, solution, newDetails) &&
-    checkMaximumShiftsPerType(instance, solution, newDetails) &&
-    checkMaximumWeekends(instance, solution, newDetails) &&
+  const feasibilityResults = [
+    checkLimitedWorktime(instance, solution, newDetails),
+    checkConsecutives(instance, solution, newDetails),
+    checkShiftRotation(instance, solution, newDetails),
+    checkMaximumShiftsPerType(instance, solution, newDetails),
+    checkMaximumWeekends(instance, solution, newDetails),
     checkBlockedDays(instance, solution, newDetails)
-  );
+  ];
+
+  const isFeasible = feasibilityResults.every(Boolean);
 
   setInfeasibilityDetails(newDetails);
   setFeasible(isFeasible);
@@ -314,7 +341,7 @@ function checkMinimumConsecutives(consecutive: Consecutives, nurse: Nurse, insta
   return isFeasible;
 }
 
-function checkLimitedWorktime(instance: Instance, solution: Solution, newDetails: InfeasibilityDetails) {
+function checkLimitedWorktimeWrapper(instance: Instance, solution: Solution, newDetails: InfeasibilityDetails, checkMaxOnly: boolean) {
   let isFeasible = true;
   instance.nurses.forEach((nurse) => {
     let totalWorkTime = 0;
@@ -330,7 +357,7 @@ function checkLimitedWorktime(instance: Instance, solution: Solution, newDetails
       instance.shifts.forEach((shift) => {
         const shiftDate = getShiftDate(shift);
         const assignedNurses = solution[shift.uid] || [];
-        if (!assignedNurses.includes(nurse.uid)) {
+        if (!assignedNurses.includes(nurse.uid)  && !checkMaxOnly) {
           if (totalWorkTime < nurse.minimum_work_time) {
             addReason(
               nurse.uid,
@@ -338,6 +365,7 @@ function checkLimitedWorktime(instance: Instance, solution: Solution, newDetails
               `Total work time (${totalWorkTime} mins) is less than minimum required (${nurse.minimum_work_time} mins)`,
               newDetails
             );
+            isFeasible = false;
           }
         } else if (totalWorkTime > nurse.maximum_work_time) {
           addReason(
@@ -346,12 +374,24 @@ function checkLimitedWorktime(instance: Instance, solution: Solution, newDetails
             `Total work time (${totalWorkTime} mins) is more than maximum allowed (${nurse.maximum_work_time} mins)`,
             newDetails
           );
+          isFeasible = false;
         }
       });
 
-      isFeasible = false;
+      
     }
   });
   return isFeasible;
+
+}
+
+function checkLimitedWorktime(instance: Instance, solution: Solution, newDetails: InfeasibilityDetails, ) {
+  const checkMaxOnly = false;
+  return checkLimitedWorktimeWrapper(instance, solution, newDetails, checkMaxOnly);
+}
+
+function checkMaximumWorktime(instance: Instance, solution: Solution, newDetails: InfeasibilityDetails) {
+  const checkMaxOnly = true;
+  return checkLimitedWorktimeWrapper(instance, solution, newDetails, checkMaxOnly);
 }
 
