@@ -248,25 +248,27 @@ function checkShiftRotation(instance: Instance, solution: Solution, newDetails: 
 }
 
 function checkConsecutivesWrapper(instance: Instance, solution: Solution, newDetails: InfeasibilityDetails, checkMaxOnly: boolean) {
-  let isFeasible = true;
+  let allFeasibilityResults: boolean[] = [];
   instance.nurses.forEach((nurse) => {
     const nurseConsecutives = getConsecutivesArrayForNurse({ instance, solution, nurseUid: nurse.uid });
     
     nurseConsecutives.forEach((consecutive) => {
+      
       if (!checkMaxOnly) {
-        isFeasible = checkMinimumConsecutives(consecutive, nurse, instance, newDetails) && isFeasible;
+        allFeasibilityResults.push(
+          checkMinimumConsecutives(consecutive, nurse, instance, newDetails),
+          checkMinimumDaysOff(consecutive, nurse, instance, newDetails)
+        );
       }
 
-      isFeasible = (
-        checkMaximumConsecutives(consecutive, nurse, newDetails) && 
-        checkMinimumDaysOff(consecutive, nurse, instance, newDetails) &&
-        isFeasible
+      allFeasibilityResults.push(
+        checkMaximumConsecutives(consecutive, nurse, newDetails),
       );
 
     });
 
   });
-  return isFeasible;
+  return allFeasibilityResults.every(Boolean);
 }
 
 function checkConsecutives(instance: Instance, solution: Solution, newDetails: InfeasibilityDetails) {
