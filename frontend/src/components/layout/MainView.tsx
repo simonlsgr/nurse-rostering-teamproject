@@ -2,17 +2,7 @@
 
 
 
-import { Instance, Nurse, Solution } from "@/types/nurseVars";
-import { useInstance } from "@/store/instanceStore";
-import { useSolution } from "@/store/solutionStore";
-import { useFixedVars } from "@/store/fixedVarsStore"
-import { use, useEffect, useMemo, useState } from "react";
-import { Tooltip } from "@mui/material"
-import React from "react";
-import { InfeasibilityDetails } from "src/types/feasibilityHelperVars";
-import { NurseTable } from "../rostering/RosteringTable";
-import { instanceSolutionToTableData } from "@/lib/roster/dataWrangler";
-import { calculateObjective, checkFeasibility } from "@/lib/roster/modelChecker";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SolutionViewer } from "@/components/rostering/SolutionViewer";
 import { VariableFixer } from "@/components/rostering/VariableFixer";
