@@ -2,7 +2,7 @@
 
 import NurseList from "@/components/rostering/NurseList";
 import { useLoadInstance } from "@/hooks/instanceHooks";
-import { useLoadSolution } from "@/hooks/solutionHooks";
+import { useLoadSolutionsArray } from "@/hooks/solutionHooks";
 import { use, useEffect } from "react";
 import InputJson from "@/components/common/InputJson"
 import SolveButton from "@/components/rostering/SolveButton";
@@ -14,16 +14,12 @@ import JobsView from "@/components/layout/JobsView";
 export default function ProjectPage({ params }: { params: { projectId: string } }){  
   
   const { loadInstance } = useLoadInstance();
-  const { loadSolution } = useLoadSolution();
+  const { loadSolutionsArray } = useLoadSolutionsArray();
 
   useEffect(() => {
     loadInstance();
-  }, []);
-
-
-  useEffect(() => {
-    loadSolution();
-  }, []);
+    loadSolutionsArray();
+  }, []);;
 
 
 

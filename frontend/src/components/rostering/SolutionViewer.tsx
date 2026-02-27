@@ -1,14 +1,15 @@
 import { Instance, Nurse, Solution } from "@/types/nurseVars";
 import { useInstance } from "@/store/instanceStore";
-import { useSolution } from "@/store/solutionStore";
+import { useSolution, useSolutionsArray } from "@/store/solutionStore";
 import { useFixedVars } from "@/store/fixedVarsStore"
 import { use, useEffect, useMemo, useState } from "react";
-import { Tooltip } from "@mui/material"
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Tooltip } from "@mui/material"
 import React from "react";
 import { InfeasibilityDetails } from "src/types/feasibilityHelperVars";
 import { NurseTable } from "../rostering/RosteringTable";
 import { instanceSolutionToTableData } from "@/lib/roster/dataWrangler";
 import { calculateObjective, checkFeasibility } from "@/lib/roster/modelChecker";
+
 
 
 
@@ -26,17 +27,32 @@ export function SolutionViewer() {
 
 
     // used to display the solution
-    const solutionId = useSolution((s) => s.solutionId);
-    const solution = useSolution((s) => s.solution);
-    const setSolution = useSolution((s) => s.setSolution);
+    const activeSolutionId = useSolution((s) => s.solutionId);
+    const activeSolution = useSolution((s) => s.solution);
+    const setActiveSolution = useSolution((s) => s.setSolution);
+    const loadActiveSolution = useSolution((s) => s.loadSolution);
 
+    const solutionsArray = useSolutionsArray((s) => s.solutions);
+
+    useEffect(() => {
+        if (solutionsArray.length === 0) return;
+      
+        const exists = solutionsArray.some(
+          (s) => s.solutionId === activeSolutionId
+        );
+      
+        if (!exists) {
+          const first = solutionsArray[0];
+          loadActiveSolution(first.solutionId, first.solution_name, first.solution);
+        }
+      }, [solutionsArray, activeSolutionId, loadActiveSolution]);
 
 
     const [infeasibilityDetails, setInfeasibilityDetails] = useState<InfeasibilityDetails>({});
 
     const tableDataFromSolution = useMemo(
-        () => instanceSolutionToTableData({ instance, solution }),
-        [instance, solutionId]
+        () => instanceSolutionToTableData({ instance, solution: activeSolution ?? {} }),
+        [instance, activeSolution]
     );
 
     const [solutionData, setSolutionData] = useState<any[]>([]);
@@ -64,10 +80,10 @@ export function SolutionViewer() {
     const [solutionValue, setSolutionValue] = useState(0);
 
     useEffect(() => {
-        const newObjective = calculateObjective(instance, solution);
-        checkFeasibility(instance, solution, setInfeasibilityDetails, setFeasible);
+        const newObjective = calculateObjective(instance, activeSolution ?? {});
+        checkFeasibility(instance, activeSolution ?? {}, setInfeasibilityDetails, setFeasible);
         setSolutionValue(newObjective);
-    }, [instance, solution]);
+    }, [instance, activeSolution]);
 
 
 
@@ -92,12 +108,38 @@ export function SolutionViewer() {
             }
         }
 
-        setSolution(newSolution);
+        setActiveSolution(newSolution);
 
     }
 
+    const handleChange = (event: SelectChangeEvent) => {
+        const newSolutionId = event.target.value as string;
+        const selected = solutionsArray.find((s) => s.solutionId === newSolutionId);
+        if (!selected) return;
+    
+        loadActiveSolution(selected.solutionId, selected.solution_name, selected.solution);
+        
+    };
+
     return (
         <div className="flex flex-col gap-4">
+            <div>
+            <FormControl fullWidth>
+            <InputLabel id="select-solution-label-id">Solution</InputLabel>
+            <Select
+                labelId="select-solution-label-id"
+                id="select-solution-id"
+                value={activeSolutionId}
+                label="Solution"
+                onChange={handleChange}
+            >
+                
+                {solutionsArray.map((s) => (
+                    <MenuItem key={s.solutionId} value={s.solutionId}>{s.solution_name}</MenuItem>
+                ))}
+            </Select>
+            </FormControl>
+            </div>
             <div className="flex gap-4">
                 <NurseTable tableData={solutionData} setTableData={setSolutionData} instance={instance} infeasibilityDetails={infeasibilityDetails} />
             </div>
