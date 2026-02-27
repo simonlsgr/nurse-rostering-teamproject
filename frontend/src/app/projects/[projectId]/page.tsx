@@ -4,7 +4,6 @@ import NurseList from "@/components/rostering/NurseList";
 import { useLoadInstance } from "@/hooks/instanceHooks";
 import { useLoadSolutionsArray } from "@/hooks/solutionHooks";
 import { use, useEffect } from "react";
-import InputJson from "@/components/common/InputJson"
 import SolveButton from "@/components/rostering/SolveButton";
 import FixVariablesSelections from "@/components/rostering/FixVariablesSelection";
 import SolverSelector from "@/components/rostering/SolverSelector";
@@ -37,7 +36,6 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
         <NurseList />
         
         
-        <InputJson />
 
       </div>
       
