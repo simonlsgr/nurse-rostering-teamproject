@@ -4,6 +4,8 @@ import React from "react";
 import { getShiftDate, getConsecutivesArrayForNurse, getFirstDateOfInstance, getLastDateOfInstance } from "./dataWrangler";
 
 
+type SetFeasible = (value: boolean) => void;
+
 export function addReason(shiftUid: number, date: string, msg: string, newDetails: InfeasibilityDetails) {
   if (!newDetails[shiftUid]) {
     newDetails[shiftUid] = {};
@@ -57,7 +59,7 @@ export function checkMaxConstraintsFeasibility(
   instance: Instance, 
   solution: Solution, 
   setInfeasibilityDetails: React.Dispatch<React.SetStateAction<InfeasibilityDetails>>, 
-  setFeasible: React.Dispatch<React.SetStateAction<boolean>>
+  setFeasible: SetFeasible
 ) {
   
   const newDetails: InfeasibilityDetails = {};

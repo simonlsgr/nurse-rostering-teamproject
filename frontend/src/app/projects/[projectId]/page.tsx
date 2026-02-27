@@ -6,6 +6,9 @@ import { useLoadSolutionsArray } from "@/hooks/solutionHooks";
 import { use, useEffect } from "react";
 import InputJson from "@/components/common/InputJson"
 import SolveButton from "@/components/rostering/SolveButton";
+import FixVariablesSelections from "@/components/rostering/FixVariablesSelection";
+import SolverSelector from "@/components/rostering/SolverSelector";
+import TimeLimitInput from "@/components/rostering/TimeLimitInput";
 import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs"
 import { MainView } from "@/components/layout/MainView";
 import JobsView from "@/components/layout/JobsView";
@@ -75,6 +78,11 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
 
       {/* sidebar right */}
       <div className="w-[20vw] min-w-[240px] max-w-[320px] border-l border-border">
+
+        
+        <FixVariablesSelections />
+        <SolverSelector />
+        <TimeLimitInput />
 
         <SolveButton />
 

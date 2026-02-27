@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useJsonData } from "@/store/JsonStore";
+import { useInstance } from "@/store/instanceStore";
+import { useFixedVars } from "@/store/fixedVarsStore";
+import { NurseRosteringInstance } from "@/types/solverVars";
+import { useSolverSettings } from "@/store/solverSettingsStore";
 import { solve } from "@/app/api/solver";
 import { useJobs } from "@/store/solverStore";
 import JobsList from "./JobsList";
@@ -11,21 +14,47 @@ import JobsList from "./JobsList";
 export default function SolveButton() {
 
 
-  const { jsonData } = useJsonData();
   const { jobs, setJobs } = useJobs();
   
+  const activateFixedVariables = useSolverSettings(s => s.activateFixedVariables);
+  const fixedVars = useFixedVars(s => s.solution);
+  const timeLimit = useSolverSettings(s => s.timeLimit);
+  const usedSolver = useSolverSettings(s => s.usedSolver);
+  const nurses = useInstance(s => s.nurses);
+  const shifts = useInstance(s => s.shifts);
+  const staff_weight = useInstance(s => s.staff_weight);
+
+  const instance: NurseRosteringInstance = {nurses, shifts, staff_weight};
+
+
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSolve = async () => {
+  async function handleSolve() {
 
     try {
 
       setLoading(true);
       setError(null);
 
-      const data = await solve(jsonData)
+      const payload: Record<string, any> = {};
+      payload["nurse_rostering_instance"] = instance;
+      payload["optimization_parameters"] = {};
+      payload["optimization_parameters"]["timeout"] = timeLimit;
+      payload["fixed_variables"] = {};
+      if (activateFixedVariables) {
+        payload["fixed_variables"]["active"] = fixedVars;
+      } else {
+        payload["fixed_variables"]["active"] = {};
+      }
+      payload["solver"] = usedSolver;
+
+      
+      console.log(payload)
+
+      const data = await solve(payload)
       setResult(data);
       setJobs({
         ...jobs,
