@@ -68,7 +68,6 @@ class NurseRosteringModel:
         self.model.minimize(objective)
     
     def _set_nurses_to_shifts(self,nurses_at_shifts) -> None:
-        print(self.instance.model_dump_json)
         if not nurses_at_shifts:
             return
 
