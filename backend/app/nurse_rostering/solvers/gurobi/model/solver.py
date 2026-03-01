@@ -1,3 +1,5 @@
+from typing import Any
+
 import gurobipy as gp
 from gurobipy import GRB
 
@@ -57,6 +59,18 @@ class NurseRosteringModel:
         )
         self.model.setObjective(objective, GRB.MINIMIZE)
 
+    def _set_nurses_to_shifts(self, nurses_at_shifts) -> None:
+        if not nurses_at_shifts:
+            return
+
+        nurse_vars_by_uid = {nv.nurse.uid: nv for nv in self.nurse_vars}
+
+        for shift_uid, nurse_uids in nurses_at_shifts.items():
+
+            for nurse_uid in nurse_uids:
+                nurse_vars = nurse_vars_by_uid.get(nurse_uid)
+                nurse_vars.fix(int(shift_uid), True)
+
     def solve(
         self,
         log_search_progress: bool = True,
@@ -66,6 +80,16 @@ class NurseRosteringModel:
         # Basic params
         self.model.Params.OutputFlag = 1 if log_search_progress else 0
         self.model.Params.TimeLimit = float(max_time_in_seconds)
+        meta_params: dict[str, Any] = {}
+        for key, value in solver_params.items():
+            if key.startswith("meta_param_"):
+                meta_key = key[len("meta_param_"):]
+                meta_params[meta_key] = value
+                continue
+
+        nurses_at_shifts_active = meta_params.get("nurses_at_shifts_active")
+        if nurses_at_shifts_active is not None:
+            self._set_nurses_to_shifts(nurses_at_shifts_active)
 
         # Optional extra params (e.g. MIPGap, Threads, etc.)
         for key, value in solver_params.items():

@@ -1,3 +1,5 @@
+from typing import Any
+
 import hexaly.optimizer
 from nurse_rostering.solvers.hexaly.utils.generalize_return_status import generalize_return_status
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
@@ -45,6 +47,7 @@ class NurseRosteringModel:
             PreferredShiftsModule(),
         ]
 
+
     def __str__(self) -> str:
         return "Hexaly Nurse Rostering Model" 
         
@@ -54,7 +57,13 @@ class NurseRosteringModel:
         max_time_in_seconds: int = 60,
         **solver_params,
     ) -> NurseRosteringSolution:
-        
+
+        meta_params: dict[str, Any] = {}
+        for key, value in solver_params.items():
+            if key.startswith("meta_param_"):
+                meta_key = key[len("meta_param_"):]
+                meta_params[meta_key] = value
+                continue
         with hexaly.optimizer.HexalyOptimizer() as optimizer:
             
             
@@ -64,11 +73,26 @@ class NurseRosteringModel:
                 ShiftDecisionVars(shift, self.instance.nurses, model)
                 for shift in self.instance.shifts
             ]
+
+            def _set_nurses_to_shifts(nurses_at_shifts) -> None:
+                if not nurses_at_shifts:
+                    return
+
+                shift_var_by_uid = {shift_var.shift.uid: shift_var for shift_var in self.shift_vars}
+                for shift_uid, nurse_uids in nurses_at_shifts.items():
+                    shift_var = shift_var_by_uid[int(shift_uid)]
+                    for nurse_uid in nurse_uids:
+                        shift_var.fix(nurse_uid, True)
+
+
+
             
             objective = model.sum(
                 module.build(self.instance, model, self.shift_vars)  # type: ignore
                 for module in self.modules
             )
+
+            _set_nurses_to_shifts(nurses_at_shifts=meta_params.get("nurses_at_shifts_active"))
             
             model.minimize(objective)
             
