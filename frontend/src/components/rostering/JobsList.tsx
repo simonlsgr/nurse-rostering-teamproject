@@ -12,7 +12,7 @@ export default function JobsList(){
   const jobValues = Object.values(jobs);
 
   const categories = ["active", "completed"];
-  const runningJobs: Job[] = jobValues.filter((job) => job.status == "Submitted" || job.status == "Started")
+  const runningJobs: Job[] = jobValues.filter((job) => job.status == "Submitted" || job.status == "Running")
   const finishedJobs: Job[] = jobValues.filter((job) => job.status == "Completed");
   const _jobs: Record<string, Job[]> = {"active": runningJobs, "completed": finishedJobs};
 
