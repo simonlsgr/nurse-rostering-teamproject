@@ -1,0 +1,29 @@
+import { Project } from "@/types/projectVars";
+import { create } from "zustand";
+
+
+type ProjectsState = {
+
+  projects: Record<string, Project>;
+  setProjects: (projects: Record<string, Project> | ((prev: Record<string, Project>) => Record<string, Project>)) => void;
+  updateProject: (project: Project) => void;
+  removeProject: (projectId: string) => void;
+};
+
+export const useProjects = create<ProjectsState>((set) => ({
+
+  projects: {},
+  setProjects: (projects) => set((state) => ({ projects: typeof(projects) === "function" ? projects(state.projects) : projects})),
+  updateProject: (project: Project) =>
+    set((state) => ({
+      projects: {
+        ...state.projects,
+        [project.id]: project,
+      },
+    })),
+    removeProject: (projectId: string) =>
+      set((state) => {
+        const { [projectId]: _, ...rest } = state.projects;
+        return { projects: rest };
+    }),
+}));

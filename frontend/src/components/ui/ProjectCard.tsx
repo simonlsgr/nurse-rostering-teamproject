@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import { Project } from "@/types/projectVars";
+import EditProjectDialog from "../common/EditProjectDialog";
+import DeleteProjectDialog from "../common/DeleteProjectDialog";
 
 
 
@@ -30,8 +30,9 @@ export default function ProjectCard({ id, name, created_at, last_modified }: Pro
 
       <div className="w-[5vw] min-w-20 flex gap-4 items-center justify-center border-l border-border mt-2 mb-2">
         
-        <EditIcon fontSize="small" className="hover:bg-gray-200 rounded"/>
-        <DeleteIcon fontSize="small" className="hover:bg-gray-200 rounded"/>
+        <EditProjectDialog projectId={id} name={name} />
+        
+        <DeleteProjectDialog projectId={id} name={name}/>
 
       </div>
     </div>

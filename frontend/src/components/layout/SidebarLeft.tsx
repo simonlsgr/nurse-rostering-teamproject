@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useProjects } from "@/store/projectStore";
+import { Project } from "@/types/projectVars";
 
 
 
@@ -12,11 +14,13 @@ export default function SidebarLeft(){
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>("");
 
+  const { updateProject } = useProjects();
+
   const handleCreateProject = async () => {
 
     try {
-      const res = await createProject(nameInput);
-
+      const res: Project = await createProject(nameInput);
+      updateProject(res);
     }
     catch (err: any) {
       alert("Creation failed");

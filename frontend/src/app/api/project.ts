@@ -50,3 +50,29 @@ export async function getProject(projectId: string) {
 
   return data as Project;
 }
+
+export async function editProject(projectId: string, name: string) {
+
+  const res = await fetch(`/api/projects?projectId=${projectId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.error);
+
+  return data as Project;
+}
+
+export async function deleteProject(projectId: string) {
+  
+  const res = await fetch(`/api/projects?projectId=${projectId}`, {
+    method: "DELETE",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.error);
+}

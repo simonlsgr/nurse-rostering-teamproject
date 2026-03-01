@@ -21,7 +21,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
   useEffect(() => {
     loadInstance();
     loadSolutionsArray();
-  }, []);;
+  }, []);
 
 
 

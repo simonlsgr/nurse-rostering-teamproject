@@ -8,21 +8,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import SearchIcon from '@mui/icons-material/Search';
 import { getAllProjects } from "../api/project";
 import { Project } from "@/types/projectVars";
+import { useProjects } from "@/store/projectStore";
 
 
 export default function ProjectsView(){
   
   const [query, setQuery] = useState("");
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { projects: projectsRecord, setProjects: setProjectsRecord } = useProjects();
+  const [projects, setProjects] = useState<Project[]>(projectsRecord.values ? [projectsRecord.values] : []);
+  
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-/*   const projects = [
-    { id: "1", name: "Project A", num_of_nurses: 21 },
-    { id: "2", name: "Project B", num_of_nurses: 32 },
-  ];
- */
   // filtered by search
   const filteredItems = projects.filter((project) =>
     project.name.toLowerCase().includes(query.toLowerCase()) || project.id.includes(query)
@@ -33,8 +31,15 @@ export default function ProjectsView(){
     try {
       setLoading(true);
       const data = await getAllProjects();
+      
+      const dataRecord = Object.fromEntries(
+        data.map(project => [project.id, project])
+      ) as Record<string, Project>;
+      
+      setProjectsRecord(dataRecord);
       setProjects(data);
       setError(null);
+
     } catch (err: any) {
       setError(err.message || "Failed to load projects");
     } finally {
@@ -42,6 +47,9 @@ export default function ProjectsView(){
     }
   }
 
+  useEffect(() => {
+    setProjects(Object.values(projectsRecord))
+  }, [projectsRecord]);
 
   useEffect(() => {
 
