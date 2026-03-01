@@ -43,11 +43,11 @@ export default function SolveButton() {
       payload["nurse_rostering_instance"] = instance;
       payload["optimization_parameters"] = {};
       payload["optimization_parameters"]["timeout"] = timeLimit;
-      payload["fixed_variables"] = {};
+      payload["optimization_parameters"]["nurses_at_shifts_active"] = {};
       if (activateFixedVariables) {
-        payload["fixed_variables"]["active"] = fixedVars;
+        payload["optimization_parameters"]["nurses_at_shifts_active"] = fixedVars;
       } else {
-        payload["fixed_variables"]["active"] = {};
+        payload["optimization_parameters"]["nurses_at_shifts_active"] = {};
       }
       payload["solver"] = usedSolver;
 

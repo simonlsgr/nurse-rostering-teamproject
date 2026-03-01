@@ -52,7 +52,7 @@ def run_optimization_job(
     db_connection.update_job_status(job_status)
 
 
-    match job_request:
+    match job_request.solver:
         
         case "gurobi":
             solver = NurseRosteringModelGRB(job_request.nurse_rostering_instance, None) 
@@ -61,8 +61,11 @@ def run_optimization_job(
         case _:
             solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None) # TODO: find out where to apply the optimization parameters: job_request.optimization_parameters
 
-
-    solution = solver.solve() # TODO: log_callback=print
+    
+    solution = solver.solve(
+        max_time_in_seconds=job_request.optimization_parameters.timeout,
+        meta_param_nurses_at_shifts_active=job_request.optimization_parameters.nurses_at_shifts_active
+    )
 
     db_connection.set_solution(job_id, solution)
 

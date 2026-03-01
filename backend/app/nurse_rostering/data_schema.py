@@ -27,7 +27,7 @@ class SolverReturnStatus(str, enum.Enum):
     FEASIBLE = "FEASIBLE"
     INFEASIBLE = "INFEASIBLE"
     UNBOUNDED = "UNBOUNDED"
-    INCONSISTENT = "INCONSISTENT"
+    MODEL_INVALID = "MODEL_INVALID"
     UNKNOWN = "UNKNOWN"
 
 class Nurse(BaseModel):
@@ -230,4 +230,8 @@ class OptimizationParameters(BaseModel):
         default=60,
         gt=0,
         description="The maximum time in seconds to run the optimization.",
+    )
+    nurses_at_shifts_active: dict = Field(
+        default={},
+        description="A dictionary containing shiftuids as keys and a list of nursuids as values. If a nurse-shift pair appears, the corresponding variable will be fixed to 1."
     )
