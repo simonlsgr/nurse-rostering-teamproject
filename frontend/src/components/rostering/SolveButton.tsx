@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useInstance } from "@/store/instanceStore";
 import { useFixedVars } from "@/store/fixedVarsStore";
@@ -52,7 +52,6 @@ export default function SolveButton() {
       payload["solver"] = usedSolver;
 
       
-      console.log(payload)
 
       const data = await solve(payload)
       setResult(data);

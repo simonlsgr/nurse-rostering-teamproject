@@ -2,7 +2,7 @@ import { useSolution, useSolutionsArray } from "@/store/solutionStore";
 import { Solution } from "@/types/nurseVars";
 import solutionData from "@/components/layout/solution_instance_2.json";
 import solutionData2 from "@/components/layout/solution_instance_2_infeasible.json";
-import { nanoid } from "nanoid";
+
 
 export function useLoadSolutionsArray() {
   const setSolutions = useSolutionsArray((s) => s.setSolutions);

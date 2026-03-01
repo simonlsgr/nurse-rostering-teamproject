@@ -6,6 +6,7 @@ type JobsState = {
   jobs: Record<string, Job>;
   setJobs: (jobs: Record<string, Job> | ((prev: Record<string, Job>) => Record<string, Job>)) => void;
   updateJob: (job: Job) => void;
+  removeJob: (job: Job) => void;
 };
 
 export const useJobs = create<JobsState>((set) => ({
@@ -19,4 +20,9 @@ export const useJobs = create<JobsState>((set) => ({
         [job.task_id]: job,
       },
     })),
+  removeJob: (job: Job) =>
+    set((state) => {
+      const { [job.task_id]: _, ...remaining } = state.jobs;
+      return { jobs: remaining };
+    }),
 }));
