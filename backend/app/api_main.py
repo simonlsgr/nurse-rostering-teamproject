@@ -7,6 +7,7 @@ from typing import List
 from uuid import UUID
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
 from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel
@@ -17,7 +18,7 @@ from api_tasks import run_optimization_job
 from sqlalchemy.orm import Session
 from postgres.database import get_db
 from postgres.models_db.project import Project
-from postgres.schemas_pydantic.project import ProjectCreate, ProjectResponse
+from postgres.schemas_pydantic.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from postgres.database import engine, Base
 
 
@@ -136,7 +137,39 @@ def get_project(project_id: str, db: Session = Depends(get_db)):
     return project
 
 
+@projects_router.put("/{project_id}", response_model=ProjectResponse)
+def update_project(
+    project_id: UUID,
+    project_update: ProjectUpdate,
+    db: Session = Depends(get_db),
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
 
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project.name = project_update.name
+    project.last_modified = datetime.utcnow()
+
+    db.commit()
+    db.refresh(project)
+
+    return project
+
+@projects_router.delete("/{project_id}")
+def delete_project(
+    project_id: UUID,
+    db: Session = Depends(get_db),
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    db.delete(project)
+    db.commit()
+
+    return
 
 
 Base.metadata.create_all(bind=engine) # for dev-purposes, change this later

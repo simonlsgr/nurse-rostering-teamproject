@@ -5,6 +5,9 @@ from datetime import datetime
 class ProjectCreate(BaseModel):
     name: str
 
+class ProjectUpdate(BaseModel):
+    name: str
+
 class ProjectResponse(BaseModel):
     id: UUID
     name: str
