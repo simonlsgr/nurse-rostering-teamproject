@@ -6,19 +6,19 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SolutionViewer } from "@/components/rostering/SolutionViewer";
 import { VariableFixer } from "@/components/rostering/VariableFixer";
+import { useSelectedProject } from "@/store/projectStore";
 
 
 export function MainView(){
   
-  
-  
+  const { selectedProject } = useSelectedProject();
 
   return (
     <div className="flex flex-col p-4 gap-4 h-full w-full">
       
         
       <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
-        Project [id]
+        Project {selectedProject?.name}
       </h1>
       <Tabs defaultValue="fix_vars">
       
