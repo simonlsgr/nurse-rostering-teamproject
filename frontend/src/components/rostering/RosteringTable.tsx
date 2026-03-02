@@ -161,7 +161,7 @@ export function NurseTable({
 
 
   return (
-    <div className="overflow-x-auto max-h-[65vh]">
+    <div className="overflow-x-auto">
       <table className="border-separate border-spacing-0 overflow-x-hidden">
         <NurseTableHeader table={table} hoveredColumn={hoveredColumn} setHoveredColumn={setHoveredColumn}/>
         <NurseTableBody table={table} setTableData={setTableData} shift_types={shift_types} instance={instance} hoveredColumn={hoveredColumn} setHoveredColumn={setHoveredColumn} infeasibilityDetails={infeasibilityDetails} />

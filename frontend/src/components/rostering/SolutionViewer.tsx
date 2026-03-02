@@ -123,8 +123,11 @@ export function SolutionViewer() {
 
     return (
         <div className="flex flex-col gap-4">
+            <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
+                Solutions
+            </h1>
             <div>
-            <FormControl fullWidth>
+            <FormControl>
             <InputLabel id="select-solution-label-id">Solution</InputLabel>
             <Select
                 labelId="select-solution-label-id"
@@ -140,10 +143,10 @@ export function SolutionViewer() {
             </Select>
             </FormControl>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 max-h-[60vh]">
                 <NurseTable tableData={solutionData} setTableData={setSolutionData} instance={instance} infeasibilityDetails={infeasibilityDetails} />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-start">
                 <p className="mr-4 self-center text-sm text-gray-600">
                     {`Objective: ${solutionValue}`}
                 </p>

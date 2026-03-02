@@ -16,6 +16,8 @@ import { useProjects, useSelectedProject } from "@/store/projectStore";
 import { getProject } from "@/app/api/project";
 import { Project } from "@/types/projectVars";
 import ShiftList from "@/components/rostering/ShiftList";
+import { SolutionViewer } from "@/components/rostering/SolutionViewer";
+import { VariableFixer } from "@/components/rostering/VariableFixer";
 
 export default function ProjectPage(){  
   
@@ -68,7 +70,7 @@ export default function ProjectPage(){
       </div>
       
       
-      <div className="w-[70vw]">
+      <div className="w-full">
       
         {/* topbar */}
         <div className="h-[2vw] min-h-[30px] max-h-[40px] hidden">
@@ -77,19 +79,24 @@ export default function ProjectPage(){
         {/* main view */}
         <div className="p-2">
         
-        <Tabs defaultValue="dashboard">
+        <Tabs defaultValue="solution_viewer">
         
           <div className="flex justify-center">
             <TabsList>
 
-              <TabsTrigger value="dashboard"> Dashboard </TabsTrigger>
+              <TabsTrigger value="solution_viewer"> View Solutions </TabsTrigger>
+              <TabsTrigger value="create_job"> Solve </TabsTrigger>
               <TabsTrigger value="jobs"> Jobs </TabsTrigger>
 
             </TabsList>
           </div>
         
-          <TabsContent value="dashboard">
-            <MainView />
+          <TabsContent value="solution_viewer">
+            <SolutionViewer />
+          </TabsContent>
+                    
+          <TabsContent value="create_job">
+            <VariableFixer />
           </TabsContent>
           
           <TabsContent value="jobs">
@@ -102,17 +109,7 @@ export default function ProjectPage(){
       
       </div>
 
-      {/* sidebar right */}
-      <div className="w-[20vw] min-w-[240px] max-w-[320px] border-l border-border">
-
-        
-        <FixVariablesSelections />
-        <SolverSelector />
-        <TimeLimitInput />
-
-        <SolveButton />
-
-      </div>
+      
     
     </div>
   );

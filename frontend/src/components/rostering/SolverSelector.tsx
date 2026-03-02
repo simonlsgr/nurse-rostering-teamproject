@@ -13,7 +13,7 @@ export default function SolverSelector () {
     }
 
     return (
-        <div className="p-4">
+        <div className="p-4 min-w-50">
             <div>
             <FormControl required fullWidth>
             <InputLabel id="select-solver-label-id">Solver</InputLabel>
