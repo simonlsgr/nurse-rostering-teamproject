@@ -17,6 +17,7 @@ export default function SolveButton() {
   const { jobs, setJobs } = useJobs();
   
   const activateFixedVariables = useSolverSettings(s => s.activateFixedVariables);
+  const fixedVariablesFeasible = useSolverSettings(s => s.fixedVariablesFeasible);
   const fixedVars = useFixedVars(s => s.solution);
   const timeLimit = useSolverSettings(s => s.timeLimit);
   const usedSolver = useSolverSettings(s => s.usedSolver);
@@ -44,7 +45,7 @@ export default function SolveButton() {
       payload["optimization_parameters"] = {};
       payload["optimization_parameters"]["timeout"] = timeLimit;
       payload["optimization_parameters"]["nurses_at_shifts_active"] = {};
-      if (activateFixedVariables) {
+      if (activateFixedVariables && fixedVariablesFeasible) {
         payload["optimization_parameters"]["nurses_at_shifts_active"] = fixedVars;
       } else {
         payload["optimization_parameters"]["nurses_at_shifts_active"] = {};

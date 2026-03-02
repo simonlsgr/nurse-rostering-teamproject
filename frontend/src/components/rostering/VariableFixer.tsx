@@ -9,6 +9,10 @@ import { NurseTable } from "@/components/rostering/RosteringTable";
 import { instanceSolutionToTableData } from "@/lib/roster/dataWrangler";
 import { checkMaxConstraintsFeasibility } from "@/lib/roster/modelChecker";
 import { getShiftByDateAndType } from "@/lib/roster/dataWrangler";
+import FixVariablesSelections from "./FixVariablesSelection";
+import SolverSelector from "@/components/rostering/SolverSelector";
+import TimeLimitInput from "@/components/rostering/TimeLimitInput";
+import SolveButton from "@/components/rostering/SolveButton";
 
 export function VariableFixer() {
 
@@ -70,12 +74,21 @@ export function VariableFixer() {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex gap-4">
+            <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
+                Solve the instance
+            </h1>
+            <FixVariablesSelections />
+            <div className="flex gap-4 max-h-[40vh]">
             <NurseTable tableData={fixedVariableData} setTableData={setFixedVariableData} instance={instance} infeasibilityDetails={infeasibilityDetails}/>
-            
             </div>
-            <p>{feasible ? "feasible" : "infeasible"}</p>
-            <p>{JSON.stringify(fixedVariables)}</p>
+            {/* <p>{feasible ? "feasible" : "infeasible"}</p>
+            <p>{JSON.stringify(fixedVariables)}</p> */}
+            <div className="flex flex-row gap-5 items-end">
+                <SolverSelector />
+                <TimeLimitInput />
+            </div>
+
+        <SolveButton />
         </div>
     )
 }
