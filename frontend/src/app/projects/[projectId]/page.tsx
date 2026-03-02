@@ -15,6 +15,7 @@ import { useParams } from "next/navigation";
 import { useProjects, useSelectedProject } from "@/store/projectStore";
 import { getProject } from "@/app/api/project";
 import { Project } from "@/types/projectVars";
+import ShiftList from "@/components/rostering/ShiftList";
 
 export default function ProjectPage(){  
   
@@ -58,6 +59,10 @@ export default function ProjectPage(){
       <div className="w-[20vw] min-w-[240px] max-w-[320px] border-r bg-gray-100 h-screen border-border">
 
         <NurseList />
+
+        <div className="mt-2 mb-2 text-muted-foreground"></div>
+
+        <ShiftList />
         
 
       </div>
