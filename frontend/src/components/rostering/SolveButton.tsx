@@ -75,7 +75,7 @@ export default function SolveButton() {
     <div>
       <div className="p-4">
       <Button
-        className="mt-2 px-4 py-2 bg-gray-800 text-white rounded"
+        className="bg-gray-800 text-white rounded-2xl h-10 w-full text-lg"
         onClick={handleSolve}
         disabled={loading}
       >
