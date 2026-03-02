@@ -14,7 +14,7 @@ export function MainView(){
   const { selectedProject } = useSelectedProject();
 
   return (
-    <div className="flex flex-col p-4 gap-4 h-full w-full">
+    <div className="flex flex-col gap-4 h-full w-full">
       
         
       <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
