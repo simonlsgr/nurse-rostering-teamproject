@@ -30,7 +30,7 @@ export function MainView(){
 
           </TabsList>
         </div>
-        <div className="p-4 flex flex-col gap-4 w-full h-[80vh] overflow-y-scroll">
+        <div className="p-4 flex flex-col gap-4 w-full h-[80vh] overflow-y-auto">
       
           <TabsContent value="solution_viewer">
             <SolutionViewer />
