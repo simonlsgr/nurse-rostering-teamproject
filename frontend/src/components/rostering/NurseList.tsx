@@ -1,11 +1,12 @@
 "use client";
 
-import { useNurseListSelection } from "@/store/nurseStore";
 import { useInstance } from "@/store/instanceStore";
 import NurseCard from "@/components/ui/NurseCard";
 import { Nurse } from "@/types/nurseVars";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import PeopleIcon from '@mui/icons-material/People';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 
 export default function NurseList(){
@@ -14,35 +15,32 @@ export default function NurseList(){
 
 
   const { nurses, shifts } = useInstance();
-  const { selectedNurses, setSelectedNurses } = useNurseListSelection();
+  
   
 
-  const toggleItem = (nurse: Nurse) => {
-    setSelectedNurses((prev) =>
-      prev.some(n => n.uid === nurse.uid)
-        ? prev.filter((n) => n.uid !==nurse.uid)
-        : [...prev, nurse]
-    );
-  };
+  
 
   // filtered by search
   const filteredItems = nurses.filter((nurse) =>
     nurse.name.toLowerCase().includes(query.toLowerCase()) || nurse.uid.toString().includes(query)
   );
 
-  // sort items by selection
-  const sortedItems = [
-    ...filteredItems.filter((nurse) => selectedNurses.some(n => n.uid === nurse.uid)),
-    ...filteredItems.filter((nurse) => !selectedNurses.some(n => n.uid === nurse.uid)),
-  ];
 
 
 
 
   return (
 
-    <div className="border-b h-[50vh] content-between border-border flex flex-col">
-      <p className="p-2"> All Nurses: </p>
+    <div className="border-b h-[100vh] content-between border-border flex flex-col">
+      
+      <div className="p-2 flex flex-row gap-2">
+        <div className="h-10 w-10" onClick={() => console.log("Nurses")}>
+          <PeopleIcon className="p-2 h-full! w-full! hover:bg-gray-500 bg-black! text-white bg-white rounded-xl"/>
+        </div>
+        <div className="h-10 w-10" onClick={() => console.log("Nurses")}>
+          <AssignmentIcon className="p-2 hover:bg-gray-500 bg-white h-full! w-full! rounded-xl"/>
+        </div>
+      </div>
 
       <input
         type="text"
@@ -55,7 +53,7 @@ export default function NurseList(){
       <p className="border-b m-2 border-border"></p>
 
       <div className="overflow-auto flex-1">
-      {sortedItems.map((nurse) => (
+      {filteredItems.map((nurse) => (
         <AnimatePresence key={nurse.uid} mode="popLayout">
           <motion.div
             key={nurse.uid}
@@ -64,8 +62,7 @@ export default function NurseList(){
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.17 }}
-            className="cursor-pointer select-none"
-            onClick={() => toggleItem(nurse)}
+            className="select-none"
           >
             <NurseCard nurse={nurse} key={nurse.uid}/>
           </motion.div>
