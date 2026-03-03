@@ -16,6 +16,7 @@ export default function SolveButton() {
 
   const { jobs, setJobs } = useJobs();
   
+  const setSolverError = useSolverSettings(s => s.setUsedSolverError)
   const activateFixedVariables = useSolverSettings(s => s.activateFixedVariables);
   const fixedVariablesFeasible = useSolverSettings(s => s.fixedVariablesFeasible);
   const fixedVars = useFixedVars(s => s.solution);
@@ -36,30 +37,36 @@ export default function SolveButton() {
   async function handleSolve() {
 
     try {
-
+      
       setLoading(true);
       setError(null);
-
-      const payload: Record<string, any> = {};
-      payload["nurse_rostering_instance"] = instance;
-      payload["optimization_parameters"] = {};
-      payload["optimization_parameters"]["timeout"] = timeLimit;
-      payload["optimization_parameters"]["nurses_at_shifts_active"] = {};
-      if (activateFixedVariables && fixedVariablesFeasible) {
-        payload["optimization_parameters"]["nurses_at_shifts_active"] = fixedVars;
-      } else {
+      if (usedSolver !== "") {
+        setSolverError(false);
+        
+        
+        const payload: Record<string, any> = {};
+        payload["nurse_rostering_instance"] = instance;
+        payload["optimization_parameters"] = {};
+        payload["optimization_parameters"]["timeout"] = timeLimit;
         payload["optimization_parameters"]["nurses_at_shifts_active"] = {};
+        if (activateFixedVariables && fixedVariablesFeasible) {
+          payload["optimization_parameters"]["nurses_at_shifts_active"] = fixedVars;
+        } else {
+          payload["optimization_parameters"]["nurses_at_shifts_active"] = {};
+        }
+        payload["solver"] = usedSolver;
+        
+        
+        
+        const data = await solve(payload)
+        setResult(data);
+        setJobs({
+          ...jobs,
+          [data.task_id]: data
+        })
+      } else {
+        setSolverError(true);
       }
-      payload["solver"] = usedSolver;
-
-      
-
-      const data = await solve(payload)
-      setResult(data);
-      setJobs({
-        ...jobs,
-        [data.task_id]: data
-      })
 
     } catch (err: any) {
       setError(err.message);
