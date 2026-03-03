@@ -4,13 +4,18 @@ import { formatDate } from "@/lib/utils";
 import { useJobs } from "@/store/solverStore";
 import { Job } from "@/types/solverVars";
 import { useSolutionsArray } from "@/store/solutionStore";
-import { nanoid } from "nanoid";
-import { uniqueNamesGenerator, Config, adjectives, animals } from 'unique-names-generator';
+import { Button } from "@/components/ui/button"
+import SaveSolutionDialog from "@/components/common/SaveSolutionDialog";
+
+
+
+
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { SaveIcon } from "lucide-react";
 import { useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
+import { DialogHeader } from "./dialog";
 
 
 type JobCardProps = {
@@ -22,11 +27,6 @@ type JobCardProps = {
 
 export default function JobCard({ jobId, bgGray }: JobCardProps) {
 
-  const config: Config = {
-    dictionaries: [adjectives, animals],
-    separator: " ",
-    style: "capital"
-  }
   
 
   const addSolution = useSolutionsArray((s) => s.addSolution)
@@ -36,7 +36,7 @@ export default function JobCard({ jobId, bgGray }: JobCardProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [saveOpen, setSaveOpen] = useState(false);
-  const [solutionName, setSolutionName] = useState("");
+  
 
   const handleOpenSave = () => {
     setSaveOpen(true);
@@ -64,21 +64,8 @@ export default function JobCard({ jobId, bgGray }: JobCardProps) {
     }
   }
 
-  // TODO: save the solution in the backend
-  const handleSaveSolution = async () => {
-    setSaveOpen(false);
-    try {
-      const data = await fetchSolution(job.task_id);
-      const name = solutionName || uniqueNamesGenerator(config);
-      setSolutionName(name);
-      addSolution({ solutionId: nanoid(), solution_name: name, solution: data.nurses_at_shifts });
-      removeJob(job);
+  
 
-    } catch (err: any) {
-      console.log(err.message);
-      setError(err.message);
-    }
-  }
 
   return (
 
@@ -118,35 +105,7 @@ export default function JobCard({ jobId, bgGray }: JobCardProps) {
       </div>
       <div className="flex">
         {job.status === "Completed" &&
-        <div className={`h-10 w-10 flex items-center justify-center ${bgGray ? "hover:bg-white" : "hover:bg-gray-100"} rounded-lg transition duration-170`}>
-          <SaveIcon onClick={handleOpenSave} />
-        <Dialog open={saveOpen} onClose={handleCloseSave}>
-        <DialogTitle>Save Solution</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter a name for the solution.
-          </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              name="name"
-              label="Solution name"
-              type="text"
-              value={solutionName}
-              fullWidth
-              variant="standard"
-              onChange={(event) => setSolutionName(event.target.value)}
-            />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseSave}>Cancel</Button>
-          <Button type="submit" onClick={handleSaveSolution}>
-            Save
-          </Button>
-        </DialogActions>
-        </Dialog>
-        </div>
+          <SaveSolutionDialog jobId={jobId} bgGray={bgGray}/>
 
         }
         <div className={`h-10 w-10 flex items-center justify-center ${bgGray ? "hover:bg-white" : "hover:bg-gray-100"} rounded-lg transition duration-170`}>
