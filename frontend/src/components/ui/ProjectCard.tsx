@@ -4,10 +4,15 @@ import { formatDate } from "@/lib/utils";
 import { Project } from "@/types/projectVars";
 import EditProjectDialog from "../common/EditProjectDialog";
 import DeleteProjectDialog from "../common/DeleteProjectDialog";
+import { useSelectedProject } from "@/store/projectStore";
 
 
 
-export default function ProjectCard({ id, name, created_at, last_modified }: Project ) {
+export default function ProjectCard(project: Project ) {
+
+  const { id, name, created_at, last_modified } = project;
+
+  const { setSelectedProject } = useSelectedProject();
 
   return (
     <div 
@@ -18,6 +23,7 @@ export default function ProjectCard({ id, name, created_at, last_modified }: Pro
           href={`/projects/${id}`}
           key={id}
           className="text-xl flex-1"
+          //onClick={() => setSelectedProject(project)}
       >
         {name}
       

@@ -1,3 +1,4 @@
+import ProjectCard from "@/components/ui/ProjectCard";
 import { Project } from "@/types/projectVars";
 import { create } from "zustand";
 
@@ -26,4 +27,17 @@ export const useProjects = create<ProjectsState>((set) => ({
         const { [projectId]: _, ...rest } = state.projects;
         return { projects: rest };
     }),
+}));
+
+
+type SelectedProjectState = {
+
+  selectedProject: Project | null;
+  setSelectedProject: (project: Project | null) => void;
+};
+
+export const useSelectedProject = create<SelectedProjectState>((set) => ({
+
+  selectedProject: null,
+  setSelectedProject: (selectedProject) => set({ selectedProject }),
 }));

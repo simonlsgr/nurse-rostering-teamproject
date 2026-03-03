@@ -2,37 +2,31 @@
 
 import { useInstance } from "@/store/instanceStore";
 import NurseCard from "@/components/ui/NurseCard";
-import { Nurse } from "@/types/nurseVars";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from 'lucide-react';
-import NurseListTopbar from "../common/NurseListTopbar";
+import ShiftListTopbar from "../common/ShiftListTopbar";
+import ShiftCard from "../ui/ShiftCard";
 
-export default function NurseList(){
+export default function ShiftList(){
 
   const [query, setQuery] = useState("");
 
 
   const { nurses, shifts } = useInstance();
   
-  
 
-  
 
   // filtered by search
-  const filteredItems = nurses.filter((nurse) =>
-    nurse.name.toLowerCase().includes(query.toLowerCase()) || nurse.uid.toString().includes(query)
+  const filteredItems = shifts.filter((shift) =>
+    shift.name.toLowerCase().includes(query.toLowerCase()) || shift.uid.toString().includes(query)
   );
-
-
-
-
 
   return (
 
-    <div className="border-b h-[50vh] content-between border-border flex flex-col">
+    <div className="border-b h-[49vh] content-between border-border flex flex-col">
 
-      <NurseListTopbar />
+      <ShiftListTopbar />
       
       <div className="flex w-[calc(100%-1rem)] ml-2 p-1 border border-gray-300 rounded">
         <input
@@ -48,18 +42,18 @@ export default function NurseList(){
       <p className="border-b m-2 border-border"></p>
 
       <div className="overflow-auto flex-1">
-      {filteredItems.map((nurse) => (
-        <AnimatePresence key={nurse.uid} mode="popLayout">
+      {filteredItems.map((shift) => (
+        <AnimatePresence key={shift.uid} mode="popLayout">
           <motion.div
-            key={nurse.uid}
+            key={shift.uid}
             layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.17 }}
-            className="select-none"
+            className="cursor-pointer select-none"
           >
-            <NurseCard nurse={nurse} key={nurse.uid}/>
+            <ShiftCard shift={shift} key={shift.uid}/>
           </motion.div>
         </AnimatePresence>
       ))}

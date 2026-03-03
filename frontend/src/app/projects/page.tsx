@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import SearchIcon from '@mui/icons-material/Search';
 import { getAllProjects } from "../api/project";
 import { Project } from "@/types/projectVars";
-import { useProjects } from "@/store/projectStore";
+import { useProjects, useSelectedProject } from "@/store/projectStore";
 
 
 export default function ProjectsView(){
@@ -17,7 +17,9 @@ export default function ProjectsView(){
 
   const { projects: projectsRecord, setProjects: setProjectsRecord } = useProjects();
   const [projects, setProjects] = useState<Project[]>(projectsRecord.values ? [projectsRecord.values] : []);
-  
+  const { setSelectedProject } = useSelectedProject();
+
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -53,7 +55,9 @@ export default function ProjectsView(){
 
   useEffect(() => {
 
+    setSelectedProject(null);
     loadAllProjects();
+
 
   }, [])
 

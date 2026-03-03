@@ -8,6 +8,8 @@ type SolverSettingsState = {
     setFixedVariablesFeasible: (feasible: boolean) => void;
     usedSolver: string;
     setUsedSolver: (solver: string) => void;
+    usedSolverError: boolean;
+    setUsedSolverError: (solverError: boolean) => void;
     timeLimit: number;
     setTimeLimit: (timeLimit: number) => void;
 }
@@ -19,6 +21,8 @@ export const useSolverSettings = create<SolverSettingsState>((set) => ({
     setFixedVariablesFeasible: (feasible) => set({ fixedVariablesFeasible: feasible }),
     usedSolver: "",
     setUsedSolver: (solver) => set({ usedSolver: solver }),
+    usedSolverError: false,
+    setUsedSolverError: (solverError) => set({ usedSolverError: solverError }),
     timeLimit: 60,
     setTimeLimit: (timeLimit) => set({ timeLimit }),
 }))
