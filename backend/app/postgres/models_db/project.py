@@ -3,6 +3,8 @@ from sqlalchemy import Column, Text, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from ..database import Base
+from sqlalchemy.orm import relationship
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -11,3 +13,10 @@ class Project(Base):
     name = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_modified = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+    nurses = relationship(
+        "Nurse",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )

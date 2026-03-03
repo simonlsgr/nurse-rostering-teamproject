@@ -18,7 +18,9 @@ from api_tasks import run_optimization_job
 from sqlalchemy.orm import Session
 from postgres.database import get_db
 from postgres.models_db.project import Project
+from postgres.models_db.nurse import Nurse
 from postgres.schemas_pydantic.project import ProjectCreate, ProjectUpdate, ProjectResponse
+from postgres.schemas_pydantic.nurse import NurseCreate, NurseResponse, NurseUpdate
 from postgres.database import engine, Base
 
 
@@ -172,8 +174,106 @@ def delete_project(
     return
 
 
+nurses_router = APIRouter(tags=["Nurses"], prefix="/projects/{project_id}/nurses")
+
+@nurses_router.post("", response_model=NurseResponse)
+def create_nurse(
+    project_id: UUID,
+    nurse_data: NurseCreate,
+    db: Session = Depends(get_db),
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    nurse = Nurse(
+        **nurse_data.model_dump(),
+        project_id=project_id,
+    )
+
+    db.add(nurse)
+    db.commit()
+    db.refresh(nurse)
+
+    return nurse
+
+
+@nurses_router.get("", response_model=list[NurseResponse])
+def list_project_nurses(
+    project_id: UUID,
+    db: Session = Depends(get_db),
+):
+    return db.query(Nurse).filter(Nurse.project_id == project_id).all()
+
+
+
+@nurses_router.get("/{nurse_id}", response_model=NurseResponse)
+def get_nurse(
+    project_id: UUID,
+    nurse_id: UUID,
+    db: Session = Depends(get_db),
+):
+    nurse = (
+        db.query(Nurse)
+        .filter(Nurse.id == nurse_id, Nurse.project_id == project_id)
+        .first()
+    )
+
+    if not nurse:
+        raise HTTPException(status_code=404, detail="Nurse not found")
+
+    return nurse
+
+
+@nurses_router.delete("/{nurse_id}")
+def delete_nurse(
+    project_id: UUID,
+    nurse_id: UUID,
+    db: Session = Depends(get_db),
+):
+    nurse = (
+        db.query(Nurse)
+        .filter(Nurse.id == nurse_id, Nurse.project_id == project_id)
+        .first()
+    )
+
+    if not nurse:
+        raise HTTPException(status_code=404, detail="Nurse not found in this project")
+
+    db.delete(nurse)
+    db.commit()
+
+
+@nurses_router.put("/{nurse_id}", response_model=NurseResponse)
+def update_nurse(
+    project_id: UUID,
+    nurse_id: UUID,
+    nurse_update: NurseUpdate,
+    db: Session = Depends(get_db),
+):
+
+    nurse = (
+        db.query(Nurse)
+        .filter(Nurse.id == nurse_id, Nurse.project_id == project_id)
+        .first()
+    )
+
+    if not nurse:
+        raise HTTPException(status_code=404, detail="Nurse not found in this project")
+
+
+    for key, value in nurse_update.model_dump().items():
+        setattr(nurse, key, value)
+
+    db.commit()
+    db.refresh(nurse)
+
+    return nurse
+
+
+
+
 Base.metadata.create_all(bind=engine) # for dev-purposes, change this later
-
-
 app.include_router(nurse_rostering_solver_v0_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
+app.include_router(nurses_router, prefix="/nurse_rostering_solver/v0")

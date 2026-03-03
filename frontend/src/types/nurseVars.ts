@@ -1,7 +1,7 @@
 
 
 export type Nurse = {
-  uuid?: string; // for later
+  db_id?: string; // from database
   uid: number;
   name: string;
   preferred_shifts: number[];
@@ -22,7 +22,7 @@ export type Nurse = {
 }
 
 export type Shift = {
-  uuid?: string; // for later
+  db_id?: string; // for later
   uid: number;
   name: string;
   start_time: string;
