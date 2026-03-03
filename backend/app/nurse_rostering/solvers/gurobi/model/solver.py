@@ -59,13 +59,13 @@ class NurseRosteringModel:
         )
         self.model.setObjective(objective, GRB.MINIMIZE)
 
-    def _set_nurses_to_shifts(self, nurses_at_shifts) -> None:
-        if not nurses_at_shifts:
+    def _set_nurses_to_shifts(self, nurses_at_shifts_forced) -> None:
+        if not nurses_at_shifts_forced:
             return
 
         nurse_vars_by_uid = {nv.nurse.uid: nv for nv in self.nurse_vars}
 
-        for shift_uid, nurse_uids in nurses_at_shifts.items():
+        for shift_uid, nurse_uids in nurses_at_shifts_forced.items():
 
             for nurse_uid in nurse_uids:
                 nurse_vars = nurse_vars_by_uid.get(nurse_uid)
@@ -87,9 +87,9 @@ class NurseRosteringModel:
                 meta_params[meta_key] = value
                 continue
 
-        nurses_at_shifts_active = meta_params.get("nurses_at_shifts_active")
-        if nurses_at_shifts_active is not None:
-            self._set_nurses_to_shifts(nurses_at_shifts_active)
+        nurses_at_shifts_forced = meta_params.get("nurses_at_shifts_forced")
+        if nurses_at_shifts_forced is not None:
+            self._set_nurses_to_shifts(nurses_at_shifts_forced)
 
         # Optional extra params (e.g. MIPGap, Threads, etc.)
         for key, value in solver_params.items():

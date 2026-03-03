@@ -68,14 +68,14 @@ class NurseRosteringModel:
         
         self.model.minimize(objective)
     
-    def _set_nurses_to_shifts(self,nurses_at_shifts) -> None:
-        if not nurses_at_shifts:
+    def _set_nurses_to_shifts(self, nurses_at_shifts_forced) -> None:
+        print("-------------DDDDDDDDDDDDDDDDDDDDDDDDDDDD", nurses_at_shifts_forced)
+        if not nurses_at_shifts_forced:
             return
 
         nurse_vars_by_uid = {nv.nurse.uid: nv for nv in self.nurse_vars}
 
-        for shift_uid, nurse_uids in nurses_at_shifts.items():
-
+        for shift_uid, nurse_uids in nurses_at_shifts_forced.items():
             for nurse_uid in nurse_uids:
                 nurse_vars = nurse_vars_by_uid.get(nurse_uid)
                 nurse_vars.fix(int(shift_uid), True)
@@ -91,6 +91,7 @@ class NurseRosteringModel:
         solver.parameters.log_search_progress = log_search_progress
         solver.parameters.max_time_in_seconds = max_time_in_seconds
         meta_params: dict[str, Any] = {}
+        print(solver_params)
         for key, value in solver_params.items():
             if key.startswith("meta_param_"):
                 meta_key = key[len("meta_param_"):]
@@ -99,9 +100,9 @@ class NurseRosteringModel:
 
             setattr(solver.parameters, key, value)
 
-        nurses_at_shifts_active = meta_params.get("nurses_at_shifts_active")
-        if nurses_at_shifts_active is not None:
-            self._set_nurses_to_shifts(nurses_at_shifts_active)
+        nurses_at_shifts_forced = meta_params.get("nurses_at_shifts_forced")
+        if nurses_at_shifts_forced is not None:
+            self._set_nurses_to_shifts(nurses_at_shifts_forced)
 
         status = solver.solve(self.model)
         

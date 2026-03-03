@@ -64,7 +64,7 @@ def run_optimization_job(
     
     solution = solver.solve(
         max_time_in_seconds=job_request.optimization_parameters.timeout,
-        meta_param_nurses_at_shifts_active=job_request.optimization_parameters.nurses_at_shifts_active
+        meta_param_nurses_at_shifts_forced=job_request.optimization_parameters.nurses_at_shifts_forced
     )
 
     db_connection.set_solution(job_id, solution)
