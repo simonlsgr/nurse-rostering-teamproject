@@ -181,8 +181,8 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
                         >= 1
                     )
             
-            self.enforce_for_first_day(model, shifts_by_date_union, all_dates, n_idx, min_shifts)
-            self.enforce_for_last_day(model, shifts_by_date_union, all_dates, n_idx, min_shifts)
+            # self.enforce_for_first_day(model, shifts_by_date_union, all_dates, n_idx, min_shifts)
+            # self.enforce_for_last_day(model, shifts_by_date_union, all_dates, n_idx, min_shifts)
             
         return 0 
 
@@ -237,12 +237,12 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                         >= 1
                     )
         
-        self.enfore_for_first_day(model, shifts_by_date_union, all_dates, n_idx, min_days_off)
-        self.enfore_for_last_day(model, shifts_by_date_union, all_dates, n_idx, min_days_off)
+        # self.enforce_for_first_day(model, shifts_by_date_union, all_dates, n_idx, min_days_off)
+        # self.enforce_for_last_day(model, shifts_by_date_union, all_dates, n_idx, min_days_off)
         
         return 0
     
-    def enfore_for_first_day(self, model, shifts_by_date_union, all_dates, n_idx, min_days_off):
+    def enforce_for_first_day(self, model, shifts_by_date_union, all_dates, n_idx, min_days_off):
         model.add_constraint(
             (1 - model.contains(shifts_by_date_union[all_dates[0]], n_idx))
             <= 
@@ -255,7 +255,7 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
         )
         
     
-    def enfore_for_last_day(self, model, shifts_by_date_union, all_dates, n_idx, min_days_off):
+    def enforce_for_last_day(self, model, shifts_by_date_union, all_dates, n_idx, min_days_off):
         model.add_constraint(
             (1 - model.contains(shifts_by_date_union[all_dates[-1]], n_idx))
             <= 

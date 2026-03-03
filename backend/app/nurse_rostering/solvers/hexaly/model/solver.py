@@ -64,6 +64,8 @@ class NurseRosteringModel:
                 meta_key = key[len("meta_param_"):]
                 meta_params[meta_key] = value
                 continue
+            else:
+                setattr(optimizer.param, key, value)
         with hexaly.optimizer.HexalyOptimizer() as optimizer:
             
             
@@ -101,8 +103,7 @@ class NurseRosteringModel:
             optimizer.param.time_limit = max_time_in_seconds
             optimizer.param.verbosity = int(log_search_progress)
             
-            for key, value in solver_params.items():
-                setattr(optimizer.param, key, value)
+                
 
             optimizer.solve()
 
