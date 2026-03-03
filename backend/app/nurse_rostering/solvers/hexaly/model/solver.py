@@ -74,12 +74,12 @@ class NurseRosteringModel:
                 for shift in self.instance.shifts
             ]
 
-            def _set_nurses_to_shifts(nurses_at_shifts) -> None:
-                if not nurses_at_shifts:
+            def _set_nurses_to_shifts(nurses_at_shifts_forced) -> None:
+                if not nurses_at_shifts_forced:
                     return
 
                 shift_var_by_uid = {shift_var.shift.uid: shift_var for shift_var in self.shift_vars}
-                for shift_uid, nurse_uids in nurses_at_shifts.items():
+                for shift_uid, nurse_uids in nurses_at_shifts_forced.items():
                     shift_var = shift_var_by_uid[int(shift_uid)]
                     for nurse_uid in nurse_uids:
                         shift_var.fix(nurse_uid, True)
@@ -92,7 +92,7 @@ class NurseRosteringModel:
                 for module in self.modules
             )
 
-            _set_nurses_to_shifts(nurses_at_shifts=meta_params.get("nurses_at_shifts_active"))
+            _set_nurses_to_shifts(nurses_at_shifts_forced=meta_params.get("nurses_at_shifts_forced"))
             
             model.minimize(objective)
             

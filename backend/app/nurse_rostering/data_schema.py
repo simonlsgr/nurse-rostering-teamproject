@@ -231,7 +231,7 @@ class OptimizationParameters(BaseModel):
         gt=0,
         description="The maximum time in seconds to run the optimization.",
     )
-    nurses_at_shifts_active: dict = Field(
+    nurses_at_shifts_forced: dict = Field(
         default={},
         description="A dictionary containing shiftuids as keys and a list of nursuids as values. If a nurse-shift pair appears, the corresponding variable will be fixed to 1."
     )
