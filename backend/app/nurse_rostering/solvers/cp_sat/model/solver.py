@@ -17,7 +17,7 @@ from .modules import (
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
     DaysOffModule,
-    CoverRequirementsModule,
+    CoverRequirementsModule, NoBlockedShiftsModule,
 )
 from nurse_rostering.solvers.cp_sat.utils.generalize_return_status import generalize_return_status
 
@@ -52,6 +52,7 @@ class NurseRosteringModel:
             CoverRequirementsModule(),
             OffPreferences(),
             DaysOffModule(),
+            NoBlockedShiftsModule(),
         ]
 
         objective = sum(

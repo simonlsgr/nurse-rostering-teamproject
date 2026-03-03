@@ -22,26 +22,27 @@ class ShiftAssignmentModule(abc.ABC):
         """
         return 0
 
-# class NoBlockedShiftsModule(ShiftAssignmentModule):
-#     """
-#     Prohibit assignment to blocked shifts. 
-#     """
+class NoBlockedShiftsModule(ShiftAssignmentModule):
+    """
+    Prohibit assignment to blocked shifts.
+    """
 
-#     def enforce_for_nurse(self, model: cp_model.CpModel, nurse_x: NurseDecisionVars):
-#         for shift_uid in nurse_x.nurse.blocked_shifts:
-#             # prohibit assignment to blocked shifts
-#             model.add(nurse_x.is_assigned_to(shift_uid) == 0)
 
-#     def build(
-#         self,
-#         instance: NurseRosteringInstance,
-#         model: cp_model.CpModel,
-#         nurse_shift_vars: list[NurseDecisionVars],
-#         preferred_shift_vars: PreferredCoverDecisionVars = None
-#     ) -> cp_model.LinearExprT:
-#         for nurse_x in nurse_shift_vars:
-#             self.enforce_for_nurse(model, nurse_x)
-#         return 0
+    def build(
+        self,
+        instance: NurseRosteringInstance,
+        model: cp_model.CpModel,
+        nurse_shift_vars: list[NurseDecisionVars],
+        preferred_shift_vars: PreferredCoverDecisionVars = None
+    ) -> cp_model.LinearExprT:
+        for nv in nurse_shift_vars:
+            blocked_shifts = nv.nurse.blocked_shifts
+            if not blocked_shifts:
+                continue
+            for shift_uid in blocked_shifts:
+                nv.fix(shift_uid, False)
+
+        return 0
 
 
 # class DemandSatisfactionModule(ShiftAssignmentModule):
@@ -117,6 +118,8 @@ class MaximumShiftTypesModule(ShiftAssignmentModule):
         shift_type_dict = get_shift_type_dict(instance)
         
         for nv in nurse_shift_vars:
+            if nv.nurse.maximum_number_of_shifts_per_type is None:
+                continue
             for type, nb_types in nv.nurse.maximum_number_of_shifts_per_type.items():
                 model.add(
                     sum(nv.is_assigned_to(shift.uid) for shift in instance.shifts if shift.type == type) <= nb_types
@@ -136,7 +139,7 @@ class MaximizePreferences(ShiftAssignmentModule):
         expr = 0
         for nv in nurse_shift_vars:
             for shift_uid in nv.nurse.preferred_shifts:
-                expr += nv.nurse.preferred_shift_weight[shift_uid] * (1-nv.is_assigned_to(shift_uid))
+                expr += nv.nurse.preferred_shift_weight.get(shift_uid, 0) * (1-nv.is_assigned_to(shift_uid))
         return expr
 
 
@@ -225,31 +228,31 @@ class MinimumConsecutiveShiftsModule(ShiftAssignmentModule):
                         shifts_in_range += shifts_by_date[all_dates[i]]
                     model.add(sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d]]) + (s - sum(nv.is_assigned_to(shift) for shift in shifts_in_range)) + sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[d+s+1]]) >= 1)
             # if instance.planning_horizon_in_days >= min_shifts:
-
+            #
             #     lhs_start = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[0]])
             #     rhs_start = sum(
             #         nv.is_assigned_to(shift)
             #         for d in all_dates[:min_shifts]
             #         for shift in shifts_by_date[d]
             #     )
-
+            #
             #     worked_start = model.new_bool_var(f"worked_start_day_{nv.nurse.uid}")
             #     model.add(lhs_start >= 1).only_enforce_if(worked_start)
             #     model.add(lhs_start == 0).only_enforce_if(worked_start.Not())
-
+            #
             #     model.add(rhs_start >= min_shifts).only_enforce_if(worked_start)
-
+            #
             #     lhs_end = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[-1]])
             #     rhs_end = sum(
             #         nv.is_assigned_to(shift)
             #         for d in all_dates[-min_shifts:]
             #         for shift in shifts_by_date[d]
             #     )
-
+            #
             #     worked_end = model.new_bool_var("worked_end_day")
             #     model.add(lhs_end >= 1).only_enforce_if(worked_end)
             #     model.add(lhs_end == 0).only_enforce_if(worked_end.Not())
-
+            #
             #     model.add(rhs_end >= min_shifts).only_enforce_if(worked_end)
 
         return 0
@@ -287,24 +290,24 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
             #         for d in all_dates[:min_days_off]
             #         for shift in shifts_by_date[d]
             #     )
-
+            #
             #     start_day_off = model.new_bool_var(f"start_day_off_{nv.nurse.uid}")
             #     model.add(worked_start == 0).only_enforce_if(start_day_off)
             #     model.add(worked_start >= 1).only_enforce_if(start_day_off.Not())
-
+            #
             #     model.add(worked_window_start == 0).only_enforce_if(start_day_off)
-
+            #
             #     worked_end = sum(nv.is_assigned_to(shift) for shift in shifts_by_date[all_dates[-1]])
             #     worked_window_end = sum(
             #         nv.is_assigned_to(shift)
             #         for d in all_dates[-min_days_off:]
             #         for shift in shifts_by_date[d]
             #     )
-
+            #
             #     end_day_off = model.new_bool_var(f"end_day_off_{nv.nurse.uid}")
             #     model.add(worked_end == 0).only_enforce_if(end_day_off)
             #     model.add(worked_end >= 1).only_enforce_if(end_day_off.Not())
-
+            #
             #     model.add(worked_window_end == 0).only_enforce_if(end_day_off)
 
         return 0
