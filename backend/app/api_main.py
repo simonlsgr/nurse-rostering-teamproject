@@ -175,6 +175,7 @@ def delete_project(
 
 
 nurses_router = APIRouter(tags=["Nurses"], prefix="/projects/{project_id}/nurses")
+
 @nurses_router.post("", response_model=NurseResponse)
 def create_nurse(
     project_id: UUID,
