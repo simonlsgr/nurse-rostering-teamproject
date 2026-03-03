@@ -71,7 +71,6 @@ def nurse_strategy(draw, shift_uids):
         blocked_shifts=blocked,
         staff=staff,
         min_time_between_shifts=min_tbs,
-        preferred_shift_weight=pref_weight,
     )
 
 

@@ -10,6 +10,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.utils.data_utils import group_shifts_by_date, get_shift_type_dict
 
 
 def assert_consistent_uids(
@@ -67,18 +68,30 @@ def assert_min_time_between_shifts(
     """
     Assert that nurses are not assigned to shifts too close together.
     """
-    shifts_by_uid = {s.uid: s for s in instance.shifts}
-    nurse_to_shifts = defaultdict(list)
-    for shift_uid, nurse_uids in solution.nurses_at_shifts.items():
-        for nurse_uid in nurse_uids:
-            nurse_to_shifts[nurse_uid].append(shifts_by_uid[shift_uid])
-    for nurse in instance.nurses:
-        assigned = sorted(nurse_to_shifts[nurse.uid], key=lambda s: s.start_time)
-        for a, b in zip(assigned, assigned[1:]):
-            if b.start_time < a.end_time + nurse.min_time_between_shifts:
-                raise AssertionError(
-                    f"Nurse {nurse.uid} assigned to shifts {a.uid} and {b.uid} with insufficient rest."
-                )
+    shift_by_uid = {shift.uid: shift for shift in instance.shifts}
+    shift_type_dict = get_shift_type_dict(instance)
+    shifts_by_date = group_shifts_by_date(instance)
+    all_dates = sorted(shifts_by_date.keys())
+    if not all_dates:
+        return
+    for i in range(len(all_dates)-1):
+        day_shifts = shifts_by_date.get(all_dates[i], [])
+        following_day_shifts = shifts_by_date.get(all_dates[i] + timedelta(days=1), [])
+        if not day_shifts or not following_day_shifts:
+            continue
+        for day_shift in day_shifts:
+            types = shift_type_dict.get(day_shift, [])
+            if not types:
+                continue
+            for following_shift in following_day_shifts:
+                _type = shift_by_uid[following_shift].type
+                if _type is None:
+                    continue
+                if _type in types:
+                    intersect = set(solution.nurses_at_shifts[day_shift]).intersection(set(solution.nurses_at_shifts[following_shift]))
+                    if intersect:
+                        raise AssertionError("Not enough rest time")
+
 
 
 def assert_limit_worktime(
@@ -195,6 +208,7 @@ def assert_minimum_consecutive_days_off(
                     raise AssertionError(
                         f"Nurse {nurse_uid} has not enough days off: {days_off}, allowed: {min_days_off}"
                     )
+
 
 
 def assert_maximum_number_of_weekends(
