@@ -19,7 +19,7 @@ def run_min_rest_test(
     instance = NurseRosteringInstance(nurses=[nurse], shifts=shifts)
 
     # context = AssertModelFeasible() if expected_feasible else AssertModelInfeasible()
-    
+
     with hexaly.optimizer.HexalyOptimizer() as optimizer:
         model = optimizer.model
         nurse_vars = NurseDecisionVars(nurse, shifts, model)
@@ -37,7 +37,7 @@ def run_min_rest_test(
         else:
             if optimizer.solution.status != hexaly.optimizer.HxSolutionStatus.INFEASIBLE and optimizer.solution.status != hexaly.optimizer.HxSolutionStatus.INCONSISTENT:
                 raise Exception(f"Expected infeasible, but got status {optimizer.solution.status}")
-        
+
 
 
 def test_pattern_false_true_true_false():

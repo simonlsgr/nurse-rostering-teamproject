@@ -3,9 +3,12 @@ This module provides a basic container to manage the variables for a single nurs
 """
 
 from collections.abc import Iterable
-from hexaly.optimizer import HxModel, HxOperator
-from nurse_rostering.data_schema import Nurse, Shift, ShiftUid, NurseUid
+from datetime import date
+from typing import Any
 
+from hexaly.optimizer import HxModel, HxOperator
+from nurse_rostering.data_schema import Nurse, Shift, ShiftUid, NurseUid, NurseRosteringInstance
+from nurse_rostering.utils.data_utils import group_shifts_by_date
 
 
 class ShiftDecisionVars:
@@ -46,43 +49,46 @@ class NurseDecisionVars:
     This class also provides helper methods to iterate over assignments and extract results.
     """
 
-    def __init__(self, nurse: Nurse, shifts: list[Shift], model: HxModel):
+    def __init__(self, nurse: Nurse, shifts: list[Shift], model: HxModel, dates: dict[date, list[ShiftUid]]):
         self.nurse = nurse
         self.shifts = shifts
+        self.dates = dates
         self.model = model
-        # Create one Boolean decision variable per shift for this nurse
-        self._x = {
-            shift.uid: model.bool()
-            for shift in shifts
-        }
+        self._x = {}
+        for _date, shift_uids in self.dates.items():
+            shift_count = len(shift_uids)
+            self._x[_date] = self.model.int(0, shift_count)
 
-    def fix(self, shift_uid: ShiftUid, value: bool):
+
+    def fix(self, _date: date, value: int):
         """
         Fix the assignment variable for the given shift UID to a specific value (True or False).
         Useful for setting hard constraints or testing the model.
         """
-        if shift_uid not in self._x:
+        if _date not in self._x:
             raise ValueError(
-                f"Shift UID {shift_uid} not found in nurse {self.nurse.uid} assignments."
+                f"Date {_date} not found in nurse {self.nurse.uid} assignments."
             )
-        self.model.add_constraint(self._x[shift_uid] == value)
+        if value not in range(len(self.dates.get(_date, []))+1):
+            raise ValueError(
+                f"Shift {value} does not exist on date {_date} for nurse {self.nurse.uid} assignments."
+            )
+        self.model.add_constraint(self._x[_date] == value)
 
-    def is_assigned_to(self, shift_uid: ShiftUid):# -> cp_model.BoolVarT:
+    def is_assigned_to(self, _date: date):# -> cp_model.BoolVarT:
         """
         Return the decision variable for the given shift UID.
         This variable is True if the nurse is assigned to that shift, and False otherwise.
         """
-        return self._x[shift_uid]
+        return self._x[_date]
 
     def iter_shifts(self):# -> Iterable[tuple[Shift, cp_model.BoolVarT]]:
         """
         Iterate over all (shift, variable) pairs for this nurse.
         """
-        for shift in self.shifts:
-            yield shift, self.is_assigned_to(shift_uid=shift.uid)
+        for _date in self.dates.keys():
+            yield _date, self.is_assigned_to(_date=_date)
 
-    def extract(self) -> list[ShiftUid]:
-        """
-        Extract a list of shift UIDs that this nurse is assigned to in the solution.
-        """
-        return [shift_uid for shift_uid in self._x if self._x[shift_uid].value]
+
+
+
