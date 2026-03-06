@@ -1,5 +1,6 @@
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
+import CreateNurseDialog from './CreateNurseDialog';
 
 
 export default function NurseListTopbar() {
@@ -11,10 +12,7 @@ export default function NurseListTopbar() {
     <p className="p-2"> All Nurses: </p>
 
     <div className="flex gap-1">
-      <AddIcon 
-        fontSize="small"
-        className="hover:bg-gray-200 rounded text-muted-foreground"
-      />
+      <CreateNurseDialog />
       <MoreVertIcon 
         fontSize="small"
         className="hover:bg-gray-200 rounded"          
