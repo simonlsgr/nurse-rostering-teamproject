@@ -27,6 +27,32 @@ export const useNurses = create<NursesState>((set) => ({
     set((state) => ({
       nurses: state.nurses.filter((n) => n.uid !== nurseId),
     })),
-  }));
+}));
 
 
+type DetailViewNurseState = {
+  detailViewNurse: Nurse | null;
+  setDetailViewNurse: (detailViewNurse: Nurse | null) => void;
+};
+
+
+
+export const useDetailViewNurse = create<DetailViewNurseState>((set) => ({
+
+  detailViewNurse: null,
+  setDetailViewNurse: (detailViewNurse) => set({ detailViewNurse }),
+
+}));
+
+type OpenNurseDetailViewState = {
+
+  openNurseDetailView: boolean;
+  setOpenNurseDetailView: (openNurseDetailView: boolean) => void;
+};
+
+export const useOpenNurseDetailView = create<OpenNurseDetailViewState>((set) => ({
+
+  openNurseDetailView: false,
+  setOpenNurseDetailView: (openNurseDetailView) => set({ openNurseDetailView }),
+
+}));

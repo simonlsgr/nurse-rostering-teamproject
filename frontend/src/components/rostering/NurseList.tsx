@@ -7,6 +7,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from 'lucide-react';
 import NurseListTopbar from "../common/NurseListTopbar";
+import NurseDetailView from "../common/NurseDetailView";
 
 export default function NurseList(){
 
@@ -64,6 +65,8 @@ export default function NurseList(){
         </AnimatePresence>
       ))}
       </div>
+
+      <NurseDetailView />
 
   </div>
   );

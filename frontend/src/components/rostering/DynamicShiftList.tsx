@@ -7,26 +7,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search } from 'lucide-react';
 import ShiftListTopbar from "../common/ShiftListTopbar";
 import ShiftCard from "../ui/ShiftCard";
+import { Shift } from "@/types/nurseVars";
 
-export default function ShiftList(){
+
+type DynamicShiftListProps = {
+  shifts: Shift[];
+  shift_weights?: Record<string, number>;
+}
+
+
+export default function DynamicShiftList({ shifts, shift_weights }: DynamicShiftListProps) {
 
   const [query, setQuery] = useState("");
 
 
-  const { nurses, shifts } = useInstance();
-  
-
-
-  // filtered by search
   const filteredItems = shifts.filter((shift) =>
     shift.name.toLowerCase().includes(query.toLowerCase()) || shift.uid.toString().includes(query)
   );
 
-  return (
+  if (shifts.length <= 0) return (
+    <div className="text-muted-foreground italic flex justify-center">
+      No Entries
+    </div>
+  )
 
-    <div className="border-b h-[49vh] content-between border-border flex flex-col">
+  return(
 
-      <ShiftListTopbar />
+    <div className="content-between border-border flex flex-col">
       
       <div className="flex w-[calc(100%-1rem)] ml-2 p-1 border border-gray-300 rounded">
         <input
@@ -53,7 +60,7 @@ export default function ShiftList(){
             transition={{ duration: 0.17 }}
             className="select-none"
           >
-            <ShiftCard shift={shift} key={shift.uid}/>
+            <ShiftCard shift={shift} weight={shift_weights ? shift_weights[shift.uid] : 1} key={shift.uid}/>
           </motion.div>
         </AnimatePresence>
       ))}
@@ -61,6 +68,5 @@ export default function ShiftList(){
 
   </div>
   );
-
 
 }
