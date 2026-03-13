@@ -60,7 +60,7 @@ export default function DynamicShiftList({ shifts, shift_weights }: DynamicShift
             transition={{ duration: 0.17 }}
             className="select-none"
           >
-            <ShiftCard shift={shift} weight={shift_weights ? shift_weights[shift.uid] : 1} key={shift.uid}/>
+            <ShiftCard shift={shift} weight={shift_weights ? shift_weights[shift.uid] : undefined} key={shift.uid}/>
           </motion.div>
         </AnimatePresence>
       ))}

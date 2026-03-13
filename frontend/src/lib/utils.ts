@@ -7,11 +7,15 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(
   input: string | null,
-  type: "date" | "time" | "datetime" = "datetime"
+  type: "weekday" | "date" | "time" | "datetime" = "datetime"
 ) {
   if (!input) return "--";
   
   const date = new Date(input);
+
+  if (type === "weekday") {
+    return date.toLocaleDateString("de-DE", { weekday: "short" });
+  }
 
   if (type === "date") {
     return date.toLocaleDateString("de-DE");

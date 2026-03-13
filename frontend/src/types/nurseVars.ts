@@ -10,8 +10,8 @@ export type Nurse = {
   days_off: string[];
   staff: boolean;
   min_time_between_shifts: string;
-  preferred_shift_weight: Record<string, number | undefined>; // fix later so that it is only nubmer
-  preferred_off_shift_weight: Record<string, number | undefined>;
+  preferred_shift_weight: Record<string, number>; // fix later so that it is only nubmer
+  preferred_off_shift_weight: Record<string, number>;
   minimum_work_time: number;
   maximum_work_time: number;
   minimum_consecutive_shifts: number;
