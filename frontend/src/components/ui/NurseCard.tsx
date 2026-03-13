@@ -1,4 +1,4 @@
-import { useDetailViewNurse, useOpenNurseDetailView } from "@/store/nurseStore";
+import { useDetailViewNurse, useEditAttributes, useOpenNurseDetailView } from "@/store/nurseStore";
 import { Nurse } from "@/types/nurseVars";
 import { ScanSearch } from 'lucide-react';
 
@@ -11,7 +11,7 @@ export default function NurseCard({ nurse }: NurseCardProps){
 
   const { setDetailViewNurse } = useDetailViewNurse();
   const { setOpenNurseDetailView } = useOpenNurseDetailView();
-
+  const { setEditAttributes } = useEditAttributes();
 
 
   return (
@@ -29,7 +29,7 @@ export default function NurseCard({ nurse }: NurseCardProps){
       <div>
         <ScanSearch
           className="opacity-0 group-hover:opacity-100 transition hover:bg-gray-200 rounded" 
-          onClick={() => { setDetailViewNurse(nurse); setOpenNurseDetailView(true); }}
+          onClick={() => { setDetailViewNurse(nurse); setOpenNurseDetailView(true); setEditAttributes({}); }}
         />
       </div>
     </div>

@@ -56,3 +56,25 @@ export const useOpenNurseDetailView = create<OpenNurseDetailViewState>((set) => 
   setOpenNurseDetailView: (openNurseDetailView) => set({ openNurseDetailView }),
 
 }));
+
+type EditAttributesState = {
+  editAttributes: Record<string, boolean>;
+  setEditAttributes: (editAttributes: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void;
+  setEditAttribute: (key: string, value: boolean) => void;
+};
+
+
+export const useEditAttributes = create<EditAttributesState>((set) => ({
+
+  editAttributes: {},
+  setEditAttributes: (editAttributes) => set((state) => ({ editAttributes: typeof(editAttributes) === "function" ? editAttributes(state.editAttributes) : editAttributes})),
+  setEditAttribute(key: string, value: boolean) {
+    set((state) => ({
+      editAttributes: {
+        ...state.editAttributes,
+        [key]: value,
+      }
+    }));
+  }
+}));
+
