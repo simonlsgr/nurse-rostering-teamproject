@@ -54,9 +54,11 @@ export default function SolverSelector () {
                         onChange={handleChange}
                         error={usedSolverError}
                     >
-                        <MenuItem value={"cp-sat"}>CP SAT</MenuItem>
-                        <MenuItem value={"gurobi"}>Gurobi</MenuItem>
-                        <MenuItem value={"hexaly"}>Hexaly</MenuItem>
+                        <MenuItem value={"cpsat-mip"}>CP SAT (MIP)</MenuItem>
+                        <MenuItem value={"cpsat-automaton"}>CP SAT (Automaton)</MenuItem>
+                        <MenuItem value={"gurobi"}>Gurobi (MIP)</MenuItem>
+                        <MenuItem value={"hexaly-set"}>Hexaly (Set-Based)</MenuItem>
+                        <MenuItem value={"hexaly-table"}>Hexaly (Table-Based)</MenuItem>
                     </Select>
                 </FormControl>
             </motion.div>
