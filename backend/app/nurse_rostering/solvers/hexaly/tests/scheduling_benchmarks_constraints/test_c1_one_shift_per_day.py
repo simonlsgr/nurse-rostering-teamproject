@@ -1,6 +1,6 @@
 import datetime
 
-from nurse_rostering.solvers.hexaly.model.modules import OneShiftPerDayModule
+from nurse_rostering.solvers.hexaly.model.modules import OneShiftPerDayModuleSet
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import Shift
 from nurse_rostering.utils._generate import create_shifts, create_nurse
@@ -28,7 +28,7 @@ def test_one_shift_per_day_infeasible():
     with AssertModelInfeasible() as model:
         shift_vars1 = ShiftDecisionVars(shifts[0], [nurse1], model)
         shift_vars2 = ShiftDecisionVars(shifts[1], [nurse1], model)
-        OneShiftPerDayModule().build(instance, model, [shift_vars1, shift_vars2])
+        OneShiftPerDayModuleSet().build(instance, model, [shift_vars1, shift_vars2])
         shift_vars1.fix(nurse1.uid, True)
         shift_vars2.fix(nurse1.uid, True)
     
@@ -55,7 +55,7 @@ def test_one_shift_per_day_feasible():
     with AssertModelFeasible() as model:
         shift_vars1 = ShiftDecisionVars(shifts[0], [nurse1], model)
         shift_vars2 = ShiftDecisionVars(shifts[1], [nurse1], model)
-        OneShiftPerDayModule().build(instance, model, [shift_vars1, shift_vars2])
+        OneShiftPerDayModuleSet().build(instance, model, [shift_vars1, shift_vars2])
         shift_vars1.fix(nurse1.uid, True)
         shift_vars2.fix(nurse1.uid, False)
         

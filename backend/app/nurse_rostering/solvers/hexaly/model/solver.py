@@ -3,21 +3,21 @@ from typing import Any
 import hexaly.optimizer
 from nurse_rostering.solvers.hexaly.utils.generalize_return_status import generalize_return_status
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
-from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution, SolverFormulation
 from nurse_rostering.solvers.hexaly.model.modules import (
     ShiftAssignmentModule,
-    OneShiftPerDayModule,
-    ShiftRotationModule,
-    MaximumShiftTypesModule,
-    LimitWorkTimeModule,
-    MaximumConsecutiveShiftsModule,
-    MinimumConsecutiveShiftsModule,
-    MinimumConsecutiveDaysOffModule,
-    MaximumNumberOfWeekendsModule,
-    DaysOffModule,
-    CoverRequirementsModule,
-    PreferStaffModule,
-    PreferredShiftsModule,
+    OneShiftPerDayModuleSet,
+    ShiftRotationModuleSet,
+    MaximumShiftTypesModuleSet,
+    LimitWorkTimeModuleSet,
+    MaximumConsecutiveShiftsModuleSet,
+    MinimumConsecutiveShiftsModuleSet,
+    MinimumConsecutiveDaysOffModuleSet,
+    MaximumNumberOfWeekendsModuleSet,
+    DaysOffModuleSet,
+    CoverRequirementsModuleSet,
+    PreferStaffModuleSet,
+    PreferredShiftsModuleSet,
 )
 
 class NurseRosteringModel:
@@ -26,30 +26,30 @@ class NurseRosteringModel:
     """
     
     def __init__(
-        self, instance: NurseRosteringInstance, model = None
+        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.SET
     ):
         self.instance = instance
         
         
+        if formulation == SolverFormulation.SET:
+            self.modules: list[ShiftAssignmentModule] = [
+                OneShiftPerDayModuleSet(),
+                ShiftRotationModuleSet(),
+                MaximumShiftTypesModuleSet(),
+                LimitWorkTimeModuleSet(),
+                MaximumConsecutiveShiftsModuleSet(),
+                MinimumConsecutiveShiftsModuleSet(),
+                MinimumConsecutiveDaysOffModuleSet(),
+                MaximumNumberOfWeekendsModuleSet(),
+                DaysOffModuleSet(),
+                CoverRequirementsModuleSet(),
+                PreferStaffModuleSet(),
+                PreferredShiftsModuleSet(),
+            ]
+        
 
-        self.modules: list[ShiftAssignmentModule] = [
-            OneShiftPerDayModule(),
-            ShiftRotationModule(),
-            MaximumShiftTypesModule(),
-            LimitWorkTimeModule(),
-            MaximumConsecutiveShiftsModule(),
-            MinimumConsecutiveShiftsModule(),
-            MinimumConsecutiveDaysOffModule(),
-            MaximumNumberOfWeekendsModule(),
-            DaysOffModule(),
-            CoverRequirementsModule(),
-            PreferStaffModule(),
-            PreferredShiftsModule(),
-        ]
 
 
-    def __str__(self) -> str:
-        return "Hexaly Nurse Rostering Model" 
         
     def solve(
         self,

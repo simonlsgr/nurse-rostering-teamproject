@@ -1,6 +1,6 @@
 import datetime
 
-from nurse_rostering.solvers.hexaly.model.modules import CoverRequirementsModule
+from nurse_rostering.solvers.hexaly.model.modules import CoverRequirementsModuleSet
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import Shift, Nurse
 from nurse_rostering.utils._generate import create_shifts, create_nurse
@@ -40,7 +40,7 @@ def test_cover_requirements_feasible():
         model = optimizer.model
         
         shift_vars = ShiftDecisionVars(shifts[0], [nurse1, nurse2], model)
-        goal = CoverRequirementsModule().build(instance, model, [shift_vars])
+        goal = CoverRequirementsModuleSet().build(instance, model, [shift_vars])
         
         model.minimize(goal)
         
