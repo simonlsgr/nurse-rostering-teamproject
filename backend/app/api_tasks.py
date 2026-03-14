@@ -61,8 +61,8 @@ def run_optimization_job(
             solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
         case "hexaly-table":
             solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
-        case "cpsat-mip":
-            solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.MIP)
+        case "cpsat-ip":
+            solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.IP)
         case "cpsat-automaton":
             solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.AUTOMATON)
             

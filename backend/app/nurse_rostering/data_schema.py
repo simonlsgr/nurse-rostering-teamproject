@@ -31,7 +31,7 @@ class SolverReturnStatus(str, enum.Enum):
     UNKNOWN = "UNKNOWN"
 
 class SolverFormulation(str, enum.Enum):
-    MIP = "MIP"
+    IP = "IP"
     AUTOMATON = "AUTOMATON"
     SET = "SET"
     TABLE = "TABLE"

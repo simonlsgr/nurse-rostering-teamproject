@@ -30,10 +30,10 @@ class NurseRosteringModel:
     """
 
     def __init__(
-        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[Any, Any] | None = None, formulation: SolverFormulation | None = SolverFormulation.MIP
+        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[Any, Any] | None = None, formulation: SolverFormulation | None = SolverFormulation.IP
     ):
-        if formulation not in (SolverFormulation.MIP, SolverFormulation.AUTOMATON):
-            raise RuntimeError("CP-SAT only supports MIP and AUTOMATON formulation")
+        if formulation not in (SolverFormulation.IP, SolverFormulation.AUTOMATON):
+            raise RuntimeError("CP-SAT only supports IP and AUTOMATON formulation")
         self.instance = instance
         self.model = model or cp_model.CpModel()
         self.nurse_vars = [
@@ -58,7 +58,7 @@ class NurseRosteringModel:
         
         if formulation == SolverFormulation.AUTOMATON:
             self.modules.append(ConsecutiveShiftsAndDaysModule())
-        elif formulation == SolverFormulation.MIP:
+        elif formulation == SolverFormulation.IP:
             self.modules += [
                 MaximumConsecutiveShiftsModule(),
                 MinimumConsecutiveShiftsModule(),
