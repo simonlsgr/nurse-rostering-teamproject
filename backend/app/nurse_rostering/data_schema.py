@@ -30,6 +30,13 @@ class SolverReturnStatus(str, enum.Enum):
     MODEL_INVALID = "MODEL_INVALID"
     UNKNOWN = "UNKNOWN"
 
+class SolverFormulation(str, enum.Enum):
+    MIP = "MIP"
+    AUTOMATON = "AUTOMATON"
+    SET = "SET"
+    TABLE = "TABLE"
+    
+
 class Nurse(BaseModel):
     uid: NurseUid = Field(
         default_factory=generate_random_uid,

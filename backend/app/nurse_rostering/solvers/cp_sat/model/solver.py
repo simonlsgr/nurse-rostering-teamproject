@@ -1,6 +1,6 @@
 from ortools.sat.python import cp_model
 from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
-from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution, NurseUid, ShiftUid
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution, NurseUid, ShiftUid, SolverFormulation
 from typing import Any
 
 from .modules import (
@@ -17,7 +17,9 @@ from .modules import (
     MinimumConsecutiveDaysOffModule,
     MaximumNumberOfWeekendsModule,
     DaysOffModule,
-    CoverRequirementsModule, NoBlockedShiftsModule,
+    CoverRequirementsModule, 
+    NoBlockedShiftsModule,
+    ConsecutiveShiftsAndDaysModule,
 )
 from nurse_rostering.solvers.cp_sat.utils.generalize_return_status import generalize_return_status
 
@@ -28,8 +30,10 @@ class NurseRosteringModel:
     """
 
     def __init__(
-        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[Any, Any] | None = None
+        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[Any, Any] | None = None, formulation: SolverFormulation | None = SolverFormulation.MIP
     ):
+        if formulation not in (SolverFormulation.MIP, SolverFormulation.AUTOMATON):
+            raise RuntimeError("CP-SAT only supports MIP and AUTOMATON formulation")
         self.instance = instance
         self.model = model or cp_model.CpModel()
         self.nurse_vars = [
@@ -45,15 +49,22 @@ class NurseRosteringModel:
             MaximizePreferences(),
             PreferStaffModule(),
             LimitWorkTimeModule(),
-            MaximumConsecutiveShiftsModule(),
-            MinimumConsecutiveShiftsModule(),
-            MinimumConsecutiveDaysOffModule(),
             MaximumNumberOfWeekendsModule(),
             CoverRequirementsModule(),
             OffPreferences(),
             DaysOffModule(),
             NoBlockedShiftsModule(),
         ]
+        
+        if formulation == SolverFormulation.AUTOMATON:
+            self.modules.append(ConsecutiveShiftsAndDaysModule())
+        elif formulation == SolverFormulation.MIP:
+            self.modules += [
+                MaximumConsecutiveShiftsModule(),
+                MinimumConsecutiveShiftsModule(),
+                MinimumConsecutiveDaysOffModule()
+            ]
+        
 
         objective = sum(
             module.build(instance, self.model, self.nurse_vars) for module in self.modules
@@ -69,7 +80,6 @@ class NurseRosteringModel:
         self.model.minimize(objective)
     
     def _set_nurses_to_shifts(self, nurses_at_shifts_forced) -> None:
-        print("-------------DDDDDDDDDDDDDDDDDDDDDDDDDDDD", nurses_at_shifts_forced)
         if not nurses_at_shifts_forced:
             return
 
@@ -91,7 +101,6 @@ class NurseRosteringModel:
         solver.parameters.log_search_progress = log_search_progress
         solver.parameters.max_time_in_seconds = max_time_in_seconds
         meta_params: dict[str, Any] = {}
-        print(solver_params)
         for key, value in solver_params.items():
             if key.startswith("meta_param_"):
                 meta_key = key[len("meta_param_"):]
