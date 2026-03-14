@@ -58,6 +58,7 @@ export default function SolverSelector () {
                         <MenuItem value={"cpsat-automaton"}>CP SAT (Automaton)</MenuItem>
                         <MenuItem value={"gurobi"}>Gurobi (IP)</MenuItem>
                         <MenuItem value={"hexaly-set"}>Hexaly (Set-Based)</MenuItem>
+                        <MenuItem value={"hexaly-ip"}>Hexaly (IP)</MenuItem>
                         <MenuItem value={"hexaly-table"}>Hexaly (Table-Based)</MenuItem>
                     </Select>
                 </FormControl>

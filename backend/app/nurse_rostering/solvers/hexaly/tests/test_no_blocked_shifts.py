@@ -1,7 +1,7 @@
 from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 from nurse_rostering.data_schema import NurseRosteringInstance
-from nurse_rostering.solvers.hexaly.model.modules import NoBlockedShiftsModule
+from nurse_rostering.solvers.hexaly.model.modules_set import NoBlockedShiftsModule
 import hexaly.optimizer
 
 def test_no_blocked_shifts_trivial():

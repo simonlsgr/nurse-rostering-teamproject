@@ -2,10 +2,10 @@ from typing import Any
 
 import hexaly.optimizer
 from nurse_rostering.solvers.hexaly.utils.generalize_return_status import generalize_return_status
-from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
+from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars, NurseDecisionVarsIP
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution, SolverFormulation
-from nurse_rostering.solvers.hexaly.model.modules import (
-    ShiftAssignmentModule,
+from nurse_rostering.solvers.hexaly.model.modules_set import (
+    ShiftAssignmentModuleSet,
     OneShiftPerDayModuleSet,
     ShiftRotationModuleSet,
     MaximumShiftTypesModuleSet,
@@ -19,6 +19,22 @@ from nurse_rostering.solvers.hexaly.model.modules import (
     PreferStaffModuleSet,
     PreferredShiftsModuleSet,
 )
+from nurse_rostering.solvers.hexaly.model.modules_ip import (
+    ShiftAssignmentModuleIP,
+    OneShiftPerDayModuleIP,
+    ShiftRotationModuleIP,
+    MaximumShiftTypesModuleIP,
+    LimitWorkTimeModuleIP,
+    MaximumConsecutiveShiftsModuleIP,
+    MinimumConsecutiveShiftsModuleIP,
+    MinimumConsecutiveDaysOffModuleIP,
+    MaximumNumberOfWeekendsModuleIP,
+    DaysOffModuleIP,
+    CoverRequirementsModuleIP,
+    PreferStaffModuleIP,
+    MaximizePreferencesIP,
+    OffPreferencesIP,
+)
 
 class NurseRosteringModel:
     """
@@ -29,10 +45,11 @@ class NurseRosteringModel:
         self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.SET
     ):
         self.instance = instance
+        self.formulation = formulation
         
         
-        if formulation == SolverFormulation.SET:
-            self.modules: list[ShiftAssignmentModule] = [
+        if self.formulation == SolverFormulation.SET:
+            self.modules: list[ShiftAssignmentModuleSet] = [
                 OneShiftPerDayModuleSet(),
                 ShiftRotationModuleSet(),
                 MaximumShiftTypesModuleSet(),
@@ -45,6 +62,22 @@ class NurseRosteringModel:
                 CoverRequirementsModuleSet(),
                 PreferStaffModuleSet(),
                 PreferredShiftsModuleSet(),
+            ]
+        elif self.formulation == SolverFormulation.IP:
+            self.modules: list[ShiftAssignmentModuleIP] = [
+                MaximumShiftTypesModuleIP(),
+                OneShiftPerDayModuleIP(),
+                ShiftRotationModuleIP(),
+                MaximizePreferencesIP(),
+                PreferStaffModuleIP(),
+                LimitWorkTimeModuleIP(),
+                MaximumConsecutiveShiftsModuleIP(),
+                MinimumConsecutiveShiftsModuleIP(),
+                MinimumConsecutiveDaysOffModuleIP(),
+                MaximumNumberOfWeekendsModuleIP(),
+                CoverRequirementsModuleIP(),
+                OffPreferencesIP(),
+                DaysOffModuleIP(),
             ]
         
 
@@ -70,31 +103,34 @@ class NurseRosteringModel:
             
             
             model = optimizer.model
-            
-            self.shift_vars = [
-                ShiftDecisionVars(shift, self.instance.nurses, model)
-                for shift in self.instance.shifts
-            ]
+            objective = 0
+            if self.formulation == SolverFormulation.SET:
+                self.shift_vars = [
+                    ShiftDecisionVars(shift, self.instance.nurses, model)
+                    for shift in self.instance.shifts
+                ]
+                
+                objective = model.sum(
+                    module.build(self.instance, model, self.shift_vars)  # type: ignore
+                    for module in self.modules
+                )
 
-            def _set_nurses_to_shifts(nurses_at_shifts_forced) -> None:
-                if not nurses_at_shifts_forced:
-                    return
+                def _set_nurses_to_shifts(nurses_at_shifts_forced) -> None:
+                    if not nurses_at_shifts_forced:
+                        return
 
-                shift_var_by_uid = {shift_var.shift.uid: shift_var for shift_var in self.shift_vars}
-                for shift_uid, nurse_uids in nurses_at_shifts_forced.items():
-                    shift_var = shift_var_by_uid[int(shift_uid)]
-                    for nurse_uid in nurse_uids:
-                        shift_var.fix(nurse_uid, True)
+                    shift_var_by_uid = {shift_var.shift.uid: shift_var for shift_var in self.shift_vars}
+                    for shift_uid, nurse_uids in nurses_at_shifts_forced.items():
+                        shift_var = shift_var_by_uid[int(shift_uid)]
+                        for nurse_uid in nurse_uids:
+                            shift_var.fix(nurse_uid, True)
 
-
-
-            
-            objective = model.sum(
-                module.build(self.instance, model, self.shift_vars)  # type: ignore
-                for module in self.modules
-            )
-
-            _set_nurses_to_shifts(nurses_at_shifts_forced=meta_params.get("nurses_at_shifts_forced"))
+                _set_nurses_to_shifts(nurses_at_shifts_forced=meta_params.get("nurses_at_shifts_forced"))
+            elif self.formulation == SolverFormulation.IP:
+                self.nurse_vars = [
+                    NurseDecisionVarsIP(nurse, self.instance.shifts, self.model) for nurse in self.instance.nurses
+                ]
+                
             
             model.minimize(objective)
             
@@ -115,11 +151,18 @@ class NurseRosteringModel:
                     lower_bound=-1
                 )
                 
-            nurses_at_shifts = {}
-            for shift_var in self.shift_vars:
-                for n_idx, nurse in enumerate(shift_var.nurses):
-                    if n_idx in shift_var.nurses_assigned.value:
-                        nurses_at_shifts.setdefault(shift_var.shift.uid, []).append(nurse.uid)
+            
+            if self.formulation == SolverFormulation.SET:    
+                nurses_at_shifts = {}
+                for shift_var in self.shift_vars:
+                    for n_idx, nurse in enumerate(shift_var.nurses):
+                        if n_idx in shift_var.nurses_assigned.value:
+                            nurses_at_shifts.setdefault(shift_var.shift.uid, []).append(nurse.uid)
+            elif self.formulation == SolverFormulation.IP:
+                nurses_at_shifts: dict[int, list[int]] = {}
+                for nurse_model in self.nurse_vars:
+                    for shift_uid in nurse_model.extract():
+                        nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
 
             return NurseRosteringSolution(
                 nurses_at_shifts=nurses_at_shifts,

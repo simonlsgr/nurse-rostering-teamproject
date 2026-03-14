@@ -1,4 +1,4 @@
-from nurse_rostering.solvers.hexaly.model.modules import MinTimeBetweenShifts
+from nurse_rostering.solvers.hexaly.model.modules_set import MinTimeBetweenShifts
 from datetime import timedelta
 
 from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars

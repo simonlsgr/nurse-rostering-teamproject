@@ -1,4 +1,4 @@
-from nurse_rostering.solvers.hexaly.model.modules import MaximizePreferences, DemandSatisfactionModule
+from nurse_rostering.solvers.hexaly.model.modules_set import MaximizePreferences, DemandSatisfactionModule
 from cpsat_utils.testing import assert_objective
 from nurse_rostering.utils._generate import create_shifts, create_nurse
 

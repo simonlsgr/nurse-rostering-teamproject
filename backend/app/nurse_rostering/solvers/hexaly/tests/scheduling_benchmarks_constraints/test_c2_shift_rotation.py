@@ -1,6 +1,6 @@
 import datetime
 
-from nurse_rostering.solvers.hexaly.model.modules import ShiftRotationModuleSet
+from nurse_rostering.solvers.hexaly.model.modules_set import ShiftRotationModuleSet
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 from nurse_rostering.data_schema import Shift
 from nurse_rostering.utils._generate import create_shifts, create_nurse

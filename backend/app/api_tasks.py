@@ -57,8 +57,10 @@ def run_optimization_job(
         
         case "gurobi":
             solver = NurseRosteringModelGRB(job_request.nurse_rostering_instance, None) 
+        case "hexaly-ip":
+            solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.IP) 
         case "hexaly-set":
-            solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
+            solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.SET) 
         case "hexaly-table":
             solver = NurseRosteringModelHXLY(job_request.nurse_rostering_instance, None) 
         case "cpsat-ip":

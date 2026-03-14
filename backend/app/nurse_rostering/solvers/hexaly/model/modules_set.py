@@ -8,7 +8,7 @@ from nurse_rostering.data_schema import NurseRosteringInstance, Shift
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars
 
 
-class ShiftAssignmentModule(abc.ABC):
+class ShiftAssignmentModuleSet(abc.ABC):
     @abc.abstractmethod
     def build(
         self,
@@ -22,7 +22,7 @@ class ShiftAssignmentModule(abc.ABC):
         """
         return 0
 
-class OneShiftPerDayModuleSet(ShiftAssignmentModule):
+class OneShiftPerDayModuleSet(ShiftAssignmentModuleSet):
     """1st constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
@@ -42,7 +42,7 @@ class OneShiftPerDayModuleSet(ShiftAssignmentModule):
 
         return 0
 
-class ShiftRotationModuleSet(ShiftAssignmentModule):
+class ShiftRotationModuleSet(ShiftAssignmentModuleSet):
     """2nd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
@@ -70,7 +70,7 @@ class ShiftRotationModuleSet(ShiftAssignmentModule):
                     
         return 0
             
-class MaximumShiftTypesModuleSet(ShiftAssignmentModule):
+class MaximumShiftTypesModuleSet(ShiftAssignmentModuleSet):
     """3rd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
@@ -95,7 +95,7 @@ class MaximumShiftTypesModuleSet(ShiftAssignmentModule):
         return 0
 
 
-class LimitWorkTimeModuleSet(ShiftAssignmentModule):
+class LimitWorkTimeModuleSet(ShiftAssignmentModuleSet):
     """4th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, shift_vars):
         for n_idx, nurse in enumerate(instance.nurses):
@@ -113,7 +113,7 @@ class LimitWorkTimeModuleSet(ShiftAssignmentModule):
                 model.add_constraint(working_time <= max_time)
         return 0
 
-class MaximumConsecutiveShiftsModuleSet(ShiftAssignmentModule):
+class MaximumConsecutiveShiftsModuleSet(ShiftAssignmentModuleSet):
     """5th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
         
@@ -143,7 +143,7 @@ class MaximumConsecutiveShiftsModuleSet(ShiftAssignmentModule):
             
                 
             
-class MinimumConsecutiveShiftsModuleSet(ShiftAssignmentModule):
+class MinimumConsecutiveShiftsModuleSet(ShiftAssignmentModuleSet):
     """6th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def is_consecutive(self, all_dates, start_index, length):
@@ -210,7 +210,7 @@ class MinimumConsecutiveShiftsModuleSet(ShiftAssignmentModule):
                 )
             )   
             
-class MinimumConsecutiveDaysOffModuleSet(ShiftAssignmentModule):
+class MinimumConsecutiveDaysOffModuleSet(ShiftAssignmentModuleSet):
     """7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
@@ -269,7 +269,7 @@ class MinimumConsecutiveDaysOffModuleSet(ShiftAssignmentModule):
 
 
 # should work but tests dont terminate
-# class MaximumNumberOfWeekendsModule(ShiftAssignmentModule):
+# class MaximumNumberOfWeekendsModule(ShiftAssignmentModuleSet):
 #     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 #     def build(self, instance, model, shift_vars):
 #         shifts_by_date = {}
@@ -309,7 +309,7 @@ class MinimumConsecutiveDaysOffModuleSet(ShiftAssignmentModule):
 
 
 
-class MaximumNumberOfWeekendsModuleSet(ShiftAssignmentModule):
+class MaximumNumberOfWeekendsModuleSet(ShiftAssignmentModuleSet):
     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf
     It is assumed that if a sunday or a saturday is in the model, the corresponding other weekend day is also part of the scheduling horizn.
     """
@@ -360,7 +360,7 @@ class MaximumNumberOfWeekendsModuleSet(ShiftAssignmentModule):
         return 0
                 
 
-class DaysOffModuleSet(ShiftAssignmentModule):
+class DaysOffModuleSet(ShiftAssignmentModuleSet):
     """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
@@ -382,7 +382,7 @@ class DaysOffModuleSet(ShiftAssignmentModule):
         return 0
 
 
-class CoverRequirementsModuleSet(ShiftAssignmentModule):
+class CoverRequirementsModuleSet(ShiftAssignmentModuleSet):
     """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
@@ -400,7 +400,7 @@ class CoverRequirementsModuleSet(ShiftAssignmentModule):
         return expr
         
 
-class PreferStaffModuleSet(ShiftAssignmentModule):
+class PreferStaffModuleSet(ShiftAssignmentModuleSet):
     def build(self, instance, model, shift_vars):
         """
         Penalize use of non-staff (contract) nurses in the objective.
@@ -412,7 +412,7 @@ class PreferStaffModuleSet(ShiftAssignmentModule):
                     expr += instance.staff_weight * model.contains(sv.nurses_assigned, n_idx)
         return expr                   
 
-class PreferredShiftsModuleSet(ShiftAssignmentModule):
+class PreferredShiftsModuleSet(ShiftAssignmentModuleSet):
     """Part of objective in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
     def build(self, instance, model, shift_vars):
