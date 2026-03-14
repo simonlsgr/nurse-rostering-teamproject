@@ -235,7 +235,7 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
     """7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     def build(self, instance, model, nurse_shift_vars):
         shifts_by_date = group_shifts_by_date(instance)
-        print(shifts_by_date)
+        # print(shifts_by_date)
         all_dates = sorted(shifts_by_date.keys())
         if not all_dates:
             return 0
@@ -245,7 +245,7 @@ class MinimumConsecutiveDaysOffModule(ShiftAssignmentModule):
                 continue
             for s in range(1, min_days_off):
                 for d in range(0, len(all_dates) - (s + 1)):
-                    print(d)
+                    # print(d)
                     shifts_in_range = []
                     for i in range(d + 1, d + s + 1):
                         shifts_in_range += shifts_by_date[all_dates[i]]
@@ -315,3 +315,63 @@ class CoverRequirementsModule(ShiftAssignmentModule):
         
         return expr
 
+
+class ConsecutiveShiftsAndDaysModule(ShiftAssignmentModule):
+    """5th, 6th & 7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
+    
+    def build(self, instance, model, nurse_shift_vars):
+        shifts_by_date = group_shifts_by_date(instance)
+        
+        for nv in nurse_shift_vars:
+            works_on_day = []
+            for date, shifts in shifts_by_date.items():
+                works_on_day += [
+                    model.NewBoolVar(f"works_{nv.nurse.uid}_day_{day}")
+                    for day in shifts_by_date.keys()
+                ]
+                for day_idx, (day, shifts) in enumerate(shifts_by_date.items()):
+                    model.AddMaxEquality(works_on_day[day_idx], [nv.is_assigned_to(shift) for shift in shifts])
+                    
+            states = list(range(0,2*nv.nurse.minimum_consecutive_days_off+2*nv.nurse.maximum_consecutive_shifts+1))
+
+            start = states[0]
+            bw = states[1:nv.nurse.maximum_consecutive_shifts+1]
+            w = states[nv.nurse.maximum_consecutive_shifts+1:2*nv.nurse.maximum_consecutive_shifts+1]
+            o = states[2*nv.nurse.maximum_consecutive_shifts+1:2*nv.nurse.maximum_consecutive_shifts+1+nv.nurse.minimum_consecutive_days_off]
+            of = states[2*nv.nurse.maximum_consecutive_shifts+1+nv.nurse.minimum_consecutive_days_off:2*nv.nurse.maximum_consecutive_shifts+2+2*nv.nurse.minimum_consecutive_days_off]
+
+            transitions = []
+
+            transitions.append((start,0,of[0]))
+            transitions.append((start,1,bw[0]))
+            transitions.append((o[nv.nurse.minimum_consecutive_days_off-1],0,o[nv.nurse.minimum_consecutive_days_off-1]))
+            transitions.append((o[nv.nurse.minimum_consecutive_days_off-1],1,w[0]))
+            transitions.append((of[nv.nurse.minimum_consecutive_days_off-1],0,o[nv.nurse.minimum_consecutive_days_off-1]))
+            transitions.append((of[nv.nurse.minimum_consecutive_days_off-1],1,w[0]))
+            transitions.append((w[nv.nurse.maximum_consecutive_shifts-1],0,o[0]))
+            transitions.append((bw[nv.nurse.maximum_consecutive_shifts-1],0,o[0]))
+
+            transitions += [(w[i],1,w[i+1]) for i in range(nv.nurse.maximum_consecutive_shifts-1)]
+
+            transitions += [(w[i],0,o[0]) for i in range(nv.nurse.minimum_consecutive_shifts-1, nv.nurse.maximum_consecutive_shifts-1)]
+            transitions += [(w[i],1,w[i+1]) for i in range(nv.nurse.minimum_consecutive_shifts-1, nv.nurse.maximum_consecutive_shifts-1)]
+
+            transitions += [(bw[i],0,o[0]) for i in range(nv.nurse.maximum_consecutive_shifts-1)]
+            transitions += [(bw[i],1,bw[i+1]) for i in range(nv.nurse.maximum_consecutive_shifts-1)]
+
+            transitions += [(o[i],0,o[i+1]) for i in range(nv.nurse.minimum_consecutive_days_off-1)]
+
+            transitions += [(of[i],0,of[i+1]) for i in range(nv.nurse.minimum_consecutive_days_off-1)]
+            transitions += [(of[i],1,w[0]) for i in range(nv.nurse.minimum_consecutive_days_off-1)]
+
+            transitions = list(set(transitions))
+
+            model.AddAutomaton(
+                transition_expressions=works_on_day,
+                starting_state=start,
+                final_states=states,
+                transition_triples=transitions
+            )
+        return 0
+                
+            
