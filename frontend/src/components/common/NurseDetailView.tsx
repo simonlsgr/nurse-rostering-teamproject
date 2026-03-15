@@ -9,8 +9,8 @@ import { Nurse } from "@/types/nurseVars";
 import { useDetailViewNurse, useEditAttributes, useOpenNurseDetailView } from "@/store/nurseStore";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useInstance } from "@/store/instanceStore";
-import { capitalize, Tooltip } from "@mui/material";
-import { formatDate } from "@/lib/utils";
+import { capitalize, Switch, Tooltip } from "@mui/material";
+import { createDefaultNurse, formatDate } from "@/lib/utils";
 import { Pencil } from 'lucide-react';
 import { Calendar } from "@/components/ui/calendar";
 import CalendarPicker from "./DetailViewAddDaysCalendar";
@@ -18,14 +18,27 @@ import { CalendarPlus2 } from 'lucide-react';
 import { CalendarMinus2 } from 'lucide-react';
 import { Undo2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
+import { Check } from 'lucide-react';
+import { X } from 'lucide-react';
+import { Textarea } from "../ui/textarea";
 
 export default function NurseDetailView() {
 
   const { shifts } = useInstance();
   const { detailViewNurse, setDetailViewNurse } = useDetailViewNurse();
   const { openNurseDetailView, setOpenNurseDetailView } = useOpenNurseDetailView();
-
+  const [ editedNurse, setEditedNurse ] = useState<Nurse>(createDefaultNurse());
+  
+  
   const { editAttributes, setEditAttribute, setEditAttributes } = useEditAttributes();
+  
+
+  useEffect(() => {
+    if (detailViewNurse) {
+      setEditedNurse(detailViewNurse);
+    }
+  }, [detailViewNurse]);
+
 
   if(!detailViewNurse) return;
 
@@ -36,9 +49,88 @@ export default function NurseDetailView() {
       <div className="pb-1">
         <p> Early: {detailViewNurse.maximum_number_of_shifts_per_type["E"]} </p>
         <p> Late: {detailViewNurse.maximum_number_of_shifts_per_type["L"]} </p>
-        </div>
+      </div>
     )
   }
+
+  const dynamicAttributeDisplay = (key: string) => {
+    
+    if (key == "staff") {
+      return (
+        <div className="flex gap-2 items-center">
+          <Switch
+            checked={editedNurse.staff}
+            onChange={(event, newChecked) => {
+              setEditedNurse({...editedNurse, "staff": !editedNurse.staff});
+            }}
+            />
+          <p> {editedNurse.staff ? "true" : "false"} </p>
+        </div>
+
+      )
+    }
+
+    if (key == "min_time_between_shifts") {
+      return (
+        <Textarea
+          className="mb-2 min-h-none"     
+          value={editedNurse[key]}
+          onChange={(e) => {
+            setEditedNurse({...editedNurse, [key]: e.target.value})
+          }}     
+        />
+      )
+    }
+
+    if (key == "maximum_number_of_shifts_per_type") {
+      return (
+        <div className="pb-1">
+
+          {Object.keys(editedNurse[key]).map((type) => (
+
+            <div 
+              key={type}
+              className="flex gap-1 items-center"
+            >
+              <p className="mb-2"> {type == "E" ? "Early" : "Late"}: </p>
+              <input
+                className="border border-border rounded-md p-1 mb-2"
+                type="text"
+                inputMode="numeric"
+                value={editedNurse[key][type]}
+                onChange={(e) => {
+                  const val = Number(e.target.value.replace(/\D/g, ""));
+                  setEditedNurse(prev => ({
+                    ...prev,
+                    [key]: {
+                      ...(prev[key as keyof Nurse] as Record<string, number>),
+                      [type]: val
+                    }
+                  }));
+                }}
+              />
+            </div>
+
+          ))}
+      
+      </div>
+      )
+    }
+
+    return (
+      <input
+        className="border border-border rounded-md p-1 mb-2"
+        type="text"
+        inputMode="numeric"
+        value={editedNurse[key as keyof Nurse] as any}
+        onChange={(e) => {
+          const val = Number(e.target.value.replace(/\D/g, ""));
+          setEditedNurse({...editedNurse, [key]: val});
+        }}
+      />
+    )
+  }
+
 
 
   return (
@@ -131,7 +223,7 @@ export default function NurseDetailView() {
                       enterDelay={100}
                       enterNextDelay={100}
                     >
-                    <Undo2
+                    <X
                       fontSize={"small"} 
                       className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
                       onClick={() => setEditAttribute("days_off", false)}
@@ -176,11 +268,79 @@ export default function NurseDetailView() {
                 {capitalize(key.replaceAll("_", " "))}:
               </p>
 
-              <Pencil fontSize={"small"} className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"/>
+              {!editAttributes[key] && (
+                <Pencil 
+                  fontSize={"small"} 
+                  className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                  onClick={() => { setEditAttribute(key, true); }}  
+                />
+              )}
+
+              {editAttributes[key] && (
+
+
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.17 }}
+                    className="select-none"
+                  >
+
+
+                    <div className="flex gap-2">
+                      <Tooltip
+                        title="Save"
+                        enterDelay={100}
+                        enterNextDelay={100}
+                      >
+                        <Check 
+                          fontSize={"small"}
+                          className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                          onClick={() => { setEditAttribute(key, false); }}
+                        />
+                      </Tooltip>
+
+                      <Tooltip
+                        title="Cancel"
+                        enterDelay={100}
+                        enterNextDelay={100}
+                      >
+                      <X
+                        fontSize={"small"} 
+                        className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                        onClick={() => setEditAttribute(key, false)}
+                      />
+                      </Tooltip>
+
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+              )}
+
+              
             </div>
 
             <div className={`border-b border-border w-full pl-1 overflow-auto`} key={`content-${key}`}>
-              {key == "maximum_number_of_shifts_per_type" ? displayMaximumShiftsPerType() : JSON.stringify(detailViewNurse[key as keyof Nurse])}
+
+              {!editAttributes[key] && (
+                <div>
+                  {key == "maximum_number_of_shifts_per_type" ? displayMaximumShiftsPerType() : JSON.stringify(detailViewNurse[key as keyof Nurse])}
+                </div>
+              )}
+
+              {editAttributes[key] && (
+                <div>
+
+                  {dynamicAttributeDisplay(key)}
+
+                </div>
+              )}
+
+
             </div>  
           </div>
         )}

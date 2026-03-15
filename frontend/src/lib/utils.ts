@@ -1,3 +1,4 @@
+import { Nurse } from "@/types/nurseVars";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -26,4 +27,27 @@ export function formatDate(
   }
 
   return date.toLocaleString("de-DE");
+}
+
+
+export function createDefaultNurse(): Nurse {
+  return {
+    uid: 0,
+    name: "",
+    preferred_shifts: [],
+    preferred_off_shifts: [],
+    blocked_shifts: [],
+    days_off: [],
+    staff: false,
+    min_time_between_shifts: "",
+    preferred_shift_weight: {},
+    preferred_off_shift_weight: {},
+    minimum_work_time: 0,
+    maximum_work_time: 0,
+    minimum_consecutive_shifts: 0,
+    maximum_consecutive_shifts: 0,
+    minimum_consecutive_days_off: 0,
+    maximum_weekends: 0,
+    maximum_number_of_shifts_per_type: {},
+  };
 }
