@@ -4,35 +4,101 @@ import { Button } from "../ui/button";
 import AddIcon from '@mui/icons-material/Add';
 import { Input } from "../ui/input";
 import { Nurse } from "@/types/nurseVars";
-
-
+import { createDefaultNurse, formatDate } from "@/lib/utils";
+import { capitalize, Switch, Tooltip } from "@mui/material";
+import { Pencil } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Check } from 'lucide-react';
+import { X } from 'lucide-react';
+import { Textarea } from "../ui/textarea";
+import DynamicShiftList from "../rostering/DynamicShiftList";
+import { useInstance } from "@/store/instanceStore";
 
 export default function CreateNurseDialog() {
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [newNurse, setNewNurse] = useState<Nurse>(createDefaultNurse());
+  
+  const { shifts } = useInstance();
+  
+  const dynamicAttributeDisplay = (key: string) => {
+    
+    if (key == "staff") {
+      return (
+        <div className="flex gap-2 items-center">
+          <Switch
+            checked={newNurse.staff}
+            onChange={(event, newChecked) => {
+              setNewNurse({...newNurse, "staff": !newNurse.staff});
+            }}
+            />
+          <p> {newNurse.staff ? "true" : "false"} </p>
+        </div>
 
-  const [newNurse, setNewNurse] = useState<Nurse>(
-    {
-      uid: 0,
-      name: "",
-      preferred_shifts: [],
-      preferred_off_shifts: [],
-      blocked_shifts: [],
-      days_off: [],
-      staff: false,
-      min_time_between_shifts: "",
-      preferred_shift_weight: {},
-      preferred_off_shift_weight: {},
-      minimum_work_time: 0,
-      maximum_work_time: 0,
-      minimum_consecutive_shifts: 0,
-      maximum_consecutive_shifts: 0,
-      minimum_consecutive_days_off: 0,
-      maximum_weekends: 0,
-      maximum_number_of_shifts_per_type: {},
+      )
     }
-  )
 
+    if (key == "min_time_between_shifts") {
+      return (
+        <Textarea
+          className="mb-2 min-h-none"     
+          value={newNurse[key]}
+          onChange={(e) => {
+            setNewNurse({...newNurse, [key]: e.target.value})
+          }}     
+        />
+      )
+    }
+
+    if (key == "maximum_number_of_shifts_per_type") {
+      return (
+        <div className="pb-1">
+
+          {/* if we allow more shift types, change this to the state that handles this */}
+          {Object.keys({"E": 0, "L": 0}).map((type) => (
+
+            <div 
+              key={type}
+              className="flex gap-1 items-center"
+            >
+              <p className="mb-2"> {type == "E" ? "Early" : "Late"}: </p>
+              <input
+                className="border border-border rounded-md p-1 mb-2"
+                type="text"
+                inputMode="numeric"
+                value={newNurse[key][type]}
+                onChange={(e) => {
+                  const val = Number(e.target.value.replace(/\D/g, ""));
+                  setNewNurse(prev => ({
+                    ...prev,
+                    [key]: {
+                      ...(prev[key as keyof Nurse] as Record<string, number>),
+                      [type]: val
+                    }
+                  }));
+                }}
+              />
+            </div>
+
+          ))}
+      
+      </div>
+      )
+    }
+
+    return (
+      <input
+        className="border border-border rounded-md p-1 mb-2"
+        type="text"
+        inputMode="numeric"
+        value={newNurse[key as keyof Nurse] as any}
+        onChange={(e) => {
+          const val = Number(e.target.value.replace(/\D/g, ""));
+          setNewNurse({...newNurse, [key]: val});
+        }}
+      />
+    )
+  }
 
   return (
 
@@ -45,18 +111,83 @@ export default function CreateNurseDialog() {
       />
 
       </DialogTrigger>
-      <DialogContent className="!w-[90vw] !max-w-[1200px] h-[calc(80vh)]">
+      <DialogContent className="!w-[51vw] !max-w-[1200px] h-[calc(80vh)]">
         <DialogHeader>
           <DialogTitle>Create a new nurse</DialogTitle>
         </DialogHeader>
 
-          <Input
-            placeholder="Name"
-            value={newNurse.name}
-            onChange={(e) =>
-              setNewNurse((n: any) => ({ ...n, name: e.target.value }))
-            }
-          />
+        <div className="overflow-auto">
+
+
+        <div className="mb-5">
+          <div className="flex gap-3 group"> 
+            <p className="font-semibold mb-2" key={`title-name`}>
+              {capitalize("name")}:
+            </p>              
+          </div>
+
+          <div className={`border-b border-border w-full pl-1 overflow-auto`} key={`content-name`}>
+            <input
+              className="border border-border rounded-md p-1 mb-2"
+              value={newNurse.name}
+              onChange={(e) =>
+                setNewNurse((n: any) => ({ ...n, name: e.target.value }))
+              }
+            />
+          </div>  
+        </div>
+
+        <div className="flex gap-4 mb-2 border-b border-border pb-3">
+          <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+
+            <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
+            <DynamicShiftList shifts={shifts}/>
+
+          </div>
+
+          <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+
+            <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
+            <DynamicShiftList shifts={shifts}/>
+
+          </div>
+
+          <div key={"blocked_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.blocked_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+
+            <h2 className="pb-2 pl-2 font-semibold"> Blocked Shifts: </h2>
+            <DynamicShiftList shifts={shifts} />
+
+          </div>
+
+        </div>
+
+
+        {Object.keys(newNurse)
+        .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight"].includes(keyy))
+        .map((key) => 
+          <div key={key} className="mb-2">
+
+            <div className="flex gap-3 group"> 
+              <p className="font-semibold mb-2" key={`title-${key}`}>
+                {capitalize(key.replaceAll("_", " "))}:
+              </p>
+
+              
+            </div>
+
+            <div className={`border-b border-border w-full pl-1 overflow-auto`} key={`content-${key}`}>
+
+                <div>
+                  {dynamicAttributeDisplay(key)}
+                  {/* {key == "maximum_number_of_shifts_per_type" ? displayMaximumShiftsPerType() : JSON.stringify(newNurse[key as keyof Nurse])} */}
+                </div>
+
+
+            </div>  
+          </div>
+        )}
+        </div>
+
 
 
 

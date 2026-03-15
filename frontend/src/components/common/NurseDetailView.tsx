@@ -138,7 +138,7 @@ export default function NurseDetailView() {
 
     <Dialog open={openNurseDetailView} onOpenChange={setOpenNurseDetailView}>
 
-      <DialogContent className="!w-[55vw] !max-w-none h-[calc(80vh)]">
+      <DialogContent className="!w-[52vw] !max-w-none h-[calc(80vh)]">
         <DialogHeader>
           <DialogTitle>Nurse {detailViewNurse.name}</DialogTitle>
         </DialogHeader>
@@ -257,7 +257,6 @@ export default function NurseDetailView() {
           </div>  
         </div>
 
-        {/* this is just temporary, need better visualizations for all attributes */}
         {Object.keys(detailViewNurse)
         .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight"].includes(keyy))
         .map((key) => 
