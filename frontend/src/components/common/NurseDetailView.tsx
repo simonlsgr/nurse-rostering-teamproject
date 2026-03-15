@@ -13,7 +13,7 @@ import { capitalize, Tooltip } from "@mui/material";
 import { formatDate } from "@/lib/utils";
 import { Pencil } from 'lucide-react';
 import { Calendar } from "@/components/ui/calendar";
-import CalendarPicker from "./AddDaysCalendar";
+import CalendarPicker from "./DetailViewAddDaysCalendar";
 import { CalendarPlus2 } from 'lucide-react';
 import { CalendarMinus2 } from 'lucide-react';
 import { Undo2 } from 'lucide-react';
