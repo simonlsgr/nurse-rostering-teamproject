@@ -1,3 +1,4 @@
+import { createDefaultNurse } from "@/lib/utils";
 import { Nurse } from "@/types/nurseVars";
 import { create } from "zustand";
 
@@ -32,7 +33,7 @@ export const useNurses = create<NursesState>((set) => ({
 
 type DetailViewNurseState = {
   detailViewNurse: Nurse | null;
-  setDetailViewNurse: (detailViewNurse: Nurse | null) => void;
+  setDetailViewNurse: (detailViewNurse: Nurse | null | ((prev: Nurse) => Nurse)) => void;
 };
 
 
@@ -40,7 +41,7 @@ type DetailViewNurseState = {
 export const useDetailViewNurse = create<DetailViewNurseState>((set) => ({
 
   detailViewNurse: null,
-  setDetailViewNurse: (detailViewNurse) => set({ detailViewNurse }),
+  setDetailViewNurse: (detailViewNurse) => set((state) => ({ detailViewNurse: typeof(detailViewNurse) === "function" ? detailViewNurse(state.detailViewNurse ?? createDefaultNurse()) : detailViewNurse})),
 
 }));
 

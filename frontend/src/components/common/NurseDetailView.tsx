@@ -2,25 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Button } from "../ui/button";
-import AddIcon from '@mui/icons-material/Add';
-import { Input } from "../ui/input";
-import { Nurse } from "@/types/nurseVars";
+import { Nurse, Shift } from "@/types/nurseVars";
 import { useDetailViewNurse, useEditAttributes, useOpenNurseDetailView } from "@/store/nurseStore";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useInstance } from "@/store/instanceStore";
-import { capitalize, Switch, Tooltip } from "@mui/material";
+import { capitalize, Tooltip } from "@mui/material";
 import { createDefaultNurse, formatDate } from "@/lib/utils";
 import { Pencil } from 'lucide-react';
-import { Calendar } from "@/components/ui/calendar";
 import CalendarPicker from "./DetailViewAddDaysCalendar";
-import { CalendarPlus2 } from 'lucide-react';
 import { CalendarMinus2 } from 'lucide-react';
-import { Undo2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Check } from 'lucide-react';
 import { X } from 'lucide-react';
-import { Textarea } from "../ui/textarea";
 
 export default function NurseDetailView() {
 
@@ -55,6 +48,29 @@ export default function NurseDetailView() {
       </div>
     )
   }
+
+  const setPreferredShiftWeight = (weight: number, shift: Shift) => {
+
+    setDetailViewNurse(prev => ({
+      ...prev,
+      preferred_shift_weight: {
+        ...detailViewNurse.preferred_shift_weight,
+        [shift.uid]: weight
+      }
+    }));
+  }
+
+  const setPreferredOffShiftWeight = (weight: number, shift: Shift) => {
+
+    setDetailViewNurse(prev => ({
+      ...prev,
+      preferred_off_shift_weight: {
+        ...detailViewNurse.preferred_off_shift_weight,
+        [shift.uid]: weight
+      }
+    }));
+  }
+
 
   const dynamicAttributeDisplay = (key: string) => {
     
@@ -152,21 +168,33 @@ export default function NurseDetailView() {
           <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} shift_weights={detailViewNurse.preferred_shift_weight} selectable={false}  />
+            <DynamicShiftList 
+              shifts={shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} 
+              shift_weights={detailViewNurse.preferred_shift_weight} 
+              setShiftWeight={setPreferredShiftWeight}
+              selectable={false}  
+
+            />
 
           </div>
 
           <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid))} shift_weights={detailViewNurse.preferred_off_shift_weight}/>
+            <DynamicShiftList 
+              shifts={shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid))} 
+              shift_weights={detailViewNurse.preferred_off_shift_weight}
+              setShiftWeight={setPreferredOffShiftWeight}
+              />
 
           </div>
 
           <div key={"blocked_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.blocked_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Blocked Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => detailViewNurse.blocked_shifts.includes(s.uid))} />
+            <DynamicShiftList 
+              shifts={shifts.filter((s) => detailViewNurse.blocked_shifts.includes(s.uid))} 
+              />
 
           </div>
 
