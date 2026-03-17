@@ -47,15 +47,19 @@ export default function NurseDetailView() {
 
     return (
       <div className="pb-1">
-        <p> Early: {detailViewNurse.maximum_number_of_shifts_per_type["E"]} </p>
-        <p> Late: {detailViewNurse.maximum_number_of_shifts_per_type["L"]} </p>
+        {Object.keys(detailViewNurse.maximum_number_of_shifts_per_type).map((key) => {
+          return (
+            <p key={key}> {key}: {detailViewNurse.maximum_number_of_shifts_per_type[key]} </p>
+          )
+        })}
       </div>
     )
   }
 
   const dynamicAttributeDisplay = (key: string) => {
     
-    if (key == "staff") {
+    // these attributes are not needed currently
+/*     if (key == "staff") {
       return (
         <div className="flex gap-2 items-center">
           <Switch
@@ -80,7 +84,7 @@ export default function NurseDetailView() {
           }}     
         />
       )
-    }
+    } */
 
     if (key == "maximum_number_of_shifts_per_type") {
       return (
@@ -92,7 +96,7 @@ export default function NurseDetailView() {
               key={type}
               className="flex gap-1 items-center"
             >
-              <p className="mb-2"> {type == "E" ? "Early" : "Late"}: </p>
+              <p className="mb-2"> {type}: </p>
               <input
                 className="border border-border rounded-md p-1 mb-2"
                 type="text"
@@ -148,7 +152,7 @@ export default function NurseDetailView() {
           <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} shift_weights={detailViewNurse.preferred_shift_weight}/>
+            <DynamicShiftList shifts={shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} shift_weights={detailViewNurse.preferred_shift_weight} selectable={false}  />
 
           </div>
 
@@ -258,7 +262,7 @@ export default function NurseDetailView() {
         </div>
 
         {Object.keys(detailViewNurse)
-        .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight"].includes(keyy))
+        .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight", "min_time_between_shifts", "staff"].includes(keyy))
         .map((key) => 
           <div key={key} className="mb-2">
 
