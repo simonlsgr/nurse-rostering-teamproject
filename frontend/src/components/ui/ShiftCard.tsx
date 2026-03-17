@@ -1,16 +1,29 @@
 import { formatDate } from "@/lib/utils";
 import { Shift } from "@/types/nurseVars";
-import { ScanSearch } from 'lucide-react';
+import { Pencil, ScanSearch } from 'lucide-react';
+import { Tooltip } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check } from 'lucide-react';
+import { X } from 'lucide-react';
+
+import { useState } from "react";
 
 type ShiftCardProps = {
   shift: Shift;
   weight?: number;
+  setWeight?: any;
   selectable?: boolean;
   selected?: boolean;
 };
 
 
-export default function ShiftCard({ shift, weight, selectable = false, selected = false }: ShiftCardProps){
+export default function ShiftCard({ shift, weight, setWeight, selectable = false, selected = false }: ShiftCardProps){
+
+  const [editWeight, setEditWeight] = useState<boolean>(false);
+  const [newWeight, setNewWeight] = useState<number>(weight ?? 1);
+
+
+  if (weight && !setWeight) return;
 
   return (
     
@@ -23,8 +36,74 @@ export default function ShiftCard({ shift, weight, selectable = false, selected 
           <p> {formatDate(shift.start_time, "weekday")}. {formatDate(shift.start_time, "date")}</p>
         </div>
         {/* <p> Time: {formatDate(shift.start_time, "time")} - {formatDate(shift.end_time, "time")}</p>  */}
+        
         {weight && (
-        <p> Weight: {weight} </p>
+          <div className="group">
+            {!editWeight && (
+              <div className="flex gap-2">
+                <p> Weight: {weight} </p>
+                <Pencil 
+                  fontSize={"small"} 
+                  className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-orange-100 rounded-lg"
+                  onClick={() => { setEditWeight(true); }}  
+                />
+              </div>
+            )}
+            {editWeight && (
+              <div className="flex gap-2 items-center">
+                <p> Weight: </p>
+                <input
+                className="border rounded-md p-1 w-10"
+                type="text"
+                inputMode="numeric"
+                value={newWeight}
+                onChange={(e) => {
+                  const val = Number(e.target.value.replace(/\D/g, ""));
+                  setNewWeight(val);
+                }}
+                />
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.17 }}
+                    className="select-none"
+                  >
+
+
+                    <div className="flex gap-2">
+                      <Tooltip
+                        title="Save"
+                        enterDelay={100}
+                        enterNextDelay={100}
+                      >
+                        <Check 
+                          fontSize={"small"}
+                          className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                          onClick={() => { setWeight(newWeight, shift); setEditWeight(false);}}
+                        />
+                      </Tooltip>
+
+                      <Tooltip
+                        title="Cancel"
+                        enterDelay={100}
+                        enterNextDelay={100}
+                      >
+                      <X
+                        fontSize={"small"} 
+                        className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                        onClick={() => { setNewWeight(weight); setEditWeight(false); }}
+                      />
+                      </Tooltip>
+
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

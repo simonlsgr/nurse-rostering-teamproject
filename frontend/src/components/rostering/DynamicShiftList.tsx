@@ -15,13 +15,14 @@ import { formatDate } from "@/lib/utils";
 type DynamicShiftListProps = {
   shifts: Shift[];
   shift_weights?: Record<string, number>;
+  setShiftWeight?: any;
   selectable?: boolean;
   selectedItems?: any;
   setSelectedItems?: any;
 }
 
 
-export default function DynamicShiftList({ shifts, shift_weights, selectable = false, selectedItems = null, setSelectedItems = null }: DynamicShiftListProps) {
+export default function DynamicShiftList({ shifts, shift_weights, setShiftWeight, selectable = false, selectedItems = null, setSelectedItems = null }: DynamicShiftListProps) {
 
   const [query, setQuery] = useState("");
 
@@ -86,7 +87,14 @@ export default function DynamicShiftList({ shifts, shift_weights, selectable = f
             className={`select-none`}
             onClick={() => selectable ? toggleItem(shift) : ""}
           >
-            <ShiftCard shift={shift} weight={shift_weights ? shift_weights[shift.uid] : undefined} selectable={selectable} selected={selectedItems?.filter((s: Shift) => s.uid == shift.uid)[0] ? true : false} key={shift.uid}/>
+            <ShiftCard 
+              shift={shift}
+              weight={shift_weights ? shift_weights[shift.uid] : undefined} 
+              setWeight={setShiftWeight}
+              selectable={selectable} 
+              selected={selectedItems?.filter((s: Shift) => s.uid == shift.uid)[0] ? true : false} 
+              key={shift.uid}
+            />
           </motion.div>
         </AnimatePresence>
       ))}
