@@ -2,17 +2,13 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import AddIcon from '@mui/icons-material/Add';
-import { Input } from "../ui/input";
 import { Nurse, Shift } from "@/types/nurseVars";
 import { createDefaultNurse, formatDate } from "@/lib/utils";
 import { capitalize, Switch, Tooltip } from "@mui/material";
-import { Pencil } from 'lucide-react';
-import { motion, AnimatePresence } from "framer-motion";
-import { Check } from 'lucide-react';
-import { X } from 'lucide-react';
-import { Textarea } from "../ui/textarea";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useInstance } from "@/store/instanceStore";
+import { Calendar } from "@/components/ui/calendar";
+
 
 export default function CreateNurseDialog() {
 
@@ -21,6 +17,7 @@ export default function CreateNurseDialog() {
   const [selectedPreferredShifts, setSelectedPreferredShifts] = useState<Shift[]>([]);
   const [selectedPreferredOffShifts, setSelectedPreferredOffShifts] = useState<Shift[]>([]);
   const [selectedBlockedShifts, setSelectedBlockedShifts] = useState<Shift[]>([]);
+  const [dates, setDates] = useState<Date[] | undefined>([]);
 
   
   const { shifts } = useInstance();
@@ -224,6 +221,23 @@ export default function CreateNurseDialog() {
 
           </div>
 
+          
+        </div>
+
+        <div className={`border-b border-border w-full pl-1 mb-2 overflow-auto`}>
+          <p className="font-semibold mb-2"> Days Off: </p>
+            <Calendar
+            mode="multiple"
+            selected={dates}
+            onSelect={setDates}
+            hidden={{
+              before: new Date("2018-01-01"), 
+              after: new Date("2018-01-14")
+            }}
+            startMonth={ new Date(2018, 0) }
+            endMonth={ new Date(2018, 0) }
+            defaultMonth={ new Date("2018-01-01") }
+          />
         </div>
 
 
