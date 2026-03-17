@@ -13,7 +13,7 @@ export default function ShiftList(){
   const [query, setQuery] = useState("");
 
 
-  const { nurses, shifts } = useInstance();
+  const { shifts } = useInstance();
   
 
 

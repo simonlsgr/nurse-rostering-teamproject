@@ -79,3 +79,16 @@ export const useEditAttributes = create<EditAttributesState>((set) => ({
   }
 }));
 
+
+type NewNurseState = {
+
+  newNurse: Nurse;
+  setNewNurse: (newNurse: Nurse | ((prev: Nurse) => Nurse)) => void;
+};
+
+
+export const useNewNurse = create<NewNurseState>((set) => ({
+
+  newNurse: createDefaultNurse(),
+  setNewNurse: (newNurse) => set((state) => ({ newNurse: typeof(newNurse) === "function" ? newNurse(state.newNurse) : newNurse})),
+}));

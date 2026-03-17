@@ -8,13 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search } from 'lucide-react';
 import NurseListTopbar from "../common/NurseListTopbar";
 import NurseDetailView from "../common/NurseDetailView";
+import { useNurses } from "@/store/nurseStore";
 
 export default function NurseList(){
 
   const [query, setQuery] = useState("");
 
 
-  const { nurses, shifts } = useInstance();
+  const { nurses } = useNurses();
+  const { shifts } = useInstance();
   
   
 

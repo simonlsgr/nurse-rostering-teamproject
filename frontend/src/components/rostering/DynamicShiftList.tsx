@@ -1,7 +1,5 @@
 "use client";
 
-import { useInstance } from "@/store/instanceStore";
-import NurseCard from "@/components/ui/NurseCard";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ToggleLeft } from 'lucide-react';

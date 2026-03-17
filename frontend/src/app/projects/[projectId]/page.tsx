@@ -24,6 +24,7 @@ export default function ProjectPage(){
   const params = useParams();
   const projectId = params.projectId as string;
 
+
   const { loadInstance } = useLoadInstance();
   const { loadSolutionsArray } = useLoadSolutionsArray();
 
@@ -52,6 +53,7 @@ export default function ProjectPage(){
     loadInstance();
     loadSolutionsArray();
   }, []);
+
 
   return (
 

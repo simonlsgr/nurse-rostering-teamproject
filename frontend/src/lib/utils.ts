@@ -29,10 +29,13 @@ export function formatDate(
   return date.toLocaleString("de-DE");
 }
 
+export function generateUID(): number {
+  return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+}
 
 export function createDefaultNurse(): Nurse {
   return {
-    uid: 0,
+    uid: generateUID(),
     name: "",
     preferred_shifts: [],
     preferred_off_shifts: [],
@@ -51,3 +54,4 @@ export function createDefaultNurse(): Nurse {
     maximum_number_of_shifts_per_type: {},
   };
 }
+

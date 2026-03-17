@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import AddIcon from '@mui/icons-material/Add';
@@ -8,19 +8,52 @@ import { capitalize, Switch, Tooltip } from "@mui/material";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useInstance } from "@/store/instanceStore";
 import { Calendar } from "@/components/ui/calendar";
+import { useHandleCreateNurse } from "@/hooks/nurseHooks";
+import { useNewNurse } from "@/store/nurseStore";
 
 
 export default function CreateNurseDialog() {
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [newNurse, setNewNurse] = useState<Nurse>(createDefaultNurse());
   const [selectedPreferredShifts, setSelectedPreferredShifts] = useState<Shift[]>([]);
   const [selectedPreferredOffShifts, setSelectedPreferredOffShifts] = useState<Shift[]>([]);
   const [selectedBlockedShifts, setSelectedBlockedShifts] = useState<Shift[]>([]);
   const [dates, setDates] = useState<Date[] | undefined>([]);
 
+  const { newNurse, setNewNurse } = useNewNurse();
+  const { handleCreateNurse } = useHandleCreateNurse();
+
   
   const { shifts } = useInstance();
+
+  useEffect(() => {
+    if (dates) {
+      setNewNurse(prev => ({
+        ...prev,
+        "days_off": dates?.map((date) => date.toISOString().split("T")[0])
+      })); 
+    }
+
+    setNewNurse(prev => ({
+      ...prev,
+      "preferred_shifts": selectedPreferredShifts.map((s) => s.uid),
+      "preferred_off_shifts": selectedPreferredOffShifts.map((s) => s.uid),
+      "blocked_shifts": selectedBlockedShifts.map((s) => s.uid),
+
+    })); 
+
+
+
+   }, [dates, selectedPreferredShifts, selectedPreferredOffShifts, selectedBlockedShifts])
+
+
+   useEffect(() => {
+    setSelectedPreferredShifts([]);
+    setSelectedPreferredOffShifts([]);
+    setSelectedBlockedShifts([]);
+    setDates([]);
+  }, [openDialog])
+
   
   const dynamicAttributeDisplay = (key: string) => {
     
@@ -274,11 +307,19 @@ export default function CreateNurseDialog() {
         <DialogFooter className="mt-4 flex items-end">
           <Button
             variant="outline"
-            onClick={() => {setOpenDialog(false); setNewNurse(createDefaultNurse());}}
+            onClick={() => {
+              setOpenDialog(false); 
+              setNewNurse(createDefaultNurse());
+            }}
           >
             Cancel
           </Button>
-          <Button onClick={() => {setOpenDialog(false); setNewNurse({...newNurse, preferred_shifts: selectedPreferredShifts.map(s => s.uid), preferred_off_shifts: selectedPreferredOffShifts.map(s => s.uid), blocked_shifts: selectedBlockedShifts.map(s => s.uid)})}}>
+          <Button 
+            onClick={() => {
+              setOpenDialog(false);
+              handleCreateNurse();
+              }}
+            >
             Create
           </Button>
         </DialogFooter>

@@ -33,6 +33,13 @@ export const useInstance = create<InstanceState>((set) => ({
 	staff_weight: 1,
 	setShifts: (shifts) => set({ shifts }),
 	setStaffWeight: (staff_weight) => set({ staff_weight }),
-	setInstance: (instance) => set({ nurses: instance.nurses, shifts: instance.shifts, staff_weight: instance.staff_weight }),
+	setInstance: (instance) => {
+    useNurses.getState().setNurses(instance.nurses);
+
+    set({
+      shifts: instance.shifts, 
+      staff_weight: instance.staff_weight,
+    });
+  }
 }));
 
