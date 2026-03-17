@@ -4,6 +4,7 @@ from sqlalchemy import (
     String,
     Boolean,
     ForeignKey,
+    BigInteger
 )
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from sqlalchemy.orm import relationship
@@ -25,12 +26,12 @@ class Nurse(Base):
     )
     project = relationship("Project", back_populates="nurses")
 
-    uid = Column(Integer, nullable=False, unique=True)
+    uid = Column(BigInteger, nullable=False, unique=True)
     name = Column(String, nullable=False)
 
-    preferred_shifts = Column(ARRAY(Integer), nullable=False, default=list)
-    preferred_off_shifts = Column(ARRAY(Integer), nullable=False, default=list)
-    blocked_shifts = Column(ARRAY(Integer), nullable=False, default=list)
+    preferred_shifts = Column(ARRAY(BigInteger), nullable=False, default=list)
+    preferred_off_shifts = Column(ARRAY(BigInteger), nullable=False, default=list)
+    blocked_shifts = Column(ARRAY(BigInteger), nullable=False, default=list)
     days_off = Column(ARRAY(String), nullable=False, default=list)
 
     staff = Column(Boolean, nullable=False)

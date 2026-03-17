@@ -7,12 +7,12 @@ export async function createNurse(nurse: Nurse, projectId: string) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({nurse}),
+    body: JSON.stringify(nurse),
   });
 
   const data = await res.json();
 
-  if (!res.ok) throw new Error(data.error);
+  if (!res.ok) throw new Error(JSON.stringify(data.error));
 
   return data as Nurse;
 
@@ -52,7 +52,7 @@ export async function getNurse(nurseId: string, projectId: string) {
 
 export async function editNurse(editedNurse: Nurse, projectId: string) {
 
-  const res = await fetch(`/api/projects?projectId=${projectId}&nurseId=${editedNurse.db_id}`, {
+  const res = await fetch(`/api/projects?projectId=${projectId}&nurseId=${editedNurse.id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ editedNurse }),

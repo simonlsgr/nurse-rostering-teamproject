@@ -35,6 +35,7 @@ export function generateUID(): number {
 
 export function createDefaultNurse(): Nurse {
   return {
+    id: crypto.randomUUID(),
     uid: generateUID(),
     name: "",
     preferred_shifts: [],

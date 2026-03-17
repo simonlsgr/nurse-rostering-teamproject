@@ -35,7 +35,7 @@ export async function GET(req: Request) {
 
   if (!res.ok) {
     return NextResponse.json(
-      { error: data.detail ?? "Failed to get project from backend" },
+      { error: data.detail ?? "Failed to get nurse from backend" },
       { status: 500 }
     );
   }
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
 
   if (!res.ok) {
     return NextResponse.json(
-      { error: data.detail ?? "Failed to post project to backend" },
+      { error: data.detail ?? "Failed to post nurse to backend" },
       { status: 500 }
     );
   }
@@ -123,7 +123,7 @@ export async function PUT(req: Request) {
 
   if (!res.ok) {
     return NextResponse.json(
-      { error: data.detail ?? "Failed to edit project in backend" },
+      { error: data.detail ?? "Failed to edit nurse in backend" },
       { status: 500 }
     );
   }
@@ -162,7 +162,7 @@ export async function DELETE(req: Request) {
 
   if (!res.ok) {
     return NextResponse.json(
-      { error: data.detail ?? "Failed to delete project in backend" },
+      { error: data.detail ?? "Failed to delete nurse in backend" },
       { status: 500 }
     );
   }

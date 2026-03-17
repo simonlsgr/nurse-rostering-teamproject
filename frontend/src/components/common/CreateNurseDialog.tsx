@@ -275,7 +275,7 @@ export default function CreateNurseDialog() {
 
 
         {Object.keys(newNurse)
-        .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight", "staff", "min_time_between_shifts"].includes(keyy))
+        .filter((keyy) => !["id", "db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight", "staff", "min_time_between_shifts"].includes(keyy))
         .map((key) => 
           <div key={key} className="mb-2">
 
