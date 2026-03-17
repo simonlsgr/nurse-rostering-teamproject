@@ -50,7 +50,7 @@ class NurseRosteringModel:
     """
     
     def __init__(
-        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.SET
+        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.TABLE
     ):
         self.instance = instance
         self.formulation = formulation

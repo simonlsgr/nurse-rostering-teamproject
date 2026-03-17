@@ -164,7 +164,7 @@ class NurseWorksAtWeekendVarsIP:
       weekend_var >= each shift_var
       weekend_var <= sum(shift_vars)
     """
-    def __init__(self, nv: NurseDecisionVars, weekends, shifts_by_date, model: HxModel):
+    def __init__(self, nv: NurseDecisionVarsIP, weekends, shifts_by_date, model: HxModel):
         saturday = 0
         sunday = 1
         self.nurse = nv.nurse

@@ -59,79 +59,98 @@ class ShiftRotationModuleTable(ShiftAssignmentModuleTable):
                     for _type in types:
                      model.add_constraint(nv.is_assigned_to(_date) != shift or nv.is_assigned_to(following_date) != _type)
 
-
-
-
         return 0  # no objective contribution
 
 
 class MaximumShiftTypesModuleTable(ShiftAssignmentModuleTable):
 
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
-        shift_type_dict = get_shift_type_dict(instance)
 
+        day_index_to_type = {}
+        for _date, shift_uids in dates.items():
+            day_index_to_type[_date] = {}
+            for i, shift_uid in enumerate(shift_uids):
+                day_index_to_type[_date].setdefault(shift_by_uid[shift_uid].type, []).append(i+1)
         for nv in nurse_shift_vars:
-            for type, nb_types in nv.nurse.maximum_number_of_shifts_per_type.items():
-                model.add_constraint(
-                    model.sum(
-                        nv.is_assigned_to(shift.uid) for shift in instance.shifts if shift.type == type) <= nb_types
+            for _type, max_count in nv.nurse.maximum_number_of_shifts_per_type.items():
+                count_expr = model.sum(
+                    model.iif(nv.is_assigned_to(_date) == index, 1, 0)
+                    for _date in dates.keys()
+                    for index in day_index_to_type[_date].get(_type, [])
                 )
+                model.add_constraint(count_expr <= max_count)
 
         return 0
 
 
 class MaximizePreferencesTable(ShiftAssignmentModuleTable):
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
         """
         Encourage assigning nurses to their preferred shifts.
         Each preference counts negatively toward the minimization objective.
         """
+        shift_uid_table = {}
+        for _date, shift_uids in dates:
+            for i in range(len(shift_uids)):
+                shift_uid_table[shift_uids[i]] = (_date, i+1)
         expr = 0
         for nv in nurse_shift_vars:
             for shift_uid in nv.nurse.preferred_shifts:
-                expr += nv.nurse.preferred_shift_weight[shift_uid] * (1 - nv.is_assigned_to(shift_uid))
+                expr += nv.nurse.preferred_shift_weight[shift_uid] * model.iif(nv.is_assigned_to(shift_uid_table[shift_uid][0]) == shift_uid_table[shift_uid][1], 0, 1)
         return expr
 
 
 class OffPreferencesTable(ShiftAssignmentModuleTable):
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
+        shift_uid_table = {}
+        for _date, shift_uids in dates:
+            for i in range(len(shift_uids)):
+                shift_uid_table[shift_uids[i]] = (_date, i + 1)
         expr = 0
         for nv in nurse_shift_vars:
             shift_off_uids = nv.nurse.preferred_off_shifts
             if not shift_off_uids:
                 continue
-            for shift_off_uid in shift_off_uids:
-                if shift_off_uid in nv._x:
-                    expr += nv.nurse.preferred_off_shift_weight[shift_off_uid] * nv.is_assigned_to(shift_off_uid)
+            for shift_uid in shift_off_uids:
+                    expr += nv.nurse.preferred_off_shift_weight[shift_uid] * model.iif(nv.is_assigned_to(shift_uid_table[shift_uid][0]) == shift_uid_table[shift_uid][1], 1, 0)
         return expr
 
 
 class PreferStaffModuleTable(ShiftAssignmentModuleTable):
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
         """
         Penalize use of non-staff (contract) nurses in the objective.
         """
         expr = 0
         for nv in nurse_shift_vars:
             if not nv.nurse.staff:
-                for uid in nv._x:
-                    expr += instance.staff_weight * nv.is_assigned_to(uid)
+                for _date in dates:
+                    expr += instance.staff_weight * model.iif(nv.is_assigned_to(_date) >= 1, 1, 0)
         return expr
 
 
 class LimitWorkTimeModuleTable(ShiftAssignmentModuleTable):
     """4th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
+        shift_by_uid = {shift.uid: shift for shift in instance.shifts}
+        durations_by_day = {}
+        for _date, shift_uids in dates.items():
+            durations = [0]
+            for shift_uid in shift_uids:
+                shift = shift_by_uid[shift_uid]
+                durations.append(int((shift.end_time - shift.start_time).total_seconds() / 60))
+            durations_by_day[_date] = durations
         for nv in nurse_shift_vars:
             min_time = nv.nurse.minimum_work_time
             max_time = nv.nurse.maximum_work_time
             if min_time is None and max_time is None:
                 continue
-            working_time = 0
-            for shift, var in nv.iter_shifts():
-                working_time += (shift.end_time - shift.start_time) * var
+            working_time = model.sum(
+                model.at(durations_by_day[_date], nv.is_assigned_to(_date))
+                for _date in dates
+            )
             if min_time is not None:
                 model.add_constraint(working_time >= min_time)
             if max_time is not None:
