@@ -105,6 +105,47 @@ export default function CreateNurseDialog() {
     )
   }
 
+  const setPreferredShiftWeight = (weight: number, shift: Shift, unset?: boolean) => {
+
+    if (unset) {
+      const {[shift.uid]: foo, ...rest} = newNurse.preferred_shift_weight;
+      setNewNurse(prev => ({
+        ...prev,
+        preferred_shift_weight: rest
+      }));
+
+    } else {
+      setNewNurse(prev => ({
+        ...prev,
+        preferred_shift_weight: {
+          ...newNurse.preferred_shift_weight,
+          [shift.uid]: weight
+        }
+      }));
+    }
+  }
+
+  const setPreferredOffShiftWeight = (weight: number, shift: Shift, unset?: boolean) => {
+
+    if (unset) {
+      const {[shift.uid]: foo, ...rest} = newNurse.preferred_off_shift_weight;
+      setNewNurse(prev => ({
+        ...prev,
+        preferred_off_shift_weight: rest
+      }));
+
+    } else {
+      setNewNurse(prev => ({
+        ...prev,
+        preferred_off_shift_weight: {
+          ...newNurse.preferred_off_shift_weight,
+          [shift.uid]: weight
+        }
+      }));
+    }
+  }
+
+
   return (
 
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -146,21 +187,40 @@ export default function CreateNurseDialog() {
           <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedBlockedShifts.includes(s))} selectable={true} selectedItems={selectedPreferredShifts} setSelectedItems={setSelectedPreferredShifts} />
+            <DynamicShiftList 
+              shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedBlockedShifts.includes(s))} 
+              shift_weights={newNurse.preferred_shift_weight}
+              setShiftWeight={setPreferredShiftWeight}
+              selectable={true} 
+              selectedItems={selectedPreferredShifts} 
+              setSelectedItems={setSelectedPreferredShifts} 
+            />
 
           </div>
 
           <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => !selectedPreferredShifts.includes(s) && !selectedBlockedShifts.includes(s))} selectable={true} selectedItems={selectedPreferredOffShifts} setSelectedItems={setSelectedPreferredOffShifts} />
+            <DynamicShiftList 
+              shifts={shifts.filter((s) => !selectedPreferredShifts.includes(s) && !selectedBlockedShifts.includes(s))} 
+              shift_weights={newNurse.preferred_off_shift_weight}
+              setShiftWeight={setPreferredOffShiftWeight}
+              selectable={true}
+              selectedItems={selectedPreferredOffShifts} 
+              setSelectedItems={setSelectedPreferredOffShifts} 
+              />
 
           </div>
 
           <div key={"blocked_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.blocked_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Blocked Shifts: </h2>
-            <DynamicShiftList shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedPreferredShifts.includes(s))} selectable={true} selectedItems={selectedBlockedShifts} setSelectedItems={setSelectedBlockedShifts} />
+            <DynamicShiftList 
+              shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedPreferredShifts.includes(s))}
+              selectable={true} 
+              selectedItems={selectedBlockedShifts} 
+              setSelectedItems={setSelectedBlockedShifts} 
+              />
 
           </div>
 

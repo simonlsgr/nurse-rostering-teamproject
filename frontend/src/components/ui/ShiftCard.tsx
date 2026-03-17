@@ -38,15 +38,17 @@ export default function ShiftCard({ shift, weight, setWeight, selectable = false
         {/* <p> Time: {formatDate(shift.start_time, "time")} - {formatDate(shift.end_time, "time")}</p>  */}
         
         {weight && (
-          <div className="group">
+          <div className="group" onClick={(e) => e.stopPropagation()}>
             {!editWeight && (
               <div className="flex gap-2">
                 <p> Weight: {weight} </p>
-                <Pencil 
+                {setWeight && (
+                  <Pencil 
                   fontSize={"small"} 
                   className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-orange-100 rounded-lg"
                   onClick={() => { setEditWeight(true); }}  
-                />
+                  />
+                )}
               </div>
             )}
             {editWeight && (
