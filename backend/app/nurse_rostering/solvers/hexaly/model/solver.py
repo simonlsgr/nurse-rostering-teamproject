@@ -150,6 +150,11 @@ class NurseRosteringModel:
                 nurse_vars = [
                     NurseDecisionVarsIP(nurse, self.instance.shifts, model) for nurse in self.instance.nurses
                 ]
+                
+                objective = model.sum(
+                    module.build(self.instance, model, nurse_vars)  # type: ignore
+                    for module in self.modules
+                )
 
             elif self.formulation == SolverFormulation.TABLE:
                 dates = group_shifts_by_date(self.instance)
@@ -162,10 +167,7 @@ class NurseRosteringModel:
                 )
 
                 
-                objective = model.sum(
-                    module.build(self.instance, model, self.nurse_vars)  # type: ignore
-                    for module in self.modules
-                )
+                
                 
             
             model.minimize(objective)
