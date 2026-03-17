@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "../ui/button";
 import AddIcon from '@mui/icons-material/Add';
 import { Input } from "../ui/input";
-import { Nurse } from "@/types/nurseVars";
+import { Nurse, Shift } from "@/types/nurseVars";
 import { createDefaultNurse, formatDate } from "@/lib/utils";
 import { capitalize, Switch, Tooltip } from "@mui/material";
 import { Pencil } from 'lucide-react';
@@ -18,12 +18,17 @@ export default function CreateNurseDialog() {
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [newNurse, setNewNurse] = useState<Nurse>(createDefaultNurse());
+  const [selectedPreferredShifts, setSelectedPreferredShifts] = useState<Shift[]>([]);
+  const [selectedPreferredOffShifts, setSelectedPreferredOffShifts] = useState<Shift[]>([]);
+  const [selectedBlockedShifts, setSelectedBlockedShifts] = useState<Shift[]>([]);
+
   
   const { shifts } = useInstance();
   
   const dynamicAttributeDisplay = (key: string) => {
     
-    if (key == "staff") {
+    // these attributes are currently not needed
+/*     if (key == "staff") {
       return (
         <div className="flex gap-2 items-center">
           <Switch
@@ -48,7 +53,7 @@ export default function CreateNurseDialog() {
           }}     
         />
       )
-    }
+    } */
 
     if (key == "maximum_number_of_shifts_per_type") {
       return (
@@ -61,7 +66,7 @@ export default function CreateNurseDialog() {
               key={type}
               className="flex gap-1 items-center"
             >
-              <p className="mb-2"> {type == "E" ? "Early" : "Late"}: </p>
+              <p className="mb-2"> {type}: </p>
               <input
                 className="border border-border rounded-md p-1 mb-2"
                 type="text"
@@ -141,21 +146,21 @@ export default function CreateNurseDialog() {
           <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
-            <DynamicShiftList shifts={shifts}/>
+            <DynamicShiftList shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedBlockedShifts.includes(s))} selectable={true} selectedItems={selectedPreferredShifts} setSelectedItems={setSelectedPreferredShifts} />
 
           </div>
 
           <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
-            <DynamicShiftList shifts={shifts}/>
+            <DynamicShiftList shifts={shifts.filter((s) => !selectedPreferredShifts.includes(s) && !selectedBlockedShifts.includes(s))} selectable={true} selectedItems={selectedPreferredOffShifts} setSelectedItems={setSelectedPreferredOffShifts} />
 
           </div>
 
           <div key={"blocked_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.blocked_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Blocked Shifts: </h2>
-            <DynamicShiftList shifts={shifts} />
+            <DynamicShiftList shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedPreferredShifts.includes(s))} selectable={true} selectedItems={selectedBlockedShifts} setSelectedItems={setSelectedBlockedShifts} />
 
           </div>
 
@@ -163,7 +168,7 @@ export default function CreateNurseDialog() {
 
 
         {Object.keys(newNurse)
-        .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight"].includes(keyy))
+        .filter((keyy) => !["db_id", "uid", "name", "preferred_shifts", "preferred_off_shifts", "blocked_shifts", "preferred_shift_weight", "days_off", "preferred_off_shift_weight", "staff", "min_time_between_shifts"].includes(keyy))
         .map((key) => 
           <div key={key} className="mb-2">
 
@@ -195,11 +200,11 @@ export default function CreateNurseDialog() {
         <DialogFooter className="mt-4 flex items-end">
           <Button
             variant="outline"
-            onClick={() => {setOpenDialog(false);}}
+            onClick={() => {setOpenDialog(false); setNewNurse(createDefaultNurse());}}
           >
             Cancel
           </Button>
-          <Button onClick={() => {setOpenDialog(false)}}>
+          <Button onClick={() => {setOpenDialog(false); setNewNurse({...newNurse, preferred_shifts: selectedPreferredShifts.map(s => s.uid), preferred_off_shifts: selectedPreferredOffShifts.map(s => s.uid), blocked_shifts: selectedBlockedShifts.map(s => s.uid)})}}>
             Create
           </Button>
         </DialogFooter>
