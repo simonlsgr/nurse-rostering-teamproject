@@ -1,21 +1,22 @@
 import abc
-from datetime import timedelta
+from datetime import timedelta, date
 from typing import Any
 
 from hexaly.optimizer import HxModel, HxExpression
 
-from nurse_rostering.data_schema import NurseRosteringInstance, Shift
-from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.data_schema import NurseRosteringInstance, Shift, ShiftUid
+from nurse_rostering.solvers.hexaly.model.nurse_vars import NurseDecisionVarsTable
 from nurse_rostering.utils.data_utils import group_shifts_by_date, get_weekends, get_shift_type_dict
 
 
-class ShiftAssignmentModuleIntegerVars(abc.ABC):
+class ShiftAssignmentModuleTable(abc.ABC):
     @abc.abstractmethod
     def build(
             self,
             instance: NurseRosteringInstance,
             model: HxModel,
-            nurse_shift_vars: list[NurseDecisionVars],
+            nurse_shift_vars: list[NurseDecisionVarsTable],
+            dates: dict[date, list[ShiftUid]]
     ) -> HxExpression:
         """
         Add constraints and optionally return a sub-objective expression.
@@ -24,10 +25,10 @@ class ShiftAssignmentModuleIntegerVars(abc.ABC):
         return 0
 
 
-class OneShiftPerDayModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class OneShiftPerDayModuleTable(ShiftAssignmentModuleTable):
     """1st constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
         """
         Enforce that each nurse works at most one shift per day.
         """
@@ -35,39 +36,36 @@ class OneShiftPerDayModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
         return 0
 
 
-class ShiftRotationModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class ShiftRotationModuleTable(ShiftAssignmentModuleTable):
     """2nd constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
-    def build(self, instance, model, nurse_shift_vars):
+    def build(self, instance, model, nurse_shift_vars, dates):
         """
         Enforce minimum rest time between any two shifts for a nurse.
         """
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
-        shift_type_dict = get_shift_type_dict(instance)
-        shifts_by_date = group_shifts_by_date(instance)
-        all_dates = sorted(shifts_by_date.keys())
-        if not all_dates:
-            return 0
-        for nv in nurse_shift_vars:
-            for i in range(len(all_dates) - 1):
-                day_shifts = shifts_by_date.get(all_dates[i], [])
-                following_day_shifts = shifts_by_date.get(all_dates[i] + timedelta(days=1), [])
-                if not day_shifts or not following_day_shifts:
-                    continue
-                for day_shift in day_shifts:
-                    types = shift_type_dict.get(day_shift, [])
-                    if not types:
-                        continue
-                    for following_shift in following_day_shifts:
-                        _type = shift_by_uid[following_shift].type
-                        if _type is None:
-                            continue
-                        if _type in types:
-                            model.add_constraint(nv.is_assigned_to(day_shift) + nv.is_assigned_to(following_shift) <= 1)
+        for _date, shift_uids in dates.items():
+            following_date = _date+timedelta(days=1)
+            shift_mapping = {}
+            for i in range(len(shift_uids)):
+                current_shift_uid = shift_uids[i]
+                current_shift_types = shift_by_uid[current_shift_uid].not_followed_by_shift_types
+                for j in range(len(shift_uids)):
+                    shift_uid = shift_uids[j]
+                    if shift_by_uid[shift_uid].type in current_shift_types:
+                        shift_mapping.setdefault(i+1, []).append(j+1)
+            for shift, types in shift_mapping.items():
+                for nv in nurse_shift_vars:
+                    for _type in types:
+                     model.add_constraint(nv.is_assigned_to(_date) != shift or nv.is_assigned_to(following_date) != _type)
+
+
+
+
         return 0  # no objective contribution
 
 
-class MaximumShiftTypesModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class MaximumShiftTypesModuleTable(ShiftAssignmentModuleTable):
 
     def build(self, instance, model, nurse_shift_vars):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
@@ -83,7 +81,7 @@ class MaximumShiftTypesModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
         return 0
 
 
-class MaximizePreferencesIntegerVars(ShiftAssignmentModuleIntegerVars):
+class MaximizePreferencesTable(ShiftAssignmentModuleTable):
     def build(self, instance, model, nurse_shift_vars):
         """
         Encourage assigning nurses to their preferred shifts.
@@ -96,7 +94,7 @@ class MaximizePreferencesIntegerVars(ShiftAssignmentModuleIntegerVars):
         return expr
 
 
-class OffPreferencesIntegerVars(ShiftAssignmentModuleIntegerVars):
+class OffPreferencesTable(ShiftAssignmentModuleTable):
     def build(self, instance, model, nurse_shift_vars):
         expr = 0
         for nv in nurse_shift_vars:
@@ -109,7 +107,7 @@ class OffPreferencesIntegerVars(ShiftAssignmentModuleIntegerVars):
         return expr
 
 
-class PreferStaffModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class PreferStaffModuleTable(ShiftAssignmentModuleTable):
     def build(self, instance, model, nurse_shift_vars):
         """
         Penalize use of non-staff (contract) nurses in the objective.
@@ -122,7 +120,7 @@ class PreferStaffModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
         return expr
 
 
-class LimitWorkTimeModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class LimitWorkTimeModuleTable(ShiftAssignmentModuleTable):
     """4th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
@@ -141,7 +139,7 @@ class LimitWorkTimeModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
         return 0
 
 
-class MaximumConsecutiveShiftsModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class MaximumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
     """5th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
@@ -161,7 +159,7 @@ class MaximumConsecutiveShiftsModuleIntegerVars(ShiftAssignmentModuleIntegerVars
         return 0
 
 
-class MinimumConsecutiveShiftsModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class MinimumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
     """6th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
@@ -185,7 +183,7 @@ class MinimumConsecutiveShiftsModuleIntegerVars(ShiftAssignmentModuleIntegerVars
         return 0
 
 
-class MinimumConsecutiveDaysOffModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class MinimumConsecutiveDaysOffModuleTable(ShiftAssignmentModuleTable):
     """7th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
@@ -209,7 +207,7 @@ class MinimumConsecutiveDaysOffModuleIntegerVars(ShiftAssignmentModuleIntegerVar
         return 0
 
 
-class MaximumNumberOfWeekendsModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class MaximumNumberOfWeekendsModuleTable(ShiftAssignmentModuleTable):
     """8th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
@@ -228,7 +226,7 @@ class MaximumNumberOfWeekendsModuleIntegerVars(ShiftAssignmentModuleIntegerVars)
         return 0
 
 
-class DaysOffModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class DaysOffModuleTable(ShiftAssignmentModuleTable):
     """9th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
@@ -245,7 +243,7 @@ class DaysOffModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
         return 0
 
 
-class CoverRequirementsModuleIntegerVars(ShiftAssignmentModuleIntegerVars):
+class CoverRequirementsModuleTable(ShiftAssignmentModuleTable):
     """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):

@@ -41,7 +41,7 @@ class ShiftDecisionVars:
     
             
 
-class NurseDecisionVars:
+class NurseDecisionVarsTable:
     """
     A container to create and manage the decision variables for a single nurse.
 
@@ -88,6 +88,21 @@ class NurseDecisionVars:
         """
         for _date in self.dates.keys():
             yield _date, self.is_assigned_to(_date=_date)
+
+    def extract(self) -> list[ShiftUid]:
+        """
+        Extract a list of shift UIDs that this nurse is assigned to in the solution.
+        """
+        result = []
+        for _date, shift_uids in self.dates.items():
+            shift = self.is_assigned_to(_date).value
+            if not shift:
+                continue
+            mapping = {i+1: shift_uids[i] for i in range(len(shift_uids))}
+            result.append(mapping[shift])
+        return result
+
+
 
 
 
