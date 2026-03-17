@@ -42,7 +42,7 @@ class NurseRosteringModel:
     """
     
     def __init__(
-        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.SET
+        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.IP
     ):
         self.instance = instance
         self.formulation = formulation
@@ -91,16 +91,20 @@ class NurseRosteringModel:
         **solver_params,
     ) -> NurseRosteringSolution:
 
-        meta_params: dict[str, Any] = {}
-        for key, value in solver_params.items():
-            if key.startswith("meta_param_"):
-                meta_key = key[len("meta_param_"):]
-                meta_params[meta_key] = value
-                continue
-            else:
-                setattr(optimizer.param, key, value)
+        
         with hexaly.optimizer.HexalyOptimizer() as optimizer:
+            meta_params: dict[str, Any] = {}
+            for key, value in solver_params.items():
+                if key.startswith("meta_param_"):
+                    meta_key = key[len("meta_param_"):]
+                    meta_params[meta_key] = value
+                    continue
+                else:
+                    setattr(optimizer.param, key, value)
             
+            callback = meta_params.get("callback")
+            if callback is not None:
+                optimizer.add_callback(callback.cbType, callback.call)
             
             model = optimizer.model
             objective = 0
@@ -128,8 +132,13 @@ class NurseRosteringModel:
                 _set_nurses_to_shifts(nurses_at_shifts_forced=meta_params.get("nurses_at_shifts_forced"))
             elif self.formulation == SolverFormulation.IP:
                 self.nurse_vars = [
-                    NurseDecisionVarsIP(nurse, self.instance.shifts, self.model) for nurse in self.instance.nurses
+                    NurseDecisionVarsIP(nurse, self.instance.shifts, model) for nurse in self.instance.nurses
                 ]
+                
+                objective = model.sum(
+                    module.build(self.instance, model, self.nurse_vars)  # type: ignore
+                    for module in self.modules
+                )
                 
             
             model.minimize(objective)
@@ -137,7 +146,7 @@ class NurseRosteringModel:
             model.close()
             
             optimizer.param.time_limit = max_time_in_seconds
-            optimizer.param.verbosity = int(log_search_progress)
+            optimizer.param.verbosity = 2 if log_search_progress else 0
             
                 
 
@@ -151,15 +160,14 @@ class NurseRosteringModel:
                     lower_bound=-1
                 )
                 
+            nurses_at_shifts: dict[int, list[int]] = {}
             
             if self.formulation == SolverFormulation.SET:    
-                nurses_at_shifts = {}
                 for shift_var in self.shift_vars:
                     for n_idx, nurse in enumerate(shift_var.nurses):
                         if n_idx in shift_var.nurses_assigned.value:
                             nurses_at_shifts.setdefault(shift_var.shift.uid, []).append(nurse.uid)
             elif self.formulation == SolverFormulation.IP:
-                nurses_at_shifts: dict[int, list[int]] = {}
                 for nurse_model in self.nurse_vars:
                     for shift_uid in nurse_model.extract():
                         nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)

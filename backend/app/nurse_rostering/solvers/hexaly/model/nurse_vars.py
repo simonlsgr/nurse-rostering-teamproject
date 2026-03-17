@@ -163,7 +163,7 @@ class NurseWorksAtWeekendVarsIP:
             if _vars:
                 
                 for shift in shifts_on_weekend:
-                    model.addConstr(self._x[weekend] >= nv.is_assigned_to(shift))
+                    model.add_constraint(self._x[weekend] >= nv.is_assigned_to(shift))
                 model.add_constraint(self._x[weekend] <= model.sum(nv.is_assigned_to(shift) for shift in shifts_on_weekend))
                 
             else:

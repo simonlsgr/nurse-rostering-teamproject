@@ -137,7 +137,8 @@ class LimitWorkTimeModuleIP(ShiftAssignmentModuleIP):
                 continue
             working_time = 0
             for shift, var in nv.iter_shifts():
-                working_time += (shift.end_time - shift.start_time) * var
+                duration_minutes = int((shift.end_time - shift.start_time).total_seconds() // 60)
+                working_time += duration_minutes * var
             if min_time is not None:
                 model.add_constraint(working_time >= min_time)
             if max_time is not None:

@@ -112,8 +112,18 @@ class NurseRosteringModel:
         nurses_at_shifts_forced = meta_params.get("nurses_at_shifts_forced")
         if nurses_at_shifts_forced is not None:
             self._set_nurses_to_shifts(nurses_at_shifts_forced)
-
-        status = solver.solve(self.model)
+        
+        status = 0
+        callback = meta_params.get("callback")
+        best_bound_callback = meta_params.get("best_bound_callback")
+        print("callback", callback)
+        if callback is not None:
+            print("using callback", callback)
+            solver.best_bound_callback = best_bound_callback
+            status = solver.SolveWithSolutionCallback(self.model, callback)
+            
+        else:
+            status = solver.solve(self.model)
         
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             return NurseRosteringSolution(
