@@ -25,7 +25,6 @@ export function useLoadInstance(){
     
     try {
       const db_nurses = await getAllNurses(selectedProject.id);
-      console.log(db_nurses);
       setInstance({nurses: db_nurses, ...other});
     } catch (err: any) {
       alert(err);

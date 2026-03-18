@@ -36,7 +36,7 @@ export async function getAllNurses(projectId: string) {
 
 export async function getNurse(nurseId: string, projectId: string) {
 
-  const res = await fetch(`/api/projects?projectId=${projectId}&nurseId=${nurseId}`, {
+  const res = await fetch(`/api/nurses?projectId=${projectId}&nurseId=${nurseId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export async function getNurse(nurseId: string, projectId: string) {
 
 export async function editNurse(editedNurse: Nurse, projectId: string) {
 
-  const res = await fetch(`/api/projects?projectId=${projectId}&nurseId=${editedNurse.id}`, {
+  const res = await fetch(`/api/nurses?projectId=${projectId}&nurseId=${editedNurse.id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ editedNurse }),
@@ -67,7 +67,7 @@ export async function editNurse(editedNurse: Nurse, projectId: string) {
 
 export async function deleteNurse(nurseId: string, projectId: string) {
   
-  const res = await fetch(`/api/projects?projectId=${projectId}&nurseId=${nurseId}`, {
+  const res = await fetch(`/api/nurses?projectId=${projectId}&nurseId=${nurseId}`, {
     method: "DELETE",
   });
 
