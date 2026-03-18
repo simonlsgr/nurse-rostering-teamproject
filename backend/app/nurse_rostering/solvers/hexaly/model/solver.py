@@ -38,7 +38,9 @@ from nurse_rostering.solvers.hexaly.model.modules_ip import (
 )
 from nurse_rostering.solvers.hexaly.model.modules_table import (
     OneShiftPerDayModuleTable,
-    ShiftRotationModuleTable
+    ShiftRotationModuleTable, MaximizePreferencesTable, PreferStaffModuleTable, LimitWorkTimeModuleTable,
+    MaximumConsecutiveShiftsModuleTable, MinimumConsecutiveShiftsModuleTable, MinimumConsecutiveDaysOffModuleTable,
+    MaximumNumberOfWeekendsModuleTable, CoverRequirementsModuleTable, OffPreferencesTable, DaysOffModuleTable
 
 )
 from nurse_rostering.utils.data_utils import group_shifts_by_date
@@ -50,7 +52,7 @@ class NurseRosteringModel:
     """
     
     def __init__(
-        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.IP
+        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.TABLE
     ):
         self.instance = instance
         self.formulation = formulation
@@ -92,6 +94,16 @@ class NurseRosteringModel:
             self.modules: list[ShiftRotationModuleTable] = [
                 OneShiftPerDayModuleTable(),
                 ShiftRotationModuleTable(),
+                MaximizePreferencesTable(),
+                PreferStaffModuleTable(),
+                LimitWorkTimeModuleTable(),
+                MaximumConsecutiveShiftsModuleTable(),
+                MinimumConsecutiveShiftsModuleTable(),
+                MinimumConsecutiveDaysOffModuleTable(),
+                MaximumNumberOfWeekendsModuleTable(),
+                CoverRequirementsModuleTable(),
+                OffPreferencesTable(),
+                DaysOffModuleTable(),
             ]
 
 
