@@ -9,7 +9,7 @@ import { useInstance } from "@/store/instanceStore";
 import { capitalize, Tooltip } from "@mui/material";
 import { createDefaultNurse, formatDate } from "@/lib/utils";
 import { Pencil } from 'lucide-react';
-import CalendarPicker from "./DetailViewAddDaysCalendar";
+import CalendarPicker from "./DetailViewEditDaysOffCalendar";
 import { CalendarMinus2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Check } from 'lucide-react';
@@ -18,6 +18,8 @@ import { Button } from "../ui/button";
 import DeleteNurseDialog from "./DeleteNurseDialog";
 import { editNurse } from "@/app/api/nurse";
 import { useSelectedProject } from "@/store/projectStore";
+import DetailViewAddDaysCalendar from "./DetailViewEditDaysOffCalendar";
+import DetailViewEditDaysOffCalendar from "./DetailViewEditDaysOffCalendar";
 
 export default function NurseDetailView() {
 
@@ -76,6 +78,16 @@ export default function NurseDetailView() {
       }
     }));
   }
+
+  const setDaysOff = (dates: Date[]) => {
+
+    const string_dates = dates.map((date) => date.toISOString());
+    const updatedNurse = { ...editedNurse, days_off: string_dates };
+    setEditedNurse(updatedNurse);
+    handleUpdateNurse("days_off", updatedNurse);
+  }
+
+
 
 
   const dynamicAttributeDisplay = (key: string) => {
@@ -165,13 +177,13 @@ export default function NurseDetailView() {
   }
 
 
-  const handleUpdateNurse = async (key?: keyof Nurse) => {
+  // have the edited Nurse as parameter, if state is not updated fast enough
+  const handleUpdateNurse = async (key?: keyof Nurse, nurse?: Nurse) => {
 
     if (!selectedProject) return;
 
     try {
-
-      const adjustedNurse = key ? {...detailViewNurse, [key]: editedNurse[key]} : editedNurse;
+      const adjustedNurse = key ? {...detailViewNurse, [key]: nurse ? nurse[key] : editedNurse[key]} : nurse ? nurse : editedNurse;
 
       const res = await editNurse(adjustedNurse, selectedProject.id);
       updateNurse(adjustedNurse);
@@ -332,24 +344,16 @@ export default function NurseDetailView() {
 
                   <div className="flex gap-2">
                     <Tooltip
-                      title="Add Off-Days"
+                      title="Edit Off-Days"
                       enterDelay={100}
                       enterNextDelay={100}
                     >
-                      <CalendarPicker />
+
+                    <div>
+                      <DetailViewEditDaysOffCalendar selectedDates={detailViewNurse.days_off.map((date) => new Date(date))} setSelectedDates={setDaysOff} />
+                    </div>
                     </Tooltip>
                     
-                    <Tooltip
-                      title="Remove Off-Days"
-                      enterDelay={100}
-                      enterNextDelay={100}
-                    >
-                    <CalendarMinus2
-                      fontSize={"small"} 
-                      className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
-                    />
-                    </Tooltip>
-
                     <Tooltip
                       title="Close Menu"
                       enterDelay={100}

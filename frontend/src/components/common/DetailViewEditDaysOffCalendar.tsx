@@ -8,15 +8,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarPlus2, Pencil } from "lucide-react";
+import { CalendarDays } from 'lucide-react';
 
-export default function CalendarPicker() {
-  const [dates, setDates] = useState<Date[] | undefined>([]);
+type CalendarProps = {
+  selectedDates: Date[];
+  setSelectedDates: any;
+}
+
+
+
+export default function DetailViewEditDaysOffCalendar({ selectedDates, setSelectedDates }: CalendarProps) {
+  const [dates, setDates] = useState<Date[] | undefined>(selectedDates);
+  const [openPopover, setOpenPopover] = useState<boolean>(false);
 
   return (
-    <Popover>
+    <Popover open={openPopover} onOpenChange={setOpenPopover}>
       <PopoverTrigger asChild>
-        <CalendarPlus2 
+        <CalendarDays 
           fontSize={"small"} 
           className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
         />
@@ -28,14 +36,17 @@ export default function CalendarPicker() {
           selected={dates}
           onSelect={setDates}
           hidden={{
-            before: new Date("2018-01-01"), 
+            before: new Date("2018-01-01"), // TODO: link to planning horizon
             after: new Date("2018-01-14")
           }}
-          startMonth={ new Date(2018, 0) }
+          startMonth={ new Date(2018, 0) } // here too
           endMonth={ new Date(2018, 0) }
           defaultMonth={ new Date("2018-01-01") }
         />
-        <Button className="m-2 mt-0">
+        <Button 
+          className="m-2 mt-0"
+          onClick={() => {setSelectedDates(dates); setOpenPopover(false)}}
+          >
           Save
         </Button>
       </PopoverContent>
