@@ -22,27 +22,27 @@ class ShiftAssignmentModule(abc.ABC):
         """
         return 0
 
-class NoBlockedShiftsModule(ShiftAssignmentModule):
-    """
-    Prohibit assignment to blocked shifts.
-    """
+# class NoBlockedShiftsModule(ShiftAssignmentModule):
+#     """
+#     Prohibit assignment to blocked shifts.
+#     """
 
 
-    def build(
-        self,
-        instance: NurseRosteringInstance,
-        model: cp_model.CpModel,
-        nurse_shift_vars: list[NurseDecisionVars],
-        preferred_shift_vars: PreferredCoverDecisionVars = None
-    ) -> cp_model.LinearExprT:
-        for nv in nurse_shift_vars:
-            blocked_shifts = nv.nurse.blocked_shifts
-            if not blocked_shifts:
-                continue
-            for shift_uid in blocked_shifts:
-                nv.fix(shift_uid, False)
+#     def build(
+#         self,
+#         instance: NurseRosteringInstance,
+#         model: cp_model.CpModel,
+#         nurse_shift_vars: list[NurseDecisionVars],
+#         preferred_shift_vars: PreferredCoverDecisionVars = None
+#     ) -> cp_model.LinearExprT:
+#         for nv in nurse_shift_vars:
+#             blocked_shifts = nv.nurse.blocked_shifts
+#             if not blocked_shifts:
+#                 continue
+#             for shift_uid in blocked_shifts:
+#                 nv.fix(shift_uid, False)
 
-        return 0
+#         return 0
 
 
 # class DemandSatisfactionModule(ShiftAssignmentModule):
