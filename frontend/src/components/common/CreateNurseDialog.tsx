@@ -29,7 +29,7 @@ export default function CreateNurseDialog() {
     if (dates) {
       setNewNurse(prev => ({
         ...prev,
-        "days_off": dates?.map((date) => date.toISOString().split("T")[0])
+        "days_off": dates.map((date) => date.toISOString().split("T")[0])
       })); 
     }
 

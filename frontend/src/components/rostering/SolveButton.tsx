@@ -38,7 +38,7 @@ export default function SolveButton() {
   async function handleSolve() {
 
     try {
-      
+      console.log(nurses);
       setLoading(true);
       setError(null);
       if (usedSolver !== "") {
