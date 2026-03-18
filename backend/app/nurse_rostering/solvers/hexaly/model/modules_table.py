@@ -297,7 +297,7 @@ class CoverRequirementsModuleTable(ShiftAssignmentModuleTable):
         for shift_uid, field in shift_uid_table.items():
             assigned_nurses = model.sum(
                 model.iif(nv.is_assigned_to(field[0]) == field[1], 1, 0)
-                for nv in nurse_shift_vars if shift_uid in nv._x
+                for nv in nurse_shift_vars
             )
             model.add_constraint(
                 assigned_nurses - preferred_cover_vars.total_above_preferred[shift_uid] +

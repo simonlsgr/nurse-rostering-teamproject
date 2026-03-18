@@ -52,7 +52,7 @@ class NurseRosteringModel:
     """
     
     def __init__(
-        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.TABLE
+        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.IP
     ):
         self.instance = instance
         self.formulation = formulation
