@@ -18,5 +18,5 @@ class Project(Base):
     nurses = relationship(
         "Nurse",
         back_populates="project",
-        cascade="all, delete-orphan",
+        passive_deletes=True
     )

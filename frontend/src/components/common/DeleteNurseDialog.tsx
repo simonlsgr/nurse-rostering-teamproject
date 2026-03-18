@@ -23,6 +23,7 @@ export default function DeleteNurseDialog() {
     if(!detailViewNurse || !selectedProject) return;
 
     try {
+      console.log(detailViewNurse.id, selectedProject.id);
       const res = await deleteNurse(detailViewNurse.id, selectedProject.id);
       removeNurse(detailViewNurse.uid);
     }

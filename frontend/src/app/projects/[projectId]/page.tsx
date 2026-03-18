@@ -28,7 +28,7 @@ export default function ProjectPage(){
   const { loadInstance } = useLoadInstance();
   const { loadSolutionsArray } = useLoadSolutionsArray();
 
-  const { setSelectedProject } = useSelectedProject();
+  const { selectedProject, setSelectedProject } = useSelectedProject();
   const { projects, updateProject } = useProjects();
 
 
@@ -44,15 +44,23 @@ export default function ProjectPage(){
       setSelectedProject(data);
 
     } catch (err: any) {
+      alert(err ?? "Failed to load Project");
       // hmmm
     }
   }
 
   useEffect(() => {
     loadProject();
+  }, []);
+
+  useEffect(() => {
+    if(!selectedProject) return;
+    
     loadInstance();
     loadSolutionsArray();
-  }, []);
+
+  }, [selectedProject]);
+
 
 
   return (
