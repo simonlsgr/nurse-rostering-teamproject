@@ -22,7 +22,7 @@ export default function NurseCard({ nurse }: NurseCardProps){
       <div className="flex-1">
         <p className="truncate"> Name: {nurse.name} </p>              
         <p> Worktime: {nurse.minimum_work_time/60}h - {nurse.maximum_work_time/60}h </p>
-        <p className="truncate"> Min. Consecutive Shifts: {nurse.minimum_consecutive_days_off}</p> 
+        <p className="truncate"> Min. Consecutive Shifts: {nurse.minimum_consecutive_shifts}</p> 
         <p className="truncate"> Max. Consecutive Shifts: {nurse.maximum_consecutive_shifts}</p> 
       </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Nurse, Shift } from "@/types/nurseVars";
-import { useDetailViewNurse, useEditAttributes, useOpenNurseDetailView } from "@/store/nurseStore";
+import { useDetailViewNurse, useEditAttributes, useNurses, useOpenNurseDetailView } from "@/store/nurseStore";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useInstance } from "@/store/instanceStore";
 import { capitalize, Tooltip } from "@mui/material";
@@ -16,14 +16,18 @@ import { Check } from 'lucide-react';
 import { X } from 'lucide-react';
 import { Button } from "../ui/button";
 import DeleteNurseDialog from "./DeleteNurseDialog";
+import { editNurse } from "@/app/api/nurse";
+import { useSelectedProject } from "@/store/projectStore";
 
 export default function NurseDetailView() {
 
+  const { updateNurse } = useNurses();
   const { shifts } = useInstance();
   const { detailViewNurse, setDetailViewNurse } = useDetailViewNurse();
   const { openNurseDetailView, setOpenNurseDetailView } = useOpenNurseDetailView();
   const [ editedNurse, setEditedNurse ] = useState<Nurse>(createDefaultNurse());
-  
+  const { selectedProject } = useSelectedProject();
+
   
   const { editAttributes, setEditAttribute, setEditAttributes } = useEditAttributes();
   
@@ -129,6 +133,13 @@ export default function NurseDetailView() {
                       [type]: val
                     }
                   }));
+                  setDetailViewNurse(prev => ({
+                    ...prev,
+                    [key]: {
+                      ...(prev[key as keyof Nurse] as Record<string, number>),
+                      [type]: val
+                    }
+                  }));
                 }}
               />
             </div>
@@ -154,6 +165,25 @@ export default function NurseDetailView() {
   }
 
 
+  const handleUpdateNurse = async (key?: keyof Nurse) => {
+
+    if (!selectedProject) return;
+
+    try {
+
+      const adjustedNurse = key ? {...detailViewNurse, [key]: editedNurse[key]} : editedNurse;
+
+      const res = await editNurse(adjustedNurse, selectedProject.id);
+      updateNurse(adjustedNurse);
+      setEditAttributes({});
+      setDetailViewNurse(adjustedNurse);  
+
+    } catch (err: any) {
+      alert(err ?? "Failed to edit nurse");
+    }
+
+  }
+
 
   return (
 
@@ -162,7 +192,84 @@ export default function NurseDetailView() {
 
       <DialogContent className="!w-[48vw] !max-w-none h-[calc(80vh)]">
         <DialogHeader>
-          <DialogTitle>Nurse {detailViewNurse.name}</DialogTitle>
+          <DialogTitle>
+            
+            {!editAttributes["name"] && (
+
+              <div className="flex gap-2 group">
+                Nurse {detailViewNurse.name}
+                <Pencil 
+                  fontSize={"small"} 
+                  className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                  onClick={() => setEditAttribute("name", true)}
+                />
+                
+              </div>
+            )}
+
+
+            {editAttributes["name"] && (
+            
+            
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.17 }}
+                className="select-none"
+              >
+              
+            
+                <div className="flex gap-2 items-center">
+                  Nurse
+                  <input
+                    className="border border-border rounded-md p-1"
+                    type="text"
+                    inputMode="numeric"
+                    value={editedNurse["name"]}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditedNurse(prev => ({
+                        ...prev,
+                        "name": val
+                      }));
+                    }}
+                  />
+
+
+                  <Tooltip
+                    title="Save"
+                    enterDelay={100}
+                    enterNextDelay={100}
+                  >
+                    <Check 
+                      fontSize={"small"}
+                      className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                      onClick={() => { handleUpdateNurse("name"); setEditAttribute("name", false); }}
+                    />
+                  </Tooltip>
+            
+                  <Tooltip
+                    title="Cancel"
+                    enterDelay={100}
+                    enterNextDelay={100}
+                  >
+                  <X
+                    fontSize={"small"} 
+                    className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                    onClick={() => setEditAttribute("name", false)}
+                  />
+                  </Tooltip>
+            
+                </div>
+              </motion.div>
+            </AnimatePresence>
+            
+            )}
+                      
+            </DialogTitle>
         </DialogHeader>
 
         <div className="overflow-auto">
@@ -261,9 +368,6 @@ export default function NurseDetailView() {
 
             )}
 
-
-            {/* <CalendarPicker /> */}
-
           </div>
 
           <div className={`border-b border-border w-full pl-1 overflow-auto`}>
@@ -323,7 +427,7 @@ export default function NurseDetailView() {
                         <Check 
                           fontSize={"small"}
                           className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
-                          onClick={() => { setEditAttribute(key, false); }}
+                          onClick={() => { handleUpdateNurse(key as keyof Nurse); setEditAttribute(key, false); }}
                         />
                       </Tooltip>
 

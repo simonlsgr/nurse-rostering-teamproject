@@ -55,7 +55,7 @@ export async function editNurse(editedNurse: Nurse, projectId: string) {
   const res = await fetch(`/api/nurses?projectId=${projectId}&nurseId=${editedNurse.id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ editedNurse }),
+    body: JSON.stringify(editedNurse),
   });
 
   const data = await res.json();
