@@ -17,7 +17,6 @@ export default function CreateNurseDialog() {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedPreferredShifts, setSelectedPreferredShifts] = useState<Shift[]>([]);
   const [selectedPreferredOffShifts, setSelectedPreferredOffShifts] = useState<Shift[]>([]);
-  const [selectedBlockedShifts, setSelectedBlockedShifts] = useState<Shift[]>([]);
   const [dates, setDates] = useState<Date[] | undefined>([]);
 
   const { newNurse, setNewNurse } = useNewNurse();
@@ -38,19 +37,17 @@ export default function CreateNurseDialog() {
       ...prev,
       "preferred_shifts": selectedPreferredShifts.map((s) => s.uid),
       "preferred_off_shifts": selectedPreferredOffShifts.map((s) => s.uid),
-      "blocked_shifts": selectedBlockedShifts.map((s) => s.uid),
 
     })); 
 
 
 
-   }, [dates, selectedPreferredShifts, selectedPreferredOffShifts, selectedBlockedShifts])
+   }, [dates, selectedPreferredShifts, selectedPreferredOffShifts])
 
 
    useEffect(() => {
     setSelectedPreferredShifts([]);
     setSelectedPreferredOffShifts([]);
-    setSelectedBlockedShifts([]);
     setDates([]);
   }, [openDialog])
 
@@ -187,7 +184,7 @@ export default function CreateNurseDialog() {
       />
 
       </DialogTrigger>
-      <DialogContent className="!w-[51vw] !max-w-[1200px] h-[calc(80vh)]">
+      <DialogContent className="!w-[48vw] !max-w-[1200px] h-[calc(80vh)]">
         <DialogHeader>
           <DialogTitle>Create a new nurse</DialogTitle>
         </DialogHeader>
@@ -214,11 +211,11 @@ export default function CreateNurseDialog() {
         </div>
 
         <div className="flex gap-4 mb-2 border-b border-border pb-3">
-          <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+          <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(20vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
             <DynamicShiftList 
-              shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedBlockedShifts.includes(s))} 
+              shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s))} 
               shift_weights={newNurse.preferred_shift_weight}
               setShiftWeight={setPreferredShiftWeight}
               selectable={true} 
@@ -228,11 +225,11 @@ export default function CreateNurseDialog() {
 
           </div>
 
-          <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+          <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(20vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
             <DynamicShiftList 
-              shifts={shifts.filter((s) => !selectedPreferredShifts.includes(s) && !selectedBlockedShifts.includes(s))} 
+              shifts={shifts.filter((s) => !selectedPreferredShifts.includes(s))} 
               shift_weights={newNurse.preferred_off_shift_weight}
               setShiftWeight={setPreferredOffShiftWeight}
               selectable={true}
@@ -241,19 +238,6 @@ export default function CreateNurseDialog() {
               />
 
           </div>
-
-          <div key={"blocked_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${newNurse.blocked_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
-
-            <h2 className="pb-2 pl-2 font-semibold"> Blocked Shifts: </h2>
-            <DynamicShiftList 
-              shifts={shifts.filter((s) => !selectedPreferredOffShifts.includes(s) && !selectedPreferredShifts.includes(s))}
-              selectable={true} 
-              selectedItems={selectedBlockedShifts} 
-              setSelectedItems={setSelectedBlockedShifts} 
-              />
-
-          </div>
-
           
         </div>
 

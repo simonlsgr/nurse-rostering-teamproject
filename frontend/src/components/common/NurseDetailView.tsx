@@ -158,14 +158,14 @@ export default function NurseDetailView() {
 
     <Dialog open={openNurseDetailView} onOpenChange={setOpenNurseDetailView}>
 
-      <DialogContent className="!w-[52vw] !max-w-none h-[calc(80vh)]">
+      <DialogContent className="!w-[48vw] !max-w-none h-[calc(80vh)]">
         <DialogHeader>
           <DialogTitle>Nurse {detailViewNurse.name}</DialogTitle>
         </DialogHeader>
 
         <div className="overflow-auto">
         <div className="flex gap-4">
-          <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+          <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(20vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
             <DynamicShiftList 
@@ -178,22 +178,13 @@ export default function NurseDetailView() {
 
           </div>
 
-          <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
+          <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(20vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
             <DynamicShiftList 
               shifts={shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid))} 
               shift_weights={detailViewNurse.preferred_off_shift_weight}
               setShiftWeight={setPreferredOffShiftWeight}
-              />
-
-          </div>
-
-          <div key={"blocked_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.blocked_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(15vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
-
-            <h2 className="pb-2 pl-2 font-semibold"> Blocked Shifts: </h2>
-            <DynamicShiftList 
-              shifts={shifts.filter((s) => detailViewNurse.blocked_shifts.includes(s.uid))} 
               />
 
           </div>
