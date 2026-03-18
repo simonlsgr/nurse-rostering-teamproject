@@ -14,6 +14,8 @@ import { CalendarMinus2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Check } from 'lucide-react';
 import { X } from 'lucide-react';
+import { Button } from "../ui/button";
+import DeleteNurseDialog from "./DeleteNurseDialog";
 
 export default function NurseDetailView() {
 
@@ -366,11 +368,17 @@ export default function NurseDetailView() {
             </div>  
           </div>
         )}
+
+          <div className="flex justify-end mt-4 mr-4">
+            <DeleteNurseDialog />
+          </div>
+
+
         </div>
+        
 
 
         <DialogFooter className="mt-4 flex items-end">
-        
         </DialogFooter>
       </DialogContent>
     </Dialog>

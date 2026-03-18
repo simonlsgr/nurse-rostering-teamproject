@@ -1,7 +1,7 @@
 
 
 export type Nurse = {
-  id?: string // from database
+  id: string // from database
   uid: number;
   name: string;
   preferred_shifts: number[];
