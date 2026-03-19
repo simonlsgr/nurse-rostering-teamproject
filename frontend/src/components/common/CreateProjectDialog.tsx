@@ -9,6 +9,7 @@ import { capitalize } from "@mui/material";
 import { useEffect, useState } from "react";
 import PlanningHorizonInput from "./PlanningHorizonInput";
 import ShiftTypesInput from "./ShiftTypesInput";
+import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
 
 
 
@@ -56,7 +57,7 @@ export default function CreateProjectDialog(){
         <DialogTitle>Create a new project</DialogTitle>
       </DialogHeader>
 
-      <div className="overflow-auto flex flex-col gap-4">
+      <div className="overflow-auto flex flex-col gap-4 pr-2">
 
         <div className="rounded-2xl bg-white p-3">
           <p className="font-semibold mb-2"> Name: </p>
@@ -77,6 +78,10 @@ export default function CreateProjectDialog(){
       
         <div className="rounded-2xl bg-white p-3">
           <ShiftTypesInput />
+        </div>
+
+        <div className="rounded-2xl bg-white p-3">
+          <NotFollowedByShiftTypesInput />
         </div>
 
 

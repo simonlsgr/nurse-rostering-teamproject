@@ -19,4 +19,5 @@ export type ShiftType = {
   duration: string; // // HH:mm:ss
   start: string; // "HH:mm"
   end: string;
+  not_followed_by_shift_types: string[]
 };

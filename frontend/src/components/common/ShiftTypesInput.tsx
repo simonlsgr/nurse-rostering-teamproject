@@ -70,7 +70,7 @@ export default function ShiftTypesInput(){
         />
       
         <Tooltip
-          title="Specify Duration"
+          title="Duration of shift"
           enterDelay={200}
           enterNextDelay={200}
         >
@@ -102,7 +102,8 @@ export default function ShiftTypesInput(){
                 name: newShift.name,
                 duration: newShift.duration,
                 start,
-                end
+                end,
+                not_followed_by_shift_types: []
               }
             ]);
           

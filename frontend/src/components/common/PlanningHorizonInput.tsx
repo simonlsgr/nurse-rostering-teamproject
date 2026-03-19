@@ -24,7 +24,7 @@ export default function PlanningHorizonInput(){
   }, [startDate, endDate]);
 
   return (
-    <div className="gap-2">
+    <div>
 
       <p className="font-semibold mb-2"> Specify planning horizon: </p>
       <div className="pl-10">
