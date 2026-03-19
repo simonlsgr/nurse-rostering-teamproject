@@ -8,7 +8,6 @@ import { NurseRosteringInstance } from "@/types/solverVars";
 import { useSolverSettings } from "@/store/solverSettingsStore";
 import { solve } from "@/app/api/solver";
 import { useJobs } from "@/store/solverStore";
-import JobsList from "./JobsList";
 import { useNurses } from "@/store/nurseStore";
 import { useSolutionsArray } from "@/store/solutionStore";
 
