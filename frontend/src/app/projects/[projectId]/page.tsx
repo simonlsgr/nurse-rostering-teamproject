@@ -85,7 +85,7 @@ export default function ProjectPage(){
     const interval = setInterval(async () => {
       const jobs = await fetchFinishedJobs();
       
-      jobs.forEach((job) => addJobId(job.task_id))
+      jobs.forEach((job: any) => addJobId(job.task_id))
     }, 1000)
     
     return () => clearInterval(interval)

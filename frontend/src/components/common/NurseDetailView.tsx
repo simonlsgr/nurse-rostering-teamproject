@@ -54,7 +54,6 @@ export default function NurseDetailView() {
       setSelectedPreferredShifts(shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid)));
       setSelectedPreferredOffShifts(shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid)));
     }
-    console.log(detailViewNurse);
   }, [detailViewNurse]);
 
 

@@ -54,7 +54,7 @@ export default function JobCard({ jobId, bgGray }: JobCardProps) {
 
     try {
       const data = await pollJob(job.task_id);
-      updateJob(data);
+      updateJob({...data, name: job.name});
       setError(null);
       setResult("Refresh successfull");
     } catch (err: any) {
@@ -104,12 +104,12 @@ export default function JobCard({ jobId, bgGray }: JobCardProps) {
         </div>
       </div>
       <div className="flex">
-        {job.status === "Completed" &&
-          <SaveSolutionDialog jobId={jobId} bgGray={bgGray}/>
-
-        }
         <div className={`h-10 w-10 flex items-center justify-center ${bgGray ? "hover:bg-white" : "hover:bg-gray-100"} rounded-lg transition duration-170`}>
-          <RefreshIcon onClick={handleGetJob} />
+          
+          {job.status != "Completed" && (
+            <RefreshIcon onClick={handleGetJob} />
+          )}
+
         </div>
 
       </div>

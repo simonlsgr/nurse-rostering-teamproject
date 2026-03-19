@@ -45,7 +45,7 @@ export default function SolverSelector () {
                 onAnimationComplete={() => shouldShake && setShouldShake(false)}
             >
                 <input
-                className={`border border-border h-full! rounded-md p-1  ${solutionNameError ? "border-red-500" : ""}`}
+                className={`border border-border h-full! rounded-md p-1 pl-2  ${solutionNameError ? "border-red-500" : ""}`}
                 type="text"
                 inputMode="text"
                 value={solutionName}

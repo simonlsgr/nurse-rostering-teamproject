@@ -71,10 +71,11 @@ export default function SolveButton() {
         
         const data = await solve(payload)
         setResult(data);
+        console.log(data);
         addSolution({ solutionId: data.task_id, solution_name: solutionName, solution: {} });
         setJobs({
           ...jobs,
-          [data.task_id]: data
+          [data.task_id]: {...data, name: solutionName}
         })
       } else if (solutionName !== "") {
         setSolverError(true);
@@ -117,6 +118,3 @@ export default function SolveButton() {
 
   );
 }
-
-
-{/* <Button onClick={handleSolve}> Solve </Button> */}
