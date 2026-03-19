@@ -10,6 +10,7 @@ import SolverSelector from "@/components/rostering/SolverSelector";
 import TimeLimitInput from "@/components/rostering/TimeLimitInput";
 import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs"
 import { MainView } from "@/components/layout/MainView";
+import JobsView from "@/components/layout/JobsView";
 import { useParams } from "next/navigation";
 import { useProjects, useSelectedProject } from "@/store/projectStore";
 import { getProject } from "@/app/api/project";
@@ -145,6 +146,7 @@ export default function ProjectPage(){
 
               <TabsTrigger value="solution_viewer"> View Solutions </TabsTrigger>
               <TabsTrigger value="create_job"> Solve </TabsTrigger>
+              <TabsTrigger value="jobs"> Jobs </TabsTrigger>
 
             </TabsList>
           </div>
@@ -157,6 +159,9 @@ export default function ProjectPage(){
             <VariableFixer />
           </TabsContent>
           
+          <TabsContent value="jobs">
+            <JobsView />        
+          </TabsContent>
         
         </Tabs>
         
