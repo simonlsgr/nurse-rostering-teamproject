@@ -13,6 +13,17 @@ import { useNurses } from "@/store/nurseStore";
 import { useSolutionsArray } from "@/store/solutionStore";
 
 
+type SolverMap = Record<string, string>;
+
+const solver_names: SolverMap = {
+  "cpsat-ip": "CP SAT (IP)",
+  "cpsat-automaton": "CP SAT (Automaton)",
+  "gurobi": "Gurobi (IP)",
+  "hexaly-set": "Hexaly (Set-Based)",
+  "hexaly-ip": "Hexaly (IP)",
+  "hexaly-table": "Hexaly (Table-Based)"
+};
+
 export default function SolveButton() {
 
 
@@ -72,7 +83,7 @@ export default function SolveButton() {
         const data = await solve(payload)
         setResult(data);
         console.log(data);
-        addSolution({ solutionId: data.task_id, solution_name: solutionName, solution: {} });
+        addSolution({ solutionId: data.task_id, solution_name: solutionName, solution: {}, solver: solver_names[usedSolver], return_status: "TBD" });
         setJobs({
           ...jobs,
           [data.task_id]: {...data, name: solutionName}

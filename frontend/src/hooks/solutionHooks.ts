@@ -18,9 +18,9 @@ export function useLoadSolutionsArray() {
     const data2 = solutionData2 as unknown as Solution;
 
     const solutions = [
-      { solutionId: id0, solution_name: "Empty Solution", solution: empty },
-      { solutionId: id1, solution_name: "Feasible Solution", solution: data1 },
-      { solutionId: id2, solution_name: "Infeasible Solution", solution: data2 },
+      { solutionId: id0, solution_name: "Empty Solution", solution: empty, solver: "None1", return_status: "None1"},
+      { solutionId: id1, solution_name: "Feasible Solution", solution: data1, solver: "None2", return_status: "None2"},
+      { solutionId: id2, solution_name: "Infeasible Solution", solution: data2, solver: "None3", return_status: "None3"},
     ];
 
     setSolutions(solutions);
@@ -29,7 +29,7 @@ export function useLoadSolutionsArray() {
     const activeId = useSolution.getState().solutionId;
     if (!activeId) {
       const first = solutions[0];
-      loadActiveSolution(first.solutionId, first.solution_name, first.solution);
+      loadActiveSolution(first.solutionId, first.solution_name, first.solution, first.solver, first.return_status);
     }
   };
 
