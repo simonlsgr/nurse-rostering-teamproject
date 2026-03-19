@@ -29,15 +29,32 @@ export default function NurseDetailView() {
   const { openNurseDetailView, setOpenNurseDetailView } = useOpenNurseDetailView();
   const [ editedNurse, setEditedNurse ] = useState<Nurse>(createDefaultNurse());
   const { selectedProject } = useSelectedProject();
-
   
+  const [selectedPreferredShifts, setSelectedPreferredShifts] = useState<Shift[]>([]);
+  const [selectedPreferredOffShifts, setSelectedPreferredOffShifts] = useState<Shift[]>([]);
+  
+
   const { editAttributes, setEditAttribute, setEditAttributes } = useEditAttributes();
   
+  useEffect(() => {
+    setEditedNurse(prev => ({
+      ...prev,
+      "preferred_shifts": selectedPreferredShifts.map((s) => s.uid),
+      "preferred_off_shifts": selectedPreferredOffShifts.map((s) => s.uid),
+
+    })); 
+
+
+
+   }, [selectedPreferredShifts, selectedPreferredOffShifts])
 
   useEffect(() => {
     if (detailViewNurse) {
       setEditedNurse(detailViewNurse);
+      setSelectedPreferredShifts(shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid)));
+      setSelectedPreferredOffShifts(shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid)));
     }
+    console.log(detailViewNurse);
   }, [detailViewNurse]);
 
 
@@ -78,6 +95,47 @@ export default function NurseDetailView() {
     setEditedNurse(updatedNurse);
     handleUpdateNurse("preferred_off_shift_weight", updatedNurse);
   }
+
+  const setSelectedPreferredShiftWeight = (weight: number, shift: Shift, unset?: boolean) => {
+
+    if (unset) {
+      const {[shift.uid]: foo, ...rest} = editedNurse.preferred_shift_weight;
+      setEditedNurse(prev => ({
+        ...prev,
+        preferred_shift_weight: rest
+      }));
+
+    } else {
+      setEditedNurse(prev => ({
+        ...prev,
+        preferred_shift_weight: {
+          ...editedNurse.preferred_shift_weight,
+          [shift.uid]: weight
+        }
+      }));
+    }
+  }
+
+  const setSelectedPreferredOffShiftWeight = (weight: number, shift: Shift, unset?: boolean) => {
+
+    if (unset) {
+      const {[shift.uid]: foo, ...rest} = editedNurse.preferred_off_shift_weight;
+      setEditedNurse(prev => ({
+        ...prev,
+        preferred_off_shift_weight: rest
+      }));
+
+    } else {
+      setEditedNurse(prev => ({
+        ...prev,
+        preferred_off_shift_weight: {
+          ...editedNurse.preferred_off_shift_weight,
+          [shift.uid]: weight
+        }
+      }));
+    }
+  }
+
 
   const setDaysOff = (dates: Date[]) => {
 
@@ -196,6 +254,39 @@ export default function NurseDetailView() {
 
   }
 
+  const handleUpdateShiftsWeights = async (off_shifts: boolean) => {
+
+    if (!selectedProject) return;
+
+    try {
+
+      let adjustedNurse = {
+        ...detailViewNurse, 
+        "preferred_shifts": editedNurse.preferred_shifts,
+        "preferred_shift_weight": editedNurse.preferred_shift_weight,
+      };
+
+
+      if (off_shifts) {
+
+        adjustedNurse = {
+          ...detailViewNurse, 
+          "preferred_off_shifts": editedNurse.preferred_off_shifts,
+          "preferred_off_shift_weight": editedNurse.preferred_off_shift_weight,
+        };
+      }
+        
+      const res = await editNurse(adjustedNurse, selectedProject.id);
+      updateNurse(adjustedNurse);
+      setEditAttributes({});
+      setDetailViewNurse(adjustedNurse);  
+
+    } catch (err: any) {
+      alert(err ?? "Failed to edit nurse");
+    }
+
+  }
+
 
   return (
 
@@ -288,12 +379,73 @@ export default function NurseDetailView() {
         <div className="flex gap-4">
           <div key={"preferred_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(20vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
-            <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
+            <div className="flex gap-4 group">
+              <h2 className="pb-2 pl-2 font-semibold"> Preferred Shifts: </h2>
+               
+              {!editAttributes["preferred_shifts"] && (
+                <Pencil 
+                fontSize={"small"} 
+                className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-gray-200 rounded-lg"
+                onClick={() => { setEditAttribute("preferred_shifts", true); }}  
+                />
+              )}
+
+              {editAttributes["preferred_shifts"] && (
+
+
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.17 }}
+                    className="select-none"
+                  >
+
+
+                    <div className="flex gap-2">
+                      <Tooltip
+                        title="Save"
+                        enterDelay={100}
+                        enterNextDelay={100}
+                      >
+                        <Check 
+                          fontSize={"small"}
+                          className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                          onClick={() => { handleUpdateShiftsWeights(false); setEditAttribute("preferred_shifts", false); }}
+                        />
+                      </Tooltip>
+
+                      <Tooltip
+                        title="Cancel"
+                        enterDelay={100}
+                        enterNextDelay={100}
+                      >
+                      <X
+                        fontSize={"small"} 
+                        className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                        onClick={() => {setEditedNurse(detailViewNurse); setEditAttribute("preferred_shifts", false)}}
+                      />
+                      </Tooltip>
+
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+              )}
+
+
+
+            </div>
+            
             <DynamicShiftList 
-              shifts={shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} 
-              shift_weights={detailViewNurse.preferred_shift_weight} 
-              setShiftWeight={setPreferredShiftWeight}
-              selectable={false}
+              shifts={editAttributes["preferred_shifts"] ? shifts : shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} 
+              shift_weights={editAttributes["preferred_shifts"] ? editedNurse.preferred_shift_weight : detailViewNurse.preferred_shift_weight} 
+              setShiftWeight={editAttributes["preferred_shifts"] ? setSelectedPreferredShiftWeight : setPreferredShiftWeight}
+              selectable={editAttributes["preferred_shifts"]}
+              selectedItems={editAttributes["preferred_shifts"] ? selectedPreferredShifts : null}
+              setSelectedItems={editAttributes["preferred_shifts"] ? setSelectedPreferredShifts : null}
 
             />
 
@@ -301,11 +453,64 @@ export default function NurseDetailView() {
 
           <div key={"preferred_off_shifts"} className={`mb-2 overflow-auto max-h-[calc(40vh)] ${detailViewNurse.preferred_off_shifts.length >= 1 ?"h-[calc(40vh)]" : "h-min"} w-[calc(20vw)] max-w-100 border border-border rounded-3xl p-2 pr-0 bg-gray-50 shadow-xs`}>
 
+            <div className="flex gap-4 group">
+
             <h2 className="pb-2 pl-2 font-semibold"> Preferred Off-Shifts: </h2>
+
+            {!editAttributes["preferred_off_shifts"] && (
+                <Pencil 
+                fontSize={"small"} 
+                className="p-1 opacity-0 group-hover:opacity-100 transition-all duration-170 ease-in-out hover:bg-gray-200 rounded-lg"
+                onClick={() => { setEditAttribute("preferred_off_shifts", true); }}  
+                />
+            )}
+
+            {editAttributes["preferred_off_shifts"] && (
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.17 }}
+                  className="select-none"
+                >
+                  <div className="flex gap-2">
+                    <Tooltip
+                      title="Save"
+                      enterDelay={100}
+                      enterNextDelay={100}
+                    >
+                      <Check 
+                        fontSize={"small"}
+                        className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                        onClick={() => { handleUpdateShiftsWeights(true); setEditAttribute("preferred_off_shifts", false); }}
+                      />
+                    </Tooltip>
+                    <Tooltip
+                      title="Cancel"
+                      enterDelay={100}
+                      enterNextDelay={100}
+                    >
+                    <X
+                      fontSize={"small"} 
+                      className="transition-all duration-170 ease-in-out hover:bg-gray-100 rounded-lg"
+                      onClick={() => {setEditedNurse(detailViewNurse); setEditAttribute("preferred_off_shifts", false)}}
+                    />
+                    </Tooltip>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            )}
+            </div>
+
             <DynamicShiftList 
-              shifts={shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid))} 
-              shift_weights={detailViewNurse.preferred_off_shift_weight}
-              setShiftWeight={setPreferredOffShiftWeight}
+              shifts={editAttributes["preferred_off_shifts"] ? shifts : shifts.filter((s) => detailViewNurse.preferred_off_shifts.includes(s.uid))} 
+              shift_weights={editAttributes["preferred_off_shifts"] ? editedNurse.preferred_off_shift_weight : detailViewNurse.preferred_off_shift_weight} 
+              setShiftWeight={editAttributes["preferred_off_shifts"] ? setSelectedPreferredOffShiftWeight : setPreferredOffShiftWeight}
+              selectable={editAttributes["preferred_off_shifts"]}
+              selectedItems={editAttributes["preferred_off_shifts"] ? selectedPreferredOffShifts : null}
+              setSelectedItems={editAttributes["preferred_off_shifts"] ? setSelectedPreferredOffShifts : null}
               />
 
           </div>
