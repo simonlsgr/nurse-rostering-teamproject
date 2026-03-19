@@ -96,12 +96,8 @@ export default function ProjectPage(){
       for (const jobId of jobIds) {
         const data = await fetchSolution(jobId);
         
-        console.log(data.nurses_at_shifts)
-        console.log("prevsols",solutions)
         updateSolution(jobId, data.nurses_at_shifts)
-        console.log("aftersols",solutions)
         removeJobId(jobId);
-        console.log(solutions.find((s) => s.solutionId === jobId)?.solution_name)
 
         setNotificationSolutionName(solutions.find((s) => s.solutionId === jobId)?.solution_name || "");
         setNotificationStatus(true);
