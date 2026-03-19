@@ -10,11 +10,11 @@ export function useLoadInstance(){
   const { setInstance } = useInstance();
   const { selectedProject } = useSelectedProject();
 
-  // const loadInstance = async() => {
-  //   const data = instanceData;  
-    
-  //   setInstance(data);
-  // };
+/*    const loadInstance = async() => {
+     const data = instanceData;  
+
+     setInstance(data);
+   }; */
 
   const loadInstance = async () => {
     if (!selectedProject) return

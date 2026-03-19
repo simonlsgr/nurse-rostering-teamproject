@@ -59,24 +59,24 @@ export default function NurseDetailView() {
 
   const setPreferredShiftWeight = (weight: number, shift: Shift) => {
 
-    setDetailViewNurse(prev => ({
-      ...prev,
-      preferred_shift_weight: {
-        ...detailViewNurse.preferred_shift_weight,
-        [shift.uid]: weight
-      }
-    }));
+
+    const updatedNurse = { ...editedNurse, preferred_shift_weight: {
+      ...detailViewNurse.preferred_shift_weight,
+      [shift.uid]: weight
+    }};
+    setEditedNurse(updatedNurse);
+    handleUpdateNurse("preferred_shift_weight", updatedNurse);
+
   }
 
   const setPreferredOffShiftWeight = (weight: number, shift: Shift) => {
 
-    setDetailViewNurse(prev => ({
-      ...prev,
-      preferred_off_shift_weight: {
-        ...detailViewNurse.preferred_off_shift_weight,
-        [shift.uid]: weight
-      }
-    }));
+    const updatedNurse = { ...editedNurse, preferred_off_shift_weight: {
+      ...detailViewNurse.preferred_off_shift_weight,
+      [shift.uid]: weight
+    }};
+    setEditedNurse(updatedNurse);
+    handleUpdateNurse("preferred_off_shift_weight", updatedNurse);
   }
 
   const setDaysOff = (dates: Date[]) => {
@@ -293,7 +293,7 @@ export default function NurseDetailView() {
               shifts={shifts.filter((s) => detailViewNurse.preferred_shifts.includes(s.uid))} 
               shift_weights={detailViewNurse.preferred_shift_weight} 
               setShiftWeight={setPreferredShiftWeight}
-              selectable={false}  
+              selectable={false}
 
             />
 
