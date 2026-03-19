@@ -10,6 +10,7 @@ import { solve } from "@/app/api/solver";
 import { useJobs } from "@/store/solverStore";
 import JobsList from "./JobsList";
 import { useNurses } from "@/store/nurseStore";
+import { useSolutionsArray } from "@/store/solutionStore";
 
 
 export default function SolveButton() {
@@ -26,6 +27,11 @@ export default function SolveButton() {
   const nurses = useNurses(s => s.nurses);
   const shifts = useInstance(s => s.shifts);
   const staff_weight = useInstance(s => s.staff_weight);
+  const solutionName = useSolverSettings(s => s.solutionName);
+  const setSolutionNameError = useSolverSettings(s => s.setSolutionNameError);
+
+  const addSolution = useSolutionsArray((s) => s.addSolution);
+  
 
   const instance: NurseRosteringInstance = {nurses, shifts, staff_weight};
 
@@ -41,7 +47,7 @@ export default function SolveButton() {
       
       setLoading(true);
       setError(null);
-      if (usedSolver !== "") {
+      if (usedSolver !== "" && solutionName != "") {
         setSolverError(false);
         
         
@@ -58,16 +64,24 @@ export default function SolveButton() {
           payload["optimization_parameters"]["nurses_at_shifts_forced"] = {};
         }
         payload["solver"] = usedSolver;
+
+        payload["webhook_url"] = "http://host.docker.internal:3000/api/webhooks/job_status"
         
         
         
         const data = await solve(payload)
         setResult(data);
+        addSolution({ solutionId: data.task_id, solution_name: solutionName, solution: {} });
         setJobs({
           ...jobs,
           [data.task_id]: data
         })
+      } else if (solutionName !== "") {
+        setSolverError(true);
+      } else if (usedSolver !== "") {
+        setSolutionNameError(true);
       } else {
+        setSolutionNameError(true);
         setSolverError(true);
       }
 

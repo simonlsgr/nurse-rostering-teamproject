@@ -3,7 +3,7 @@
 import NurseList from "@/components/rostering/NurseList";
 import { useLoadInstance } from "@/hooks/instanceHooks";
 import { useLoadSolutionsArray } from "@/hooks/solutionHooks";
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import SolveButton from "@/components/rostering/SolveButton";
 import FixVariablesSelections from "@/components/rostering/FixVariablesSelection";
 import SolverSelector from "@/components/rostering/SolverSelector";
@@ -18,6 +18,17 @@ import { Project } from "@/types/projectVars";
 import ShiftList from "@/components/rostering/ShiftList";
 import { SolutionViewer } from "@/components/rostering/SolutionViewer";
 import { VariableFixer } from "@/components/rostering/VariableFixer";
+import { useMessages } from "@/store/messagesStore";
+import { fetchFinishedJobs } from "@/app/api/jobs";
+import { fetchSolution } from "@/app/api/solution";
+import { useSolutionsArray } from "@/store/solutionStore";
+import { Slide, SlideProps, Snackbar } from "@mui/material";
+
+
+function SlideTransition(props: SlideProps) {
+  return <Slide {...props} direction="up" />;
+}
+
 
 export default function ProjectPage(){  
   
@@ -60,6 +71,49 @@ export default function ProjectPage(){
     loadSolutionsArray();
 
   }, [selectedProject]);
+
+  const addJobId = useMessages((s) => s.addJobId)
+  const removeJobId = useMessages((s) => s.removeJobId)
+  const jobIds = useMessages((s) => s.jobIds)
+  const updateSolution = useSolutionsArray(s => s.updateSolution)
+  const solutions = useSolutionsArray(s => s.solutions)
+
+  const [notificationStatus, setNotificationStatus] = useState(false);
+  const [notificationSolutionName, setNotificationSolutionName] = useState("");
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const jobs = await fetchFinishedJobs();
+      
+      jobs.forEach((job) => addJobId(job.task_id))
+    }, 1000)
+    
+    return () => clearInterval(interval)
+  }, [addJobId])
+
+  useEffect (() => {
+    const processJobs = async () => {
+      for (const jobId of jobIds) {
+        const data = await fetchSolution(jobId);
+        
+        console.log(data.nurses_at_shifts)
+        console.log("prevsols",solutions)
+        updateSolution(jobId, data.nurses_at_shifts)
+        console.log("aftersols",solutions)
+        removeJobId(jobId);
+        console.log(solutions.find((s) => s.solutionId === jobId)?.solution_name)
+
+        setNotificationSolutionName(solutions.find((s) => s.solutionId === jobId)?.solution_name || "");
+        setNotificationStatus(true);
+
+      }
+    };
+  
+    processJobs();
+
+  }, [jobIds]);
+
+
 
 
 
@@ -118,6 +172,13 @@ export default function ProjectPage(){
         </div>
       
       </div>
+      
+      <Snackbar
+        open={notificationStatus}
+        message={"Solution: "+notificationSolutionName+" is ready!"}
+        autoHideDuration={1200}
+        onClose={() => setNotificationStatus(false)}
+      />
 
       
     

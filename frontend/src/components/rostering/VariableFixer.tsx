@@ -14,6 +14,7 @@ import SolverSelector from "@/components/rostering/SolverSelector";
 import TimeLimitInput from "@/components/rostering/TimeLimitInput";
 import SolveButton from "@/components/rostering/SolveButton";
 import { useNurses } from "@/store/nurseStore";
+import SolverNameInput from "@/components/rostering/SolverNameInput";
 
 export function VariableFixer() {
 
@@ -85,6 +86,7 @@ export function VariableFixer() {
             {/* <p>{feasible ? "feasible" : "infeasible"}</p>
             <p>{JSON.stringify(fixedVariables)}</p> */}
             <div className="flex flex-row gap-5 items-end">
+                <SolverNameInput />
                 <SolverSelector />
                 <TimeLimitInput />
             </div>

@@ -12,6 +12,10 @@ type SolverSettingsState = {
     setUsedSolverError: (solverError: boolean) => void;
     timeLimit: number;
     setTimeLimit: (timeLimit: number) => void;
+    solutionName: string;
+    editSolutionName: (name: string) => void;
+    solutionNameError: boolean;
+    setSolutionNameError: (solverError: boolean) => void;
 }
 
 export const useSolverSettings = create<SolverSettingsState>((set) => ({
@@ -25,4 +29,8 @@ export const useSolverSettings = create<SolverSettingsState>((set) => ({
     setUsedSolverError: (solverError) => set({ usedSolverError: solverError }),
     timeLimit: 60,
     setTimeLimit: (timeLimit) => set({ timeLimit }),
+    solutionName: "",
+    editSolutionName: (solutionName) => set({ solutionName }),
+    solutionNameError: false,
+    setSolutionNameError: (solutionNameError) => set({ solutionNameError }),
 }))

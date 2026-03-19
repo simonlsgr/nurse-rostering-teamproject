@@ -32,6 +32,8 @@ services:
       rq worker --with-scheduler --url redis://optimization_api_redis:6379/1
     depends_on: # Ensuring that the worker starts after the database, as it needs to connect to it.
       - optimization_api_redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       replicas: 2 # Adding two workers for parallel processing
     volumes:

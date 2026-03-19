@@ -33,12 +33,21 @@ type SolutionsArrayState = {
   solutions: SolutionEntry[];
   setSolutions: (solutions: SolutionEntry[]) => void;
   addSolution: (entry: SolutionEntry) => void;
+  updateSolution: (solutionId: string, solution: Solution) => void;
   clearSolutions: () => void;
 };
 
 export const useSolutionsArray = create<SolutionsArrayState>((set) => ({
   solutions: [],
   setSolutions: (solutions) => set({ solutions }),
+  updateSolution: (solutionId: string, solution: Solution) =>
+    set((state) => ({
+      solutions: state.solutions.map((s) =>
+        s.solutionId === solutionId
+          ? { ...s, solution } 
+          : s
+      ),
+    })),
   addSolution: (entry) =>
     set((state) => ({ solutions: [...state.solutions, entry] })),
   clearSolutions: () => set({ solutions: [] }),
