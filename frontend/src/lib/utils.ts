@@ -1,4 +1,5 @@
 import { Nurse } from "@/types/nurseVars";
+import { Project } from "@/types/projectVars";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -55,4 +56,12 @@ export function createDefaultNurse(): Nurse {
     maximum_number_of_shifts_per_type: {},
   };
 }
+
+export function createDefaultProject(): Project {
+  return {
+
+    id: crypto.randomUUID(),
+    name: "",
+  }
+} 
 
