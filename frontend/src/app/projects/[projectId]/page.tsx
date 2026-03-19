@@ -72,11 +72,13 @@ export default function ProjectPage(){
 
   }, [selectedProject]);
 
-  const addJobId = useMessages((s) => s.addJobId)
-  const removeJobId = useMessages((s) => s.removeJobId)
-  const jobIds = useMessages((s) => s.jobIds)
-  const updateSolution = useSolutionsArray(s => s.updateSolution)
-  const solutions = useSolutionsArray(s => s.solutions)
+  const addJobId = useMessages((s) => s.addJobId);
+  const removeJobId = useMessages((s) => s.removeJobId);
+  const jobIds = useMessages((s) => s.jobIds);
+  const updateSolution = useSolutionsArray(s => s.updateSolution);
+  const updateReturnStatus = useSolutionsArray(s => s.updateReturnStatus);
+  const solutions = useSolutionsArray(s => s.solutions);
+
 
   const [notificationStatus, setNotificationStatus] = useState(false);
   const [notificationSolutionName, setNotificationSolutionName] = useState("");
@@ -96,7 +98,8 @@ export default function ProjectPage(){
       for (const jobId of jobIds) {
         const data = await fetchSolution(jobId);
         
-        updateSolution(jobId, data.nurses_at_shifts)
+        updateSolution(jobId, data.nurses_at_shifts);
+        updateReturnStatus(jobId, data.return_status);
         removeJobId(jobId);
 
         setNotificationSolutionName(solutions.find((s) => s.solutionId === jobId)?.solution_name || "");

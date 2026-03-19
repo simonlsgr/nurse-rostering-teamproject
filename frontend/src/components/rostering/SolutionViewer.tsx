@@ -30,8 +30,13 @@ export function SolutionViewer() {
     // used to display the solution
     const activeSolutionId = useSolution((s) => s.solutionId);
     const activeSolution = useSolution((s) => s.solution);
+    const activeSolutionSolver = useSolution((s) => s.solver);
+    const activeSolutionReturnStatus = useSolution((s) => s.return_status);
     const setActiveSolution = useSolution((s) => s.setSolution);
     const loadActiveSolution = useSolution((s) => s.loadSolution);
+    
+
+
 
     const solutionsArray = useSolutionsArray((s) => s.solutions);
 
@@ -44,7 +49,7 @@ export function SolutionViewer() {
       
         if (!exists) {
           const first = solutionsArray[0];
-          loadActiveSolution(first.solutionId, first.solution_name, first.solution);
+          loadActiveSolution(first.solutionId, first.solution_name, first.solution, first.solver, first.return_status);
         }
       }, [solutionsArray, activeSolutionId, loadActiveSolution]);
 
@@ -118,7 +123,7 @@ export function SolutionViewer() {
         const selected = solutionsArray.find((s) => s.solutionId === newSolutionId);
         if (!selected) return;
     
-        loadActiveSolution(selected.solutionId, selected.solution_name, selected.solution);
+        loadActiveSolution(selected.solutionId, selected.solution_name, selected.solution, selected.solver, selected.return_status);
         
     };
 
@@ -127,22 +132,26 @@ export function SolutionViewer() {
             <h1 className="text-2xl font-bold pb-2 mb-4 border-b border-border">
                 Solutions
             </h1>
-            <div>
-            <FormControl>
-            <InputLabel id="select-solution-label-id">Solution</InputLabel>
-            <Select
-                labelId="select-solution-label-id"
-                id="select-solution-id"
-                value={activeSolutionId}
-                label="Solution"
-                onChange={handleChange}
-            >
-                
-                {solutionsArray.map((s) => (
-                    <MenuItem key={s.solutionId} value={s.solutionId}>{s.solution_name}</MenuItem>
-                ))}
-            </Select>
-            </FormControl>
+            <div className="flex gap-2">
+                <FormControl>
+                <InputLabel id="select-solution-label-id">Solution</InputLabel>
+                <Select
+                    labelId="select-solution-label-id"
+                    id="select-solution-id"
+                    value={activeSolutionId}
+                    label="Solution"
+                    onChange={handleChange}
+                >
+                    
+                    {solutionsArray.map((s) => (
+                        <MenuItem key={s.solutionId} value={s.solutionId}>{s.solution_name}</MenuItem>
+                    ))}
+                </Select>
+                </FormControl>
+                <div className="flex flex-col px-2 border border-border rounded-sm justify-center">
+                    <p>Solver: {activeSolutionSolver ?? "Loading..."}</p>
+                    <p>Return status: {activeSolutionReturnStatus ?? "Loading..."}</p>
+                </div>
             </div>
             <div className="flex gap-4 max-h-[60vh]">
                 <NurseTable tableData={solutionData} setTableData={setSolutionData} instance={instance} infeasibilityDetails={infeasibilityDetails} />
