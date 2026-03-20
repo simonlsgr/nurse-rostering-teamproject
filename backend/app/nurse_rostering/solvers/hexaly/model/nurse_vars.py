@@ -49,62 +49,76 @@ class NurseDecisionVarsTable:
     This class also provides helper methods to iterate over assignments and extract results.
     """
 
-    def __init__(self, nurse: Nurse, shifts: list[Shift], model: HxModel, dates: dict[date, list[ShiftUid]]):
-        self.nurse = nurse
-        self.shifts = shifts
+    def __init__(self, instance: NurseRosteringInstance, model: HxModel, dates: dict[date, list[ShiftUid]]):
+        self.nurses = instance.nurses
+        self.shifts = instance.shifts
         self.dates = dates
         self.model = model
-        self._x = {}
+        self._x = []
+        for _ in self.nurses:
+            nurse_list = []
+            for _date in sorted(self.dates):
+                shift_count = len(dates[_date])
+                nurse_list.append(self.model.int(0, shift_count))
+            self._x.append(self.model.array(nurse_list))
+        self._x = model.array(self._x)
+
+
+    def get_nurse_index(self, nurse_uid):
+        for i in range(len(self.nurses)):
+            if nurse_uid == self.nurses[i].uid:
+                return i
+        return None
+
+    def get_date_index(self, _date):
+        dates = sorted(self.dates)
+        for i in range(len(dates)):
+            if self.dates[dates[i]] == _date:
+                return i
+        return None
+
+    def get_shift_date_and_index(self, shift_uid):
         for _date, shift_uids in self.dates.items():
-            shift_count = len(shift_uids)
-            self._x[_date] = self.model.int(0, shift_count)
+            for i in range(len(shift_uids)):
+                if shift_uids[i] == shift_uid:
+                    return self.get_date_index(_date), i
+        return None
 
-
-    def fix(self, _date: date, value: int):
+    def fix(self, nurse_uid: Nurse, shift_uid, value: bool = True):
         """
         Fix the assignment variable for the given shift UID to a specific value (True or False).
         Useful for setting hard constraints or testing the model.
         """
-        if _date not in self._x:
+        date_shift = self.get_shift_date_and_index(shift_uid)
+        if date_shift is None:
             raise ValueError(
-                f"Date {_date} not found in nurse {self.nurse.uid} assignments."
+                f"Shift UID {shift_uid} does not exist"
             )
-        if value not in range(len(self.dates.get(_date, []))+1):
-            raise ValueError(
-                f"Shift {value} does not exist on date {_date} for nurse {self.nurse.uid} assignments."
-            )
-        self.model.add_constraint(self._x[_date] == value)
+        _date, shift = date_shift
+        nurse_index = self.get_nurse_index(nurse_uid)
+        if value:
+            self.model.add_constraint(self._x[date][nurse_index] == shift)
+        else:
+            self.model.add_constraint(self._x[date][nurse_index] != shift)
 
-    def is_assigned_to(self, _date: date):# -> cp_model.BoolVarT:
-        """
-        Return the decision variable for the given shift UID.
-        This variable is True if the nurse is assigned to that shift, and False otherwise.
-        """
-        return self._x[_date]
 
-    def iter_shifts(self):# -> Iterable[tuple[Shift, cp_model.BoolVarT]]:
-        """
-        Iterate over all (shift, variable) pairs for this nurse.
-        """
-        for _date in self.dates.keys():
-            yield _date, self.is_assigned_to(_date=_date)
+    def __getitem__(self, item):
+        return self._x[item]
 
-    def extract(self) -> list[ShiftUid]:
+    def extract(self) -> dict[ShiftUid, list[NurseUid]]:
         """
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
-        result = []
-        for _date, shift_uids in self.dates.items():
-            shift = self.is_assigned_to(_date).value
-            if not shift:
-                continue
-            mapping = {i+1: shift_uids[i] for i in range(len(shift_uids))}
-            result.append(mapping[shift])
+        result = {}
+        for i in range(len(self._x)):
+            for j in range(len(self._x[i])):
+                _date = sorted(self.dates)[j]
+                value = self._x[i][j].value
+                if not value:
+                    continue
+                shift_uid = self.dates[_date][value-1]
+                result.setdefault(shift_uid, []).append(self.nurses[i].uid)
         return result
-
-
-
-
 
 
 class NurseDecisionVarsIP:

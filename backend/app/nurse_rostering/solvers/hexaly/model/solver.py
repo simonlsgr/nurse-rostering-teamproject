@@ -138,6 +138,7 @@ class NurseRosteringModel:
             objective = 0
             dates = {}
             nurse_vars = []
+            nurse_var = None
             if self.formulation == SolverFormulation.SET:
                 self.shift_vars = [
                     ShiftDecisionVars(shift, self.instance.nurses, model)
@@ -172,11 +173,9 @@ class NurseRosteringModel:
 
             elif self.formulation == SolverFormulation.TABLE:
                 dates = group_shifts_by_date(self.instance)
-                nurse_vars = [
-                    NurseDecisionVarsTable(nurse, self.instance.shifts, model, dates) for nurse in self.instance.nurses
-                ]
+                nurse_var = NurseDecisionVarsTable(self.instance, model, dates)
                 objective = model.sum(
-                    module.build(self.instance, model, nurse_vars, dates)  # type: ignore
+                    module.build(self.instance, model, nurse_var, dates)  # type: ignore
                     for module in self.modules
                 )
 
@@ -210,12 +209,13 @@ class NurseRosteringModel:
                     for n_idx, nurse in enumerate(shift_var.nurses):
                         if n_idx in shift_var.nurses_assigned.value:
                             nurses_at_shifts.setdefault(shift_var.shift.uid, []).append(nurse.uid)
-            elif self.formulation in (SolverFormulation.IP, SolverFormulation.TABLE):
+            elif self.formulation == SolverFormulation.IP:
                 nurses_at_shifts: dict[int, list[int]] = {}
                 for nurse_model in nurse_vars:
                     for shift_uid in nurse_model.extract():
                         nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
-
+            elif self.formulation == SolverFormulation.IP:
+                nurses_at_shifts: dict[int, list[int]] = nurse_var.extract()
 
             return NurseRosteringSolution(
                 nurses_at_shifts=nurses_at_shifts,
