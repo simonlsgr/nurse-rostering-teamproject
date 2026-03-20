@@ -9,7 +9,7 @@ class ShiftTypeCreate(BaseModel):
     duration: str  # "HH:mm:ss"
     start: str     # "HH:mm"
     end: str
-    not_followed_by_shift_types: List[UUID]
+    not_followed_by_shift_types: List[str]
 
 
 class ShiftTypeUpdate(BaseModel):
@@ -17,7 +17,7 @@ class ShiftTypeUpdate(BaseModel):
     duration: str
     start: str
     end: str
-    not_followed_by_shift_types: List[UUID]
+    not_followed_by_shift_types: List[str]
 
 
 class ShiftTypeResponse(BaseModel):
@@ -26,7 +26,7 @@ class ShiftTypeResponse(BaseModel):
     duration: str
     start: str
     end: str
-    not_followed_by_shift_types: List[UUID]
+    not_followed_by_shift_types: List[str]
 
     class Config:
         from_attributes = True

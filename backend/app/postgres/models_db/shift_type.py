@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
 from ..database import Base
@@ -24,9 +24,13 @@ class ShiftType(Base):
     start = Column(String, nullable=False)     # "HH:mm:ss"
     end = Column(String, nullable=False)       # "HH:mm:ss"
 
-    # list of ids of other shift types
+    # list of names (unique) of other shift types
     not_followed_by_shift_types = Column(
-        ARRAY(UUID(as_uuid=True)),
+        ARRAY(String),
         nullable=False,
         default=list
+    )
+
+    __table_args__ = (
+        UniqueConstraint("project_id", "name", name="uq_shift_type_name_per_project"),
     )

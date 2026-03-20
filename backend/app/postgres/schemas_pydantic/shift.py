@@ -11,7 +11,7 @@ class ShiftCreate(BaseModel):
     end_time: str    # ISO datetime string
     demand: int = 0
     type: str
-    not_followed_by_shift_types: List[UUID] = Field(default_factory=list)
+    not_followed_by_shift_types: List[str] = Field(default_factory=list)
     weight_below_demand: int = 0
     weight_above_demand: int = 0
 
@@ -22,7 +22,7 @@ class ShiftUpdate(BaseModel):
     end_time: str
     demand: int
     type: str
-    not_followed_by_shift_types: List[UUID]
+    not_followed_by_shift_types: List[str]
     weight_below_demand: int
     weight_above_demand: int
 
@@ -35,7 +35,7 @@ class ShiftResponse(BaseModel):
     end_time: str
     demand: int
     type: str
-    not_followed_by_shift_types: List[UUID]
+    not_followed_by_shift_types: List[str]
     weight_below_demand: int
     weight_above_demand: int
 

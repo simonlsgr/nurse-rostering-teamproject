@@ -20,6 +20,6 @@ class Shift(Base):
     end_time = Column(String, nullable=False)    # ISO datetime string
     demand = Column(Integer, nullable=False, default=0)
     type = Column(String, nullable=False)
-    not_followed_by_shift_types = Column(ARRAY(UUID(as_uuid=True)), nullable=False, default=list)
+    not_followed_by_shift_types = Column(ARRAY(String), nullable=False, default=list)
     weight_below_demand = Column(Integer, nullable=False, default=0)
     weight_above_demand = Column(Integer, nullable=False, default=0)

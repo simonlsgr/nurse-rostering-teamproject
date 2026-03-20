@@ -263,8 +263,8 @@ def delete_shift_type(project_id: UUID, shift_id: UUID, db: Session = Depends(ge
     ).all()
 
     for s in other_shifts:
-        if shift_id in s.not_followed_by_shift_types:
-            s.not_followed_by_shift_types.remove(shift_id)
+        if shift.name in s.not_followed_by_shift_types:
+            s.not_followed_by_shift_types.remove(shift.name)
 
     db.delete(shift)
     db.commit()

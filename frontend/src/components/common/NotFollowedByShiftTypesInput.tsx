@@ -73,7 +73,7 @@ export default function NotFollowedByShiftTypesInput() {
   
         return {
           ...shift,
-          not_followed_by_shift_types: forbidden
+          not_followed_by_shift_types: forbidden.map((id) => shiftTypes.filter((type) => type.id == id)[0].name)
         };
       });
   
