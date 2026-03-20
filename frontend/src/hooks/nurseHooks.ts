@@ -1,7 +1,9 @@
 import { createNurse } from "@/app/api/nurse";
-import { createDefaultNurse, generateUID } from "@/lib/utils";
-import { useNewNurse, useNurses } from "@/store/nurseStore"
+import { createDefaultNurse, generateDatesFromPlanningHorizon, generateUID } from "@/lib/utils";
+import { useNewNurse, useNurses, useShifts } from "@/store/nurseStore"
 import { useSelectedProject } from "@/store/projectStore";
+import { Shift } from "@/types/nurseVars";
+import { Project, ShiftType } from "@/types/projectVars";
 
 
 
@@ -40,4 +42,38 @@ export function useHandleCreateNurse() {
   }
 
   return { handleCreateNurse }
+}
+
+
+export function useGenerateShifts() {
+
+  const { setShifts } = useShifts();
+
+  const generateShifts = (project: Project, shiftTypes: ShiftType[]) => {
+
+    const dates = generateDatesFromPlanningHorizon(project.planning_horizon);
+    let shifts_arr: Shift[] = []
+
+    dates.forEach((date, index) => {
+      shiftTypes.forEach((type) => {
+        shifts_arr.push({
+            id: crypto.randomUUID(),
+            uid: generateUID(),
+            name: index + "_" + type.name,
+            start_time: date + "T" + type.start,
+            end_time: date + "T" + type.end,
+            demand: 0,
+            type: type.name,
+            not_followed_by_shift_types: type.not_followed_by_shift_types,
+            weight_below_demand: 0,
+            weight_above_demand: 0
+          });
+      });
+    });
+
+    return shifts_arr;
+    
+  }
+
+  return { generateShifts }
 }

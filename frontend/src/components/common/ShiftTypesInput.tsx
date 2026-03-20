@@ -21,7 +21,8 @@ export default function ShiftTypesInput(){
   const isValid =
   newShift.name.trim() !== "" &&
   newShift.duration !== "" &&
-  newShift.duration !== "00:00:00";
+  newShift.duration !== "00:00:00" && 
+  !shiftTypes.some((s) => s.name.toLowerCase() == newShift.name.trim().toLowerCase());
 
   useEffect(() => {
 

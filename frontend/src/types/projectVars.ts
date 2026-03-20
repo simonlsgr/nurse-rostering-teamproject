@@ -5,10 +5,21 @@ export type Project = {
 
   id: string;
   name: string;
-  shift_types?: ShiftType[];
+  planning_horizon: [start_date: string, end_date: string];
+  created_at?: string
+  last_modified?: string;
+
+};
+
+
+export type NewProject = {
+
+  id: string;
+  name: string;
   planning_horizon?: [start_date: string, end_date: string];
   created_at?: string
   last_modified?: string;
+  shift_types?: ShiftType[];
 
 };
 

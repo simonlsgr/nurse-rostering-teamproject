@@ -2,14 +2,17 @@ import { createProject } from "@/app/api/project";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createDefaultProject } from "@/lib/utils";
+import { createDefaultNewProject } from "@/lib/utils";
 import { useNewProject, useProjects } from "@/store/projectStore";
-import { Project } from "@/types/projectVars";
+import { Project, ShiftType } from "@/types/projectVars";
 import { capitalize } from "@mui/material";
 import { useEffect, useState } from "react";
 import PlanningHorizonInput from "./PlanningHorizonInput";
 import ShiftTypesInput from "./ShiftTypesInput";
 import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
+import { createShiftType } from "@/app/api/shiftType";
+import { useGenerateShifts } from "@/hooks/nurseHooks";
+import { createShift } from "@/app/api/shift";
 
 
 
@@ -19,11 +22,11 @@ export default function CreateProjectDialog(){
 
   const { newProject, setNewProject } = useNewProject();
   const { updateProject } = useProjects();
-
+  const { generateShifts } = useGenerateShifts();
 
   useEffect(() => {
     
-    setNewProject(createDefaultProject());
+    setNewProject(createDefaultNewProject());
 
   }, [openDialog])
 
@@ -31,8 +34,31 @@ export default function CreateProjectDialog(){
   const handleCreateProject = async () => {
 
     try {
-      const res: Project = await createProject(newProject);
-      updateProject(res);
+
+      const { shift_types, ...project } = newProject;
+
+      const project_res: Project = await createProject(project as Project);
+      updateProject(project_res);
+
+      if (shift_types) {
+
+        for(const shift_type of shift_types) {
+          const res = await createShiftType(shift_type, project_res.id);
+          if (!res.id) {
+            alert(`Failed to create shift type ${shift_type.name}`);
+          }
+        }
+        
+      }
+
+      const newShifts = generateShifts(project_res, shift_types ?? []);
+      for (const shift of newShifts) {
+        const res = await createShift(shift, project_res.id);
+        if (!res.id) {
+          alert(`Failed to create shift ${shift.name}`);
+        }
+      }
+
     }
     catch (err: any) {
       alert("Creation failed");
@@ -84,19 +110,17 @@ export default function CreateProjectDialog(){
           <NotFollowedByShiftTypesInput />
         </div>
 
-
-      <span>{JSON.stringify(newProject)}</span>
-
+      {JSON.stringify(newProject)}
       </div>
 
       <DialogFooter className="mt-4 flex items-end">
         <Button
           variant="outline"
-          onClick={() => {setOpenDialog(false); setNewProject(createDefaultProject())}}
+          onClick={() => {setOpenDialog(false); setNewProject(createDefaultNewProject())}}
         >
           Cancel
         </Button>
-        <Button onClick={() => {handleCreateProject(); setOpenDialog(false); setNewProject(createDefaultProject())}}>
+        <Button onClick={() => {handleCreateProject(); setOpenDialog(false); setNewProject(createDefaultNewProject())}}>
           Create
         </Button>
       </DialogFooter>

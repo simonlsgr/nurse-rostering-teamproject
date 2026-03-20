@@ -2,7 +2,7 @@ import { useInstance } from "@/store/instanceStore";
 import instanceData from "@/components/layout/Instance2.json";
 import { getAllNurses } from "@/app/api/nurse";
 import { useSelectedProject } from "@/store/projectStore";
-import { Project } from "@/types/projectVars";
+import { getAllShifts } from "@/app/api/shift";
 
 
 export function useLoadInstance(){
@@ -21,11 +21,12 @@ export function useLoadInstance(){
 
     const data = instanceData;
 
-    const {nurses, ...other} = data;
+    const {nurses, shifts, ...other} = data;
     
     try {
       const db_nurses = await getAllNurses(selectedProject.id);
-      setInstance({nurses: db_nurses, ...other});
+      const db_shifts = await getAllShifts(selectedProject.id);
+      setInstance({nurses: db_nurses, shifts: db_shifts, ...other});
     } catch (err: any) {
       alert(err);
       setInstance(data);

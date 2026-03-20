@@ -7,7 +7,7 @@ from typing import List
 from uuid import UUID
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
+from datetime import datetime, date, timezone
 
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
 from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel
@@ -19,7 +19,12 @@ from sqlalchemy.orm import Session
 from postgres.database import get_db
 from postgres.models_db.project import Project
 from postgres.models_db.nurse import Nurse
+from postgres.models_db.shift_type import ShiftType
+from postgres.models_db.shift import Shift
+
 from postgres.schemas_pydantic.project import ProjectCreate, ProjectUpdate, ProjectResponse
+from postgres.schemas_pydantic.shift_type import ShiftTypeCreate, ShiftTypeUpdate, ShiftTypeResponse
+from postgres.schemas_pydantic.shift import ShiftCreate, ShiftUpdate, ShiftResponse
 from postgres.schemas_pydantic.nurse import NurseCreate, NurseResponse, NurseUpdate
 from postgres.database import engine, Base
 
@@ -114,10 +119,19 @@ projects_router = APIRouter(tags=["Projects"], prefix="/projects")
 
 @projects_router.post("", response_model=ProjectResponse)
 def create_project(
-    project_data: ProjectCreate,
+    project_data: ProjectCreate ,
     db: Session = Depends(get_db),
 ):
-    new_project = Project(name=project_data.name)
+    
+    start_str, end_str = project_data.planning_horizon
+    planning_start = date.fromisoformat(start_str)
+    planning_end = date.fromisoformat(end_str)
+
+    new_project = Project(
+        name=project_data.name,
+        planning_start=planning_start,
+        planning_end=planning_end,
+    )
 
     db.add(new_project)
     db.commit()
@@ -151,7 +165,9 @@ def update_project(
         raise HTTPException(status_code=404, detail="Project not found")
 
     project.name = project_update.name
-    project.last_modified = datetime.utcnow()
+    project.planning_start = project_update.planning_horizon[0]
+    project.planning_end = project_update.planning_horizon[1]
+    project.last_modified = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(project)
@@ -172,6 +188,166 @@ def delete_project(
     db.commit()
 
     return
+
+
+shift_types_router = APIRouter(tags=["ShiftTypes"], prefix="/projects/{project_id}/shift_types")
+
+@shift_types_router.post("", response_model=ShiftTypeResponse)
+def create_shift_type(project_id: UUID, shift_data: ShiftTypeCreate, db: Session = Depends(get_db)):
+
+    project = db.query(Project).get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    new_shift = ShiftType(
+        id=shift_data.id,
+        project_id=project_id,
+        name=shift_data.name,
+        duration=shift_data.duration,
+        start=shift_data.start,
+        end=shift_data.end,
+        not_followed_by_shift_types=shift_data.not_followed_by_shift_types or []
+    )
+
+    db.add(new_shift)
+    db.commit()
+    db.refresh(new_shift)
+    return new_shift
+
+
+
+@shift_types_router.get("", response_model=List[ShiftTypeResponse])
+def get_shift_types(project_id: UUID, db: Session = Depends(get_db)):
+    
+    shift_types = db.query(ShiftType).filter(ShiftType.project_id == project_id).all()
+    return shift_types
+
+
+
+@shift_types_router.put("/{shift_id}", response_model=ShiftTypeResponse)
+def update_shift_type(project_id: UUID, shift_id: UUID, shift_data: ShiftTypeUpdate, db: Session = Depends(get_db)):
+    shift = db.query(ShiftType).filter(
+        ShiftType.project_id == project_id,
+        ShiftType.id == shift_id
+    ).first()
+
+    if not shift:
+        raise HTTPException(status_code=404, detail="ShiftType not found")
+
+    shift.name = shift_data.name
+    shift.duration = shift_data.duration
+    shift.start = shift_data.start
+    shift.end = shift_data.end
+    shift.not_followed_by_shift_types = shift_data.not_followed_by_shift_types
+
+    db.commit()
+    db.refresh(shift)
+    return shift
+
+
+
+@shift_types_router.delete("/{shift_id}", response_model=dict)
+def delete_shift_type(project_id: UUID, shift_id: UUID, db: Session = Depends(get_db)):
+    shift = db.query(ShiftType).filter(
+        ShiftType.project_id == project_id,
+        ShiftType.id == shift_id
+    ).first()
+
+    if not shift:
+        raise HTTPException(status_code=404, detail="ShiftType not found")
+
+    # remove references in other shift types
+    other_shifts = db.query(ShiftType).filter(
+        ShiftType.project_id == project_id,
+        ShiftType.id != shift_id
+    ).all()
+
+    for s in other_shifts:
+        if shift.name in s.not_followed_by_shift_types:
+            s.not_followed_by_shift_types.remove(shift.name)
+
+    db.delete(shift)
+    db.commit()
+
+    return {"detail": "ShiftType deleted successfully"}
+
+
+
+
+shifts_router = APIRouter(tags=["Shifts"], prefix="/projects/{project_id}/shifts")
+
+@shifts_router.get("", response_model=List[ShiftResponse])
+def get_shifts(project_id: UUID, db: Session = Depends(get_db)):
+    shifts = db.query(Shift).filter(Shift.project_id == project_id).all()
+    return shifts
+
+
+
+@shifts_router.post("", response_model=ShiftResponse)
+def create_shift(project_id: UUID, shift_data: ShiftCreate, db: Session = Depends(get_db)):
+    project = db.query(Project).get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    new_shift = Shift(
+        id=shift_data.id,
+        uid=shift_data.uid,
+        project_id=project_id,
+        name=shift_data.name,
+        start_time=shift_data.start_time,
+        end_time=shift_data.end_time,
+        demand=shift_data.demand,
+        type=shift_data.type,
+        not_followed_by_shift_types=shift_data.not_followed_by_shift_types,
+        weight_below_demand=shift_data.weight_below_demand,
+        weight_above_demand=shift_data.weight_above_demand
+    )
+
+    db.add(new_shift)
+    db.commit()
+    db.refresh(new_shift)
+    return new_shift
+
+
+@shifts_router.put("/{shift_id}", response_model=ShiftResponse)
+def update_shift(project_id: UUID, shift_id: UUID, shift_data: ShiftUpdate, db: Session = Depends(get_db)):
+    shift = db.query(Shift).filter(
+        Shift.project_id == project_id,
+        Shift.id == shift_id
+    ).first()
+
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+
+    shift.name = shift_data.name
+    shift.start_time = shift_data.start_time
+    shift.end_time = shift_data.end_time
+    shift.demand = shift_data.demand
+    shift.type = shift_data.type
+    shift.not_followed_by_shift_types = shift_data.not_followed_by_shift_types
+    shift.weight_below_demand = shift_data.weight_below_demand
+    shift.weight_above_demand = shift_data.weight_above_demand
+
+    db.commit()
+    db.refresh(shift)
+    return shift
+
+
+@shifts_router.delete("/{shift_id}", response_model=dict)
+def delete_shift(project_id: UUID, shift_id: UUID, db: Session = Depends(get_db)):
+    shift = db.query(Shift).filter(
+        Shift.project_id == project_id,
+        Shift.id == shift_id
+    ).first()
+
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+
+
+    db.delete(shift)
+    db.commit()
+
+    return {"detail": "Shift deleted successfully"}
 
 
 nurses_router = APIRouter(tags=["Nurses"], prefix="/projects/{project_id}/nurses")
@@ -276,4 +452,6 @@ def update_nurse(
 Base.metadata.create_all(bind=engine) # for dev-purposes, change this later
 app.include_router(nurse_rostering_solver_v0_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
+app.include_router(shift_types_router, prefix="/nurse_rostering_solver/v0")
+app.include_router(shifts_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(nurses_router, prefix="/nurse_rostering_solver/v0")

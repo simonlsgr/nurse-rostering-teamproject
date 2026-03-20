@@ -51,12 +51,12 @@ export async function getProject(projectId: string) {
   return data as Project;
 }
 
-export async function editProject(projectId: string, name: string) {
+export async function editProject(editedProject: Project) {
 
-  const res = await fetch(`/api/projects?projectId=${projectId}`, {
+  const res = await fetch(`/api/projects?projectId=${editedProject.id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(editedProject),
   });
 
   const data = await res.json();

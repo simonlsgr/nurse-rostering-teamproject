@@ -6,6 +6,8 @@ import { useReactTable, flexRender, getCoreRowModel } from "@tanstack/react-tabl
 import { getNurseByUid } from "@/lib/roster/dataWrangler";
 import React, { useMemo, useState } from "react";
 import { getDatesFromTableData, getShiftTypes } from "@/lib/roster/dataWrangler";
+import { convertShiftTypes, generateDatesFromPlanningHorizon } from "@/lib/utils";
+import { useSelectedProject, useShiftTypes } from "@/store/projectStore";
 
 
 export function NurseTableHeader({ 
@@ -134,9 +136,14 @@ export function NurseTable({
         instance: Instance; 
         infeasibilityDetails: InfeasibilityDetails; }) {
 
-  const dates = getDatesFromTableData(tableData);
+  // const dates = getDatesFromTableData(tableData);
+  const { selectedProject } = useSelectedProject();
+  const { shiftTypes } = useShiftTypes();
 
-  const shift_types = getShiftTypes(instance);
+  const dates = generateDatesFromPlanningHorizon(selectedProject?.planning_horizon ?? ["", ""]);
+
+  const shift_types = convertShiftTypes(shiftTypes);
+  // const shift_types = getShiftTypes(instance);
 
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null);
 
