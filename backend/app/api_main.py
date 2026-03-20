@@ -7,7 +7,7 @@ from typing import List
 from uuid import UUID
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
+from datetime import datetime, date, timezone
 
 from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
 from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel
@@ -114,10 +114,19 @@ projects_router = APIRouter(tags=["Projects"], prefix="/projects")
 
 @projects_router.post("", response_model=ProjectResponse)
 def create_project(
-    project_data: ProjectCreate,
+    project_data: ProjectCreate ,
     db: Session = Depends(get_db),
 ):
-    new_project = Project(name=project_data.name)
+    
+    start_str, end_str = project_data.planning_horizon
+    planning_start = date.fromisoformat(start_str)
+    planning_end = date.fromisoformat(end_str)
+
+    new_project = Project(
+        name=project_data.name,
+        planning_start=planning_start,
+        planning_end=planning_end,
+    )
 
     db.add(new_project)
     db.commit()
@@ -151,7 +160,9 @@ def update_project(
         raise HTTPException(status_code=404, detail="Project not found")
 
     project.name = project_update.name
-    project.last_modified = datetime.utcnow()
+    project.planning_start = project_update.planning_horizon[0]
+    project.planning_end = project_update.planning_horizon[1]
+    project.last_modified = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(project)

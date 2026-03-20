@@ -2,7 +2,7 @@ import { createProject } from "@/app/api/project";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createDefaultProject } from "@/lib/utils";
+import { createDefaultNewProject } from "@/lib/utils";
 import { useNewProject, useProjects } from "@/store/projectStore";
 import { Project } from "@/types/projectVars";
 import { capitalize } from "@mui/material";
@@ -23,7 +23,7 @@ export default function CreateProjectDialog(){
 
   useEffect(() => {
     
-    setNewProject(createDefaultProject());
+    setNewProject(createDefaultNewProject());
 
   }, [openDialog])
 
@@ -31,7 +31,10 @@ export default function CreateProjectDialog(){
   const handleCreateProject = async () => {
 
     try {
-      const res: Project = await createProject(newProject);
+
+      const { shift_types, ...project } = newProject;
+
+      const res: Project = await createProject(project as Project);
       updateProject(res);
     }
     catch (err: any) {
@@ -85,18 +88,16 @@ export default function CreateProjectDialog(){
         </div>
 
 
-      <span>{JSON.stringify(newProject)}</span>
-
       </div>
 
       <DialogFooter className="mt-4 flex items-end">
         <Button
           variant="outline"
-          onClick={() => {setOpenDialog(false); setNewProject(createDefaultProject())}}
+          onClick={() => {setOpenDialog(false); setNewProject(createDefaultNewProject())}}
         >
           Cancel
         </Button>
-        <Button onClick={() => {handleCreateProject(); setOpenDialog(false); setNewProject(createDefaultProject())}}>
+        <Button onClick={() => {handleCreateProject(); setOpenDialog(false); setNewProject(createDefaultNewProject())}}>
           Create
         </Button>
       </DialogFooter>

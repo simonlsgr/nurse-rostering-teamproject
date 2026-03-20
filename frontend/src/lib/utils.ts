@@ -1,5 +1,5 @@
 import { Nurse } from "@/types/nurseVars";
-import { Project } from "@/types/projectVars";
+import { NewProject } from "@/types/projectVars";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(
-  input: string | null,
+  input: string | undefined,
   type: "weekday" | "date" | "time" | "datetime" = "datetime"
 ) {
   if (!input) return "--";
@@ -28,6 +28,12 @@ export function formatDate(
   }
 
   return date.toLocaleString("de-DE");
+}
+
+export function toGermanTime(time: string){
+  new Date(time).toLocaleString("de-DE", {
+    timeZone: "Europe/Berlin"
+  });
 }
 
 export function generateUID(): number {
@@ -57,7 +63,7 @@ export function createDefaultNurse(): Nurse {
   };
 }
 
-export function createDefaultProject(): Project {
+export function createDefaultNewProject(): NewProject {
   return {
 
     id: crypto.randomUUID(),

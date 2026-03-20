@@ -111,7 +111,7 @@ export default function ProjectsView(){
                   transition={{ duration: 0.17 }}
                   className="cursor-pointer select-none"
                 >
-                  <ProjectCard key={idx} id={project.id} name={project.name} created_at={project.last_modified} last_modified={project.last_modified}/>
+                  <ProjectCard key={idx} project={project}/>
                 </motion.div>
               </AnimatePresence>
 

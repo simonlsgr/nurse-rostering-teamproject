@@ -1,6 +1,6 @@
 import ProjectCard from "@/components/ui/ProjectCard";
-import { createDefaultProject } from "@/lib/utils";
-import { Project } from "@/types/projectVars";
+import { createDefaultNewProject } from "@/lib/utils";
+import { NewProject, Project } from "@/types/projectVars";
 import { create } from "zustand";
 
 
@@ -45,12 +45,12 @@ export const useSelectedProject = create<SelectedProjectState>((set) => ({
 
 type NewProjectState = {
 
-  newProject: Project;
-  setNewProject: (newProject: Project | ((prev: Project) => Project)) => void; 
+  newProject: NewProject;
+  setNewProject: (newProject: NewProject | ((prev: NewProject) => NewProject)) => void; 
 };
 
 export const useNewProject = create<NewProjectState>((set) => ({
 
-  newProject: createDefaultProject(),
+  newProject: createDefaultNewProject(),
   setNewProject: (newProject) => set((state) => ({ newProject: typeof(newProject) === "function" ? newProject(state.newProject) : newProject})),
 }));

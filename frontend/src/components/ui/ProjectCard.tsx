@@ -7,10 +7,13 @@ import DeleteProjectDialog from "../common/DeleteProjectDialog";
 import { useSelectedProject } from "@/store/projectStore";
 
 
+type ProjectCardProps = {
+  project: Project;
+}
 
-export default function ProjectCard(project: Project ) {
+export default function ProjectCard({ project }: ProjectCardProps) {
 
-  const { id, name, created_at, last_modified } = project;
+  const { id, name, created_at, last_modified, planning_horizon } = project;
 
   const { setSelectedProject } = useSelectedProject();
 
@@ -22,14 +25,36 @@ export default function ProjectCard(project: Project ) {
       <Link 
           href={`/projects/${id}`}
           key={id}
-          className="text-xl flex-1"
+          className="text-2xl flex-1"
           //onClick={() => setSelectedProject(project)}
       >
         {name}
       
-      <div className="pt-1 text-base">
-        <p> Created: {formatDate(created_at)} </p> 
-        <p> Last Modified: {formatDate(last_modified)} </p>
+      <div className="pt-1 text-base flex h-13">
+        <div className="flex-1 flex items-end">
+          
+          <div className="pl-4"> 
+            <div className="flex gap-2">
+              <p className="text-muted-foreground">
+                Planning Start: 
+              </p>
+              <p className="pl-[1px]">
+                {formatDate(planning_horizon[0], "date")}
+              </p>
+            </div>
+            <div className="flex gap-4">
+            <p className="text-muted-foreground">
+              Planning End: 
+            </p>
+            <p>
+                {formatDate(planning_horizon[1], "date")}
+              </p>
+            </div>
+          </div>
+
+        </div>
+        {/* <p> Created: {formatDate(created_at)} </p>  */}
+        <p className="flex-1 flex justify-end items-end pr-3"> Last Modified: {formatDate(last_modified)} </p>
       </div>
     
       </Link>

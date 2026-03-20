@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { editProject } from "@/app/api/project";
 import EditIcon from '@mui/icons-material/Edit';
 import { useProjects } from "@/store/projectStore";
+import { Project } from "@/types/projectVars";
 
 type EditDialogProps = {
   projectId: string;
@@ -13,16 +14,31 @@ type EditDialogProps = {
 
 
 export default function EditProjectDialog({ projectId, name }: EditDialogProps) {
+  
+  const { projects } = useProjects();
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>(name);
+  const [editedProject, setEditedProject] = useState<Project>(projects[projectId])
+
 
   const { updateProject } = useProjects();
+
+
+  useEffect(() => {
+
+    setEditedProject(prev => ({
+      ...prev,
+      name: nameInput
+    }))
+
+  }, [nameInput])
+
 
   const handleEditProject = async () => {
 
     try {
-      const res = await editProject(projectId, nameInput);
+      const res = await editProject(editedProject);
       updateProject(res);
     }
     catch (err: any) {
@@ -55,6 +71,7 @@ export default function EditProjectDialog({ projectId, name }: EditDialogProps) 
             setNameInput(() => ( name.target.value ))
           }
         />
+
         <DialogFooter className="mt-4">
           <Button
             variant="outline"
