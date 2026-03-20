@@ -70,9 +70,10 @@ class NurseRosteringModel:
 
         if self.hints is not None:
             for nv in self.nurse_vars:
-                shifts = self.hints.get(nv.nurse.uid, [])
-                for shift in shifts:
-                    self.model.add_hint(nv.is_assigned_to(shift), 1)
+                for shiftuid, nurseuids in self.hints.items():
+                    if nv.nurse.uid in nurseuids:
+                        self.model.add_hint(nv.is_assigned_to(shiftuid), 1)
+
 
         
         self.model.minimize(objective)
