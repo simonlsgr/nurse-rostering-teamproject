@@ -1,4 +1,4 @@
-from nurse_rostering.data_schema import NurseRosteringInstance, ShiftUid
+from nurse_rostering.data_schema import NurseRosteringInstance, ShiftUid, Shift
 from datetime import date
 from typing import Any
 from datetime import timedelta
@@ -29,3 +29,21 @@ def get_weekends(instance):
         saturdays.append(all_dates[0]-timedelta(days=1))
     saturdays = [d for d in all_dates if d.weekday() == 5]
     return [(s, s+timedelta(days=1)) for s in saturdays]
+
+def get_shiftuid_dict(instance: NurseRosteringInstance) -> dict[ShiftUid, Shift]:
+    shiftuid_dict = {}
+    
+    for shift in instance.shifts:
+        shiftuid_dict[shift.uid] = shift
+    return shiftuid_dict
+
+def get_types_and_length_in_instance(instance: NurseRosteringInstance) -> dict[str, int]:
+    
+    shiftuid_dict = get_shiftuid_dict(instance)
+    types = {}
+    for date, shiftids in group_shifts_by_date(instance).items():
+        for shiftid in shiftids:
+            types[shiftuid_dict[shiftid].type] = shiftuid_dict[shiftid].length
+        return types
+            
+        
