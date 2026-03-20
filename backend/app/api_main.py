@@ -19,7 +19,9 @@ from sqlalchemy.orm import Session
 from postgres.database import get_db
 from postgres.models_db.project import Project
 from postgres.models_db.nurse import Nurse
+from postgres.models_db.shift_type import ShiftType
 from postgres.schemas_pydantic.project import ProjectCreate, ProjectUpdate, ProjectResponse
+from postgres.schemas_pydantic.shift_type import ShiftTypeCreate, ShiftTypeUpdate, ShiftTypeResponse
 from postgres.schemas_pydantic.nurse import NurseCreate, NurseResponse, NurseUpdate
 from postgres.database import engine, Base
 
@@ -185,6 +187,93 @@ def delete_project(
     return
 
 
+
+
+shift_types_router = APIRouter(tags=["ShiftTypes"], prefix="/projects/{project_id}/shift_types")
+
+@shift_types_router.post("", response_model=ShiftTypeResponse)
+def create_shift_type(project_id: UUID, shift_data: ShiftTypeCreate, db: Session = Depends(get_db)):
+
+    project = db.query(Project).get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    new_shift = ShiftType(
+        id=shift_data.id,
+        project_id=project_id,
+        name=shift_data.name,
+        duration=shift_data.duration,
+        start=shift_data.start,
+        end=shift_data.end,
+        not_followed_by_shift_types=shift_data.not_followed_by_shift_types or []
+    )
+
+    db.add(new_shift)
+    db.commit()
+    db.refresh(new_shift)
+    return new_shift
+
+
+
+@shift_types_router.get("", response_model=List[ShiftTypeResponse])
+def get_shift_types(project_id: UUID, db: Session = Depends(get_db)):
+    
+    shift_types = db.query(ShiftType).filter(ShiftType.project_id == project_id).all()
+    return shift_types
+
+
+
+@shift_types_router.put("/{shift_id}", response_model=ShiftTypeResponse)
+def update_shift_type(project_id: UUID, shift_id: UUID, shift_data: ShiftTypeUpdate, db: Session = Depends(get_db)):
+    shift = db.query(ShiftType).filter(
+        ShiftType.project_id == project_id,
+        ShiftType.id == shift_id
+    ).first()
+
+    if not shift:
+        raise HTTPException(status_code=404, detail="ShiftType not found")
+
+    shift.name = shift_data.name
+    shift.duration = shift_data.duration
+    shift.start = shift_data.start
+    shift.end = shift_data.end
+    shift.not_followed_by_shift_types = shift_data.not_followed_by_shift_types
+
+    db.commit()
+    db.refresh(shift)
+    return shift
+
+
+
+@shift_types_router.delete("/{shift_id}", response_model=dict)
+def delete_shift_type(project_id: UUID, shift_id: UUID, db: Session = Depends(get_db)):
+    shift = db.query(ShiftType).filter(
+        ShiftType.project_id == project_id,
+        ShiftType.id == shift_id
+    ).first()
+
+    if not shift:
+        raise HTTPException(status_code=404, detail="ShiftType not found")
+
+    # remove references in other shift types
+    other_shifts = db.query(ShiftType).filter(
+        ShiftType.project_id == project_id,
+        ShiftType.id != shift_id
+    ).all()
+
+    for s in other_shifts:
+        if shift_id in s.not_followed_by_shift_types:
+            s.not_followed_by_shift_types.remove(shift_id)
+
+    db.delete(shift)
+    db.commit()
+
+    return {"detail": "ShiftType deleted successfully"}
+
+
+
+
+
 nurses_router = APIRouter(tags=["Nurses"], prefix="/projects/{project_id}/nurses")
 
 @nurses_router.post("", response_model=NurseResponse)
@@ -287,4 +376,5 @@ def update_nurse(
 Base.metadata.create_all(bind=engine) # for dev-purposes, change this later
 app.include_router(nurse_rostering_solver_v0_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
+app.include_router(shift_types_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(nurses_router, prefix="/nurse_rostering_solver/v0")

@@ -87,7 +87,7 @@ export default function CreateProjectDialog(){
           <NotFollowedByShiftTypesInput />
         </div>
 
-
+      {JSON.stringify(newProject)}
       </div>
 
       <DialogFooter className="mt-4 flex items-end">
