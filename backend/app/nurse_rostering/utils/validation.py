@@ -88,7 +88,7 @@ def assert_min_time_between_shifts(
                 if _type is None:
                     continue
                 if _type in types:
-                    intersect = set(solution.nurses_at_shifts[day_shift]).intersection(set(solution.nurses_at_shifts[following_shift]))
+                    intersect = set(solution.nurses_at_shifts.get(day_shift, [])).intersection(set(solution.nurses_at_shifts.get(following_shift, [])))
                     if intersect:
                         raise AssertionError("Not enough rest time")
 
