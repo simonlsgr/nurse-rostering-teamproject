@@ -4,12 +4,13 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from "@/components/ui/input";
 import { createDefaultNewProject } from "@/lib/utils";
 import { useNewProject, useProjects } from "@/store/projectStore";
-import { Project } from "@/types/projectVars";
+import { Project, ShiftType } from "@/types/projectVars";
 import { capitalize } from "@mui/material";
 import { useEffect, useState } from "react";
 import PlanningHorizonInput from "./PlanningHorizonInput";
 import ShiftTypesInput from "./ShiftTypesInput";
 import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
+import { createShiftType } from "@/app/api/shiftType";
 
 
 
@@ -34,8 +35,20 @@ export default function CreateProjectDialog(){
 
       const { shift_types, ...project } = newProject;
 
-      const res: Project = await createProject(project as Project);
-      updateProject(res);
+      const project_res: Project = await createProject(project as Project);
+      updateProject(project_res);
+
+      if (shift_types) {
+
+        for(const shift_type of shift_types) {
+          const res = await createShiftType(shift_type, project_res.id);
+          if (!res.id) {
+            alert(`Failed to create shift type ${shift_type.name}`);
+          }
+        }
+        
+      } 
+
     }
     catch (err: any) {
       alert("Creation failed");

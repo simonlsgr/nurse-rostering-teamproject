@@ -44,7 +44,6 @@ export async function POST(req: Request) {
   const { searchParams } = new URL(req.url);
 
   const projectId = searchParams.get("projectId");
-  const shiftTypeId = searchParams.get("shiftTypeId");
 
   if (!solverUrl) {
     return NextResponse.json(
@@ -60,14 +59,7 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!shiftTypeId) {
-    return NextResponse.json(
-      { error: "Shift type ID not provided" },
-      { status: 500 }
-    );
-  }
-
-  const res = await fetch(`${solverUrl}/projects/${projectId}/shift_types/${shiftTypeId}`, {
+  const res = await fetch(`${solverUrl}/projects/${projectId}/shift_types`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
