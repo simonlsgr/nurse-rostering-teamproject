@@ -138,7 +138,8 @@ export default function NurseDetailView() {
 
   const setDaysOff = (dates: Date[]) => {
 
-    const string_dates = dates.map((date) => date.toISOString());
+    const string_dates = dates.map((date) => date.toISOString().split("T")[0]);
+    console.log(string_dates)
     const updatedNurse = { ...editedNurse, days_off: string_dates };
     setEditedNurse(updatedNurse);
     handleUpdateNurse("days_off", updatedNurse);

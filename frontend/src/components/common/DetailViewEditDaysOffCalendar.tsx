@@ -25,7 +25,6 @@ export default function DetailViewEditDaysOffCalendar({ selectedDates, setSelect
   const { selectedProject } = useSelectedProject();
   const planningHorizon = selectedProject?.planning_horizon ?? ["2018-01-01", "2018-01-01"];
 
-
   return (
     <Popover open={openPopover} onOpenChange={setOpenPopover}>
       <PopoverTrigger asChild>
@@ -39,7 +38,14 @@ export default function DetailViewEditDaysOffCalendar({ selectedDates, setSelect
         <Calendar
           mode="multiple"
           selected={dates}
-          onSelect={setDates}
+          onSelect={(selected) => {
+            const fixed = selected?.map((date) => {
+              const d = new Date(date);
+              d.setHours(12, 0, 0, 0);
+              return d;
+            });
+            setDates(fixed);
+          }}
           hidden={{
             before: new Date(planningHorizon[0]),
             after: new Date(planningHorizon[1])
