@@ -15,7 +15,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
   const { id, name, created_at, last_modified, planning_horizon } = project;
 
-  const { setSelectedProject } = useSelectedProject();
 
   return (
     <div 
@@ -26,7 +25,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           href={`/projects/${id}`}
           key={id}
           className="text-2xl flex-1"
-          //onClick={() => setSelectedProject(project)}
       >
         {name}
       

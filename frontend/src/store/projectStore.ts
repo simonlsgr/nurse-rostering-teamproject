@@ -1,6 +1,6 @@
 import ProjectCard from "@/components/ui/ProjectCard";
 import { createDefaultNewProject } from "@/lib/utils";
-import { NewProject, Project } from "@/types/projectVars";
+import { NewProject, Project, ShiftType } from "@/types/projectVars";
 import { create } from "zustand";
 
 
@@ -53,4 +53,18 @@ export const useNewProject = create<NewProjectState>((set) => ({
 
   newProject: createDefaultNewProject(),
   setNewProject: (newProject) => set((state) => ({ newProject: typeof(newProject) === "function" ? newProject(state.newProject) : newProject})),
+}));
+
+
+
+type ShiftTypesState = {
+
+  shiftTypes: ShiftType[];
+  setShiftTypes: (shiftTypes: ShiftType[] | ((prev: ShiftType[]) => ShiftType[])) => void;
+};
+
+export const useShiftTypes = create<ShiftTypesState>((set) => ({
+
+  shiftTypes: [],
+  setShiftTypes: (shiftTypes) => set((state) => ({ shiftTypes: typeof(shiftTypes) === "function" ? shiftTypes(state.shiftTypes) : shiftTypes})),
 }));

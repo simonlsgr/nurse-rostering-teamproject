@@ -10,6 +10,7 @@ import { useInstance } from "@/store/instanceStore";
 import { Calendar } from "@/components/ui/calendar";
 import { useHandleCreateNurse } from "@/hooks/nurseHooks";
 import { useNewNurse } from "@/store/nurseStore";
+import { useSelectedProject, useShiftTypes } from "@/store/projectStore";
 
 
 export default function CreateNurseDialog() {
@@ -21,7 +22,10 @@ export default function CreateNurseDialog() {
 
   const { newNurse, setNewNurse } = useNewNurse();
   const { handleCreateNurse } = useHandleCreateNurse();
+  const { shiftTypes } = useShiftTypes();
+  const { selectedProject } = useSelectedProject();
 
+  const planningHorizon = selectedProject?.planning_horizon ?? ["2018-01-01", "2018-01-01"];
   
   const { shifts } = useInstance();
 
@@ -86,26 +90,25 @@ export default function CreateNurseDialog() {
       return (
         <div className="pb-1">
 
-          {/* if we allow more shift types, change this to the state that handles this */}
-          {Object.keys({"E": 0, "L": 0}).map((type) => (
+          {shiftTypes.map((type) => (
 
             <div 
-              key={type}
+              key={type.id}
               className="flex gap-1 items-center"
             >
-              <p className="mb-2"> {type}: </p>
+              <p className="mb-2"> {type.name}: </p>
               <input
                 className="border border-border rounded-md p-1 mb-2"
                 type="text"
                 inputMode="numeric"
-                value={newNurse[key][type]}
+                value={newNurse[key][type.name]}
                 onChange={(e) => {
                   const val = Number(e.target.value.replace(/\D/g, ""));
                   setNewNurse(prev => ({
                     ...prev,
                     [key]: {
                       ...(prev[key as keyof Nurse] as Record<string, number>),
-                      [type]: val
+                      [type.name]: val
                     }
                   }));
                 }}
@@ -248,12 +251,12 @@ export default function CreateNurseDialog() {
             selected={dates}
             onSelect={setDates}
             hidden={{
-              before: new Date("2018-01-01"), 
-              after: new Date("2018-01-14")
+              before: new Date(planningHorizon[0]),
+              after: new Date(planningHorizon[1])
             }}
-            startMonth={ new Date(2018, 0) }
-            endMonth={ new Date(2018, 0) }
-            defaultMonth={ new Date("2018-01-01") }
+            startMonth={ new Date(planningHorizon[0]) }
+            endMonth={ new Date(planningHorizon[1]) }
+            defaultMonth={ new Date(planningHorizon[0]) }
           />
         </div>
 

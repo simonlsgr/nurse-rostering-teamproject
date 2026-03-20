@@ -12,7 +12,7 @@ import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs"
 import { MainView } from "@/components/layout/MainView";
 import JobsView from "@/components/layout/JobsView";
 import { useParams } from "next/navigation";
-import { useProjects, useSelectedProject } from "@/store/projectStore";
+import { useProjects, useSelectedProject, useShiftTypes } from "@/store/projectStore";
 import { getProject } from "@/app/api/project";
 import { Project } from "@/types/projectVars";
 import ShiftList from "@/components/rostering/ShiftList";
@@ -23,6 +23,8 @@ import { fetchFinishedJobs } from "@/app/api/jobs";
 import { fetchSolution } from "@/app/api/solution";
 import { useSolutionsArray } from "@/store/solutionStore";
 import { Slide, SlideProps, Snackbar } from "@mui/material";
+import { id } from "date-fns/locale";
+import { getShiftTypes } from "@/app/api/shiftType";
 
 
 function SlideTransition(props: SlideProps) {
@@ -41,6 +43,7 @@ export default function ProjectPage(){
 
   const { selectedProject, setSelectedProject } = useSelectedProject();
   const { projects, updateProject } = useProjects();
+  const { shiftTypes, setShiftTypes } = useShiftTypes();
 
 
   const loadProject = async () => {
@@ -60,6 +63,19 @@ export default function ProjectPage(){
     }
   }
 
+  const loadShiftTypes = async () => {
+    try {
+
+      if(!selectedProject) return;
+
+      const types = await getShiftTypes(selectedProject.id);
+      setShiftTypes(types);
+
+    } catch (err: any) {
+      alert(err ?? "Failed to load shift types");
+    }
+  }
+
   useEffect(() => {
     loadProject();
   }, []);
@@ -69,6 +85,7 @@ export default function ProjectPage(){
     
     loadInstance();
     loadSolutionsArray();
+    loadShiftTypes();
 
   }, [selectedProject]);
 

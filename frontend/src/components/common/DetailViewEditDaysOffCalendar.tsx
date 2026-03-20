@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarDays } from 'lucide-react';
+import { useSelectedProject } from "@/store/projectStore";
 
 type CalendarProps = {
   selectedDates: Date[];
@@ -20,6 +21,10 @@ type CalendarProps = {
 export default function DetailViewEditDaysOffCalendar({ selectedDates, setSelectedDates }: CalendarProps) {
   const [dates, setDates] = useState<Date[] | undefined>(selectedDates);
   const [openPopover, setOpenPopover] = useState<boolean>(false);
+
+  const { selectedProject } = useSelectedProject();
+  const planningHorizon = selectedProject?.planning_horizon ?? ["2018-01-01", "2018-01-01"];
+
 
   return (
     <Popover open={openPopover} onOpenChange={setOpenPopover}>
@@ -36,12 +41,12 @@ export default function DetailViewEditDaysOffCalendar({ selectedDates, setSelect
           selected={dates}
           onSelect={setDates}
           hidden={{
-            before: new Date("2018-01-01"), // TODO: link to planning horizon
-            after: new Date("2018-01-14")
+            before: new Date(planningHorizon[0]),
+            after: new Date(planningHorizon[1])
           }}
-          startMonth={ new Date(2018, 0) } // here too
-          endMonth={ new Date(2018, 0) }
-          defaultMonth={ new Date("2018-01-01") }
+          startMonth={ new Date(planningHorizon[0]) }
+          endMonth={ new Date(planningHorizon[1]) }
+          defaultMonth={ new Date(planningHorizon[0]) }
         />
         <Button 
           className="m-2 mt-0"

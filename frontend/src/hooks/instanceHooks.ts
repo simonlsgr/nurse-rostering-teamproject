@@ -2,7 +2,6 @@ import { useInstance } from "@/store/instanceStore";
 import instanceData from "@/components/layout/Instance2.json";
 import { getAllNurses } from "@/app/api/nurse";
 import { useSelectedProject } from "@/store/projectStore";
-import { Project } from "@/types/projectVars";
 
 
 export function useLoadInstance(){

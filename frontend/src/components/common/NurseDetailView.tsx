@@ -17,7 +17,7 @@ import { X } from 'lucide-react';
 import { Button } from "../ui/button";
 import DeleteNurseDialog from "./DeleteNurseDialog";
 import { editNurse } from "@/app/api/nurse";
-import { useSelectedProject } from "@/store/projectStore";
+import { useSelectedProject, useShiftTypes } from "@/store/projectStore";
 import DetailViewAddDaysCalendar from "./DetailViewEditDaysOffCalendar";
 import DetailViewEditDaysOffCalendar from "./DetailViewEditDaysOffCalendar";
 
@@ -33,7 +33,7 @@ export default function NurseDetailView() {
   const [selectedPreferredShifts, setSelectedPreferredShifts] = useState<Shift[]>([]);
   const [selectedPreferredOffShifts, setSelectedPreferredOffShifts] = useState<Shift[]>([]);
   
-
+  const { shiftTypes } = useShiftTypes();
   const { editAttributes, setEditAttribute, setEditAttributes } = useEditAttributes();
   
   useEffect(() => {
@@ -181,32 +181,32 @@ export default function NurseDetailView() {
       return (
         <div className="pb-1">
 
-          {Object.keys(editedNurse[key]).map((type) => (
+          {shiftTypes.map((type) => (
 
             <div 
-              key={type}
+              key={type.id}
               className="flex gap-1 items-center"
             >
-              <p className="mb-2"> {type}: </p>
+              <p className="mb-2"> {type.name}: </p>
               <input
                 className="border border-border rounded-md p-1 mb-2"
                 type="text"
                 inputMode="numeric"
-                value={editedNurse[key][type]}
+                value={editedNurse[key][type.name]}
                 onChange={(e) => {
                   const val = Number(e.target.value.replace(/\D/g, ""));
                   setEditedNurse(prev => ({
                     ...prev,
                     [key]: {
                       ...(prev[key as keyof Nurse] as Record<string, number>),
-                      [type]: val
+                      [type.name]: val
                     }
                   }));
                   setDetailViewNurse(prev => ({
                     ...prev,
                     [key]: {
                       ...(prev[key as keyof Nurse] as Record<string, number>),
-                      [type]: val
+                      [type.name]: val
                     }
                   }));
                 }}

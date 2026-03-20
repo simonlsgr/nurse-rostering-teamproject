@@ -1,6 +1,7 @@
 import { Nurse } from "@/types/nurseVars";
-import { NewProject } from "@/types/projectVars";
+import { NewProject, ShiftType } from "@/types/projectVars";
 import { clsx, type ClassValue } from "clsx"
+import { labelDayButton } from "react-day-picker";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -71,3 +72,31 @@ export function createDefaultNewProject(): NewProject {
   }
 } 
 
+
+export function generateDatesFromPlanningHorizon(planningHorizon: [string, string]) {
+  const [startStr, endStr] = planningHorizon;
+  const startDate = new Date(startStr);
+  const endDate = new Date(endStr);
+
+  const dates: string[] = [];
+  let current = new Date(startDate);
+
+  while (current <= endDate) {
+    dates.push(current.toISOString().split("T")[0]); // nur "YYYY-MM-DD"
+    current.setDate(current.getDate() + 1); // nächsten Tag
+  }
+
+  return dates;
+}
+
+export function convertShiftTypes(shiftTypes: ShiftType[]) {
+
+  let result = [{value: "", label: ""}];
+
+  shiftTypes.forEach((type) => {
+    
+    result.push({value: type.name, label: type.name});
+  });
+
+  return result;
+}
