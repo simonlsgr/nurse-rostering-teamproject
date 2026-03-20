@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Nurse, Shift } from "@/types/nurseVars";
-import { useDetailViewNurse, useEditAttributes, useNurses, useOpenNurseDetailView } from "@/store/nurseStore";
+import { useDetailViewNurse, useEditAttributes, useNurses, useOpenNurseDetailView, useShifts } from "@/store/nurseStore";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useInstance } from "@/store/instanceStore";
 import { capitalize, Tooltip } from "@mui/material";
@@ -24,7 +24,7 @@ import DetailViewEditDaysOffCalendar from "./DetailViewEditDaysOffCalendar";
 export default function NurseDetailView() {
 
   const { updateNurse } = useNurses();
-  const { shifts } = useInstance();
+  const { shifts } = useShifts();
   const { detailViewNurse, setDetailViewNurse } = useDetailViewNurse();
   const { openNurseDetailView, setOpenNurseDetailView } = useOpenNurseDetailView();
   const [ editedNurse, setEditedNurse ] = useState<Nurse>(createDefaultNurse());

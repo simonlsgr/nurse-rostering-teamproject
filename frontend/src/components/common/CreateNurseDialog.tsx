@@ -6,10 +6,9 @@ import { Nurse, Shift } from "@/types/nurseVars";
 import { createDefaultNurse, formatDate } from "@/lib/utils";
 import { capitalize, Switch, Tooltip } from "@mui/material";
 import DynamicShiftList from "../rostering/DynamicShiftList";
-import { useInstance } from "@/store/instanceStore";
 import { Calendar } from "@/components/ui/calendar";
 import { useHandleCreateNurse } from "@/hooks/nurseHooks";
-import { useNewNurse } from "@/store/nurseStore";
+import { useNewNurse, useShifts } from "@/store/nurseStore";
 import { useSelectedProject, useShiftTypes } from "@/store/projectStore";
 
 
@@ -27,7 +26,8 @@ export default function CreateNurseDialog() {
 
   const planningHorizon = selectedProject?.planning_horizon ?? ["2018-01-01", "2018-01-01"];
   
-  const { shifts } = useInstance();
+  const { shifts } = useShifts();
+
 
   useEffect(() => {
     if (dates) {
