@@ -55,15 +55,20 @@ class ShiftRotationModuleTable(ShiftAssignmentModuleTable):
                 for j in range(len(dates[following_date])):
                     shift_uid = dates[following_date][j]
                     if shift_by_uid[shift_uid].type in current_shift_types:
-                        shift_mapping.setdefault(i+1, []).append(j+1)
-            for shift, types in shift_mapping.items():
+                        shift_mapping.setdefault(i+1, [0]).append(1)
+                    else:
+                        shift_mapping.setdefault(i+1, [0]).append(0)
+                shift_mapping[i+1] = model.array(shift_mapping[i+1])
+            for shift in shift_mapping:
+                temp = [0] * (len(shift_uids) + 1)
+                temp[shift] = 1
+                temp = model.array(temp)
                 for nv in nurse_shift_vars:
-                    for _type in types:
-                        model.add_constraint(
-                            model.iif(nv.is_assigned_to(_date) == shift, 1, 0) +
-                            model.iif(nv.is_assigned_to(following_date) == _type, 1, 0)
-                            <= 1
-                        )
+                    model.add_constraint(
+                        model.at(temp, nv.is_assigned_to(_date)) +
+                        model.at(shift_mapping[shift], nv.is_assigned_to(following_date))
+                        <= 1
+                    )
 
         return 0  # no objective contribution
 
@@ -72,21 +77,29 @@ class MaximumShiftTypesModuleTable(ShiftAssignmentModuleTable):
 
     def build(self, instance, model, nurse_shift_vars, dates):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
-
-        day_index_to_type = {}
+        day_type_mapping = {}
+        zero_mapping = {}
         for _date, shift_uids in dates.items():
-            day_index_to_type[_date] = {}
-            for i, shift_uid in enumerate(shift_uids):
-                day_index_to_type[_date].setdefault(shift_by_uid[shift_uid].type, []).append(i+1)
+            day_type_mapping[_date] = {}
+            zero_mapping[_date] = model.array([0] * (len(shift_uids) + 1))
+            types_on_day = {shift_by_uid[uid].type for uid in shift_uids}
+
+            for _type in types_on_day:
+                mapping = [0]
+                for shift_uid in shift_uids:
+                    mapping.append(1 if shift_by_uid[shift_uid].type == _type else 0)
+                day_type_mapping[_date][_type] = model.array(mapping)
+
         for nv in nurse_shift_vars:
             for _type, max_count in nv.nurse.maximum_number_of_shifts_per_type.items():
                 count_expr = model.sum(
-                    model.iif(nv.is_assigned_to(_date) == index, 1, 0)
-                    for _date in dates.keys()
-                    for index in day_index_to_type[_date].get(_type, [])
+                    model.at(
+                        day_type_mapping[_date].get(_type, zero_mapping[_date]),
+                        nv.is_assigned_to(_date)
+                    )
+                    for _date in dates
                 )
                 model.add_constraint(count_expr <= max_count)
-
         return 0
 
 
@@ -94,32 +107,62 @@ class MaximizePreferencesTable(ShiftAssignmentModuleTable):
     def build(self, instance, model, nurse_shift_vars, dates):
         """
         Encourage assigning nurses to their preferred shifts.
-        Each preference counts negatively toward the minimization objective.
+
+        Minimization objective:
+        For each preferred shift that is not assigned, its weight is paid.
         """
-        shift_uid_table = {}
-        for _date, shift_uids in dates.items():
-            for i in range(len(shift_uids)):
-                shift_uid_table[shift_uids[i]] = (_date, i+1)
         expr = 0
+
         for nv in nurse_shift_vars:
-            for shift_uid in nv.nurse.preferred_shifts:
-                expr += nv.nurse.preferred_shift_weight[shift_uid] * model.iif(nv.is_assigned_to(shift_uid_table[shift_uid][0]) == shift_uid_table[shift_uid][1], 0, 1)
+            mapping = {}
+            for _date, shift_uids in dates.items():
+                day_penalty = sum(
+                    nv.nurse.preferred_shift_weight[shift_uid]
+                    for shift_uid in shift_uids
+                    if shift_uid in nv.nurse.preferred_shifts
+                )
+                current = [day_penalty]
+
+                for shift_uid in shift_uids:
+                    if shift_uid in nv.nurse.preferred_shifts:
+                        current.append(day_penalty - nv.nurse.preferred_shift_weight[shift_uid])
+                    else:
+                        current.append(day_penalty)
+
+                mapping[_date] = model.array(current)
+
+            expr += model.sum(
+                model.at(mapping[_date], nv.is_assigned_to(_date))
+                for _date in dates
+            )
+
         return expr
 
 
 class OffPreferencesTable(ShiftAssignmentModuleTable):
     def build(self, instance, model, nurse_shift_vars, dates):
-        shift_uid_table = {}
-        for _date, shift_uids in dates.items():
-            for i in range(len(shift_uids)):
-                shift_uid_table[shift_uids[i]] = (_date, i + 1)
         expr = 0
         for nv in nurse_shift_vars:
-            shift_off_uids = nv.nurse.preferred_off_shifts
-            if not shift_off_uids:
+            off_shifts = set(nv.nurse.preferred_off_shifts)
+            if not off_shifts:
                 continue
-            for shift_uid in shift_off_uids:
-                    expr += nv.nurse.preferred_off_shift_weight[shift_uid] * model.iif(nv.is_assigned_to(shift_uid_table[shift_uid][0]) == shift_uid_table[shift_uid][1], 1, 0)
+            mapping = {}
+
+            for _date, shift_uids in dates.items():
+                current = [0]
+                for shift_uid in shift_uids:
+                    if shift_uid in off_shifts:
+                        current.append(nv.nurse.preferred_off_shift_weight[shift_uid])
+                    else:
+                        current.append(0)
+
+                mapping[_date] = model.array(current)
+
+            expr += model.sum(
+                model.at(mapping[_date], nv.is_assigned_to(_date))
+                for _date in dates
+            )
+
         return expr
 
 
@@ -129,10 +172,14 @@ class PreferStaffModuleTable(ShiftAssignmentModuleTable):
         Penalize use of non-staff (contract) nurses in the objective.
         """
         expr = 0
+        _dict = {}
+        for _date, shift_uids in dates.items():
+            _dict[_date] = model.array([0] + len(shift_uids) * [1])
+
         for nv in nurse_shift_vars:
             if not nv.nurse.staff:
                 for _date in dates:
-                    expr += instance.staff_weight * model.iif(nv.is_assigned_to(_date) >= 1, 1, 0)
+                    expr += instance.staff_weight * model.at(_dict[_date], nv.is_assigned_to(_date))
         return expr
 
 
@@ -142,6 +189,7 @@ class LimitWorkTimeModuleTable(ShiftAssignmentModuleTable):
     def build(self, instance, model, nurse_shift_vars, dates):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
         durations_by_day = {}
+
         for _date, shift_uids in dates.items():
             durations = [0]
             for shift_uid in shift_uids:
@@ -169,6 +217,9 @@ class MaximumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
 
     def build(self, instance, model, nurse_shift_vars, dates):
         dates_in_order = sorted(dates.keys())
+        _dict = {}
+        for _date, shift_uids in dates.items():
+            _dict[_date] = model.array([0] + len(shift_uids) * [1])
         for nv in nurse_shift_vars:
             max_consecutive = nv.nurse.maximum_consecutive_shifts
             if max_consecutive is None:
@@ -181,7 +232,7 @@ class MaximumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
                 window_dates = dates_in_order[start:start + window_len]
 
                 worked_days_in_window = model.sum(
-                    model.iif(nv.is_assigned_to(_date) >= 1, 1, 0)
+                    model.at(_dict[_date], nv.is_assigned_to(_date))
                     for _date in window_dates
                 )
 
@@ -194,18 +245,21 @@ class MinimumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
 
     def build(self, instance, model, nurse_shift_vars, dates):
         dates_in_order = sorted(dates.keys())
+        _dict = {}
+        for _date, shift_uids in dates.items():
+            _dict[_date] = model.array([0] + len(shift_uids) * [1])
         for nv in nurse_shift_vars:
             min_consecutive = nv.nurse.minimum_consecutive_shifts
             if min_consecutive is None:
                 continue
             for s in range(1, min_consecutive):
                 for d in range(instance.planning_horizon_in_days - (s+1)):
-                    expr = model.iif(nv.is_assigned_to(dates_in_order[d]) >= 1, 1, 0)
+                    expr = model.at(_dict[dates_in_order[d]], nv.is_assigned_to(dates_in_order[d]))
                     expr += s - model.sum(
-                        model.iif(nv.is_assigned_to(_date) >= 1, 1, 0)
+                        model.at(_dict[_date], nv.is_assigned_to(_date))
                         for _date in dates_in_order[d+1:d+s+1]
                     )
-                    expr += model.iif(nv.is_assigned_to(dates_in_order[d+s+1]) >= 1, 1, 0)
+                    expr += model.at(_dict[dates_in_order[d+s+1]], nv.is_assigned_to(dates_in_order[d+s+1]))
                     model.add_constraint(expr > 0)
 
         return 0
@@ -216,18 +270,21 @@ class MinimumConsecutiveDaysOffModuleTable(ShiftAssignmentModuleTable):
 
     def build(self, instance, model, nurse_shift_vars, dates):
         dates_in_order = sorted(dates.keys())
+        _dict = {}
+        for _date, shift_uids in dates.items():
+            _dict[_date] = model.array([0] + len(shift_uids) * [1])
         for nv in nurse_shift_vars:
             min_consecutive = nv.nurse.minimum_consecutive_days_off
             if min_consecutive is None:
                 continue
             for s in range(1, min_consecutive):
                 for d in range(instance.planning_horizon_in_days - (s + 1)):
-                    expr = model.iif(nv.is_assigned_to(dates_in_order[d]) >= 1, 0, 1)
+                    expr = 1 - model.at(_dict[dates_in_order[d]], nv.is_assigned_to(dates_in_order[d]))
                     expr += model.sum(
-                        model.iif(nv.is_assigned_to(_date) >= 1, 1, 0)
+                        model.at(_dict[_date], nv.is_assigned_to(_date))
                         for _date in dates_in_order[d + 1:d + s + 1]
                     )
-                    expr += model.iif(nv.is_assigned_to(dates_in_order[d + s + 1]) >= 1, 0, 1)
+                    expr += 1 - model.at(_dict[dates_in_order[d+s+1]], nv.is_assigned_to(dates_in_order[d+s+1]))
                     model.add_constraint(expr > 0)
 
         return 0
