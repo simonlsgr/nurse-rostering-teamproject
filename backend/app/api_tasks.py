@@ -7,6 +7,7 @@ from api_models import NurseRosteringJobRequest, NurseRosteringJobStatus
 from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel as NurseRosteringModelCPSAT
 from nurse_rostering.solvers.gurobi.model.solver import NurseRosteringModel as NurseRosteringModelGRB
 from nurse_rostering.solvers.hexaly.model.solver import NurseRosteringModel as NurseRosteringModelHXLY
+from nurse_rostering.heuristics.greedy import NurseRosteringGreedyHeuristic
 from nurse_rostering.data_schema import SolverFormulation
 from datetime import datetime
 from uuid import UUID
@@ -67,6 +68,8 @@ def run_optimization_job(
             solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.IP)
         case "cpsat-automaton":
             solver = NurseRosteringModelCPSAT(job_request.nurse_rostering_instance, None, formulation=SolverFormulation.AUTOMATON)
+        case "greedy-heuristic":
+            solver = NurseRosteringGreedyHeuristic(job_request.nurse_rostering_instance)
             
 
     

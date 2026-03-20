@@ -21,7 +21,8 @@ const solver_names: SolverMap = {
   "gurobi": "Gurobi (IP)",
   "hexaly-set": "Hexaly (Set-Based)",
   "hexaly-ip": "Hexaly (IP)",
-  "hexaly-table": "Hexaly (Table-Based)"
+  "hexaly-table": "Hexaly (Table-Based)",
+  "greedy-heuristic": "Heuristic (Greedy)",
 };
 
 export default function SolveButton() {
