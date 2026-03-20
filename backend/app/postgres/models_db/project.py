@@ -29,6 +29,13 @@ class Project(Base):
         passive_deletes=True
     )
 
+    shifts = relationship(
+        "Shift",
+        back_populates="project",
+        passive_deletes=True
+    )
+
+
     @property
     def planning_horizon(self):
         if self.planning_start and self.planning_end:
