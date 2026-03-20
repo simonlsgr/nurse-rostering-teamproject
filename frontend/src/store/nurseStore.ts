@@ -1,5 +1,5 @@
 import { createDefaultNurse } from "@/lib/utils";
-import { Nurse } from "@/types/nurseVars";
+import { Nurse, Shift } from "@/types/nurseVars";
 import { create } from "zustand";
 
 
@@ -91,4 +91,18 @@ export const useNewNurse = create<NewNurseState>((set) => ({
 
   newNurse: createDefaultNurse(),
   setNewNurse: (newNurse) => set((state) => ({ newNurse: typeof(newNurse) === "function" ? newNurse(state.newNurse) : newNurse})),
+}));
+
+
+type ShiftsState = {
+
+  shifts: Shift[];
+  setShifts: (shifts: Shift[] | ((prev: Shift[]) => Shift[])) => void;
+};
+
+
+export const useShifts = create<ShiftsState>((set) => ({
+
+  shifts: [],
+  setShifts: (shifts) => set((state) => ({ shifts: typeof(shifts) === "function" ? shifts(state.shifts) : shifts})),
 }));

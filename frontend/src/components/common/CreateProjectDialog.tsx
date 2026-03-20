@@ -11,6 +11,7 @@ import PlanningHorizonInput from "./PlanningHorizonInput";
 import ShiftTypesInput from "./ShiftTypesInput";
 import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
 import { createShiftType } from "@/app/api/shiftType";
+import { useGenerateShifts } from "@/hooks/nurseHooks";
 
 
 
@@ -20,7 +21,7 @@ export default function CreateProjectDialog(){
 
   const { newProject, setNewProject } = useNewProject();
   const { updateProject } = useProjects();
-
+  const { generateShifts } = useGenerateShifts();
 
   useEffect(() => {
     
@@ -47,7 +48,9 @@ export default function CreateProjectDialog(){
           }
         }
         
-      } 
+      }
+
+      generateShifts(project_res, shift_types ?? []);
 
     }
     catch (err: any) {

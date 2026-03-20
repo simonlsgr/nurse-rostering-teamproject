@@ -7,13 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search } from 'lucide-react';
 import ShiftListTopbar from "../common/ShiftListTopbar";
 import ShiftCard from "../ui/ShiftCard";
+import { useShifts } from "@/store/nurseStore";
 
 export default function ShiftList(){
 
   const [query, setQuery] = useState("");
 
-
-  const { shifts } = useInstance();
+  const { shifts } = useShifts();
+  // const { shifts } = useInstance();
   
 
 
