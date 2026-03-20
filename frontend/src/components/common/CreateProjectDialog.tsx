@@ -12,6 +12,7 @@ import ShiftTypesInput from "./ShiftTypesInput";
 import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
 import { createShiftType } from "@/app/api/shiftType";
 import { useGenerateShifts } from "@/hooks/nurseHooks";
+import { createShift } from "@/app/api/shift";
 
 
 
@@ -50,7 +51,13 @@ export default function CreateProjectDialog(){
         
       }
 
-      generateShifts(project_res, shift_types ?? []);
+      const newShifts = generateShifts(project_res, shift_types ?? []);
+      for (const shift of newShifts) {
+        const res = await createShift(shift, project_res.id);
+        if (!res.id) {
+          alert(`Failed to create shift ${shift.name}`);
+        }
+      }
 
     }
     catch (err: any) {

@@ -22,7 +22,7 @@ export type Nurse = {
 }
 
 export type Shift = {
-  id?: string; // for database
+  id: string; // for database
   uid: number;
   name: string;
   start_time: string;

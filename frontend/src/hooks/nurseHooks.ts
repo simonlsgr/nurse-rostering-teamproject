@@ -49,7 +49,7 @@ export function useGenerateShifts() {
 
   const { setShifts } = useShifts();
 
-  const generateShifts = async (project: Project, shiftTypes: ShiftType[]) => {
+  const generateShifts = (project: Project, shiftTypes: ShiftType[]) => {
 
     const dates = generateDatesFromPlanningHorizon(project.planning_horizon);
     let shifts_arr: Shift[] = []
@@ -71,7 +71,7 @@ export function useGenerateShifts() {
       });
     });
 
-    setShifts(shifts_arr);
+    return shifts_arr;
     
   }
 

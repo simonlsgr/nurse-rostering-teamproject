@@ -23,8 +23,9 @@ import { fetchFinishedJobs } from "@/app/api/jobs";
 import { fetchSolution } from "@/app/api/solution";
 import { useSolutionsArray } from "@/store/solutionStore";
 import { Slide, SlideProps, Snackbar } from "@mui/material";
-import { id } from "date-fns/locale";
 import { getShiftTypes } from "@/app/api/shiftType";
+import { getAllShifts } from "@/app/api/shift";
+import { useShifts } from "@/store/nurseStore";
 
 
 function SlideTransition(props: SlideProps) {
@@ -44,6 +45,7 @@ export default function ProjectPage(){
   const { selectedProject, setSelectedProject } = useSelectedProject();
   const { projects, updateProject } = useProjects();
   const { shiftTypes, setShiftTypes } = useShiftTypes();
+  const { shifts, setShifts } = useShifts();
 
 
   const loadProject = async () => {
@@ -76,6 +78,20 @@ export default function ProjectPage(){
     }
   }
 
+  const loadShifts = async () => {
+    try {
+
+      if(!selectedProject) return;
+
+      const shifts_ = await getAllShifts(selectedProject.id);
+      setShifts(shifts_);
+
+    } catch (err: any) {
+      alert(err ?? "Failed to load shifts");
+    }
+  }
+
+
   useEffect(() => {
     loadProject();
   }, []);
@@ -86,6 +102,7 @@ export default function ProjectPage(){
     loadInstance();
     loadSolutionsArray();
     loadShiftTypes();
+    loadShifts();
 
   }, [selectedProject]);
 
