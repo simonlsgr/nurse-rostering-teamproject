@@ -3,7 +3,7 @@ from typing import Any
 import gurobipy as gp
 from gurobipy import GRB
 
-from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution
+from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution, ShiftUid, NurseUid, SolverFormulation
 from .nurse_vars import NurseDecisionVars
 from .modules import (
     ShiftAssignmentModule,
@@ -29,9 +29,14 @@ class NurseRosteringModel:
     A compact and extensible solver for the nurse rostering problem using Gurobi.
     """
 
-    def __init__(self, instance: NurseRosteringInstance, model: gp.Model | None = None):
+    def __init__(self, instance: NurseRosteringInstance, model: gp.Model | None = None, hints: dict[ShiftUid, list[NurseUid]] | None = None, formulation: SolverFormulation | None = SolverFormulation.IP):
+        if formulation != SolverFormulation.IP:
+            raise ValueError(f"Gurobi only supports an IP formulation. {formulation} was provided.")
+        
         self.instance = instance
         self.model = model or gp.Model("nurse_rostering")
+        self.hints = hints
+        
         self.nurse_vars = [
             NurseDecisionVars(nurse, instance.shifts, self.model) for nurse in instance.nurses
         ]
@@ -52,6 +57,12 @@ class NurseRosteringModel:
             DaysOffModule(),
         ]
 
+        if self.hints is not None:
+            for nv in self.nurse_vars:
+                for shiftuid, nurseuids in self.hints.items():
+                    if nv.nurse.uid in nurseuids:
+                        nv._x[shiftuid].Start = 1
+        
         # Build constraints + objective expression
         terms = [module.build(instance, self.model, self.nurse_vars) for module in self.modules]
         objective = gp.quicksum(
