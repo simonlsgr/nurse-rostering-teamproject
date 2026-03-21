@@ -12,7 +12,7 @@ import ShiftTypesInput from "./ShiftTypesInput";
 import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
 import { createShiftType } from "@/app/api/shiftType";
 import { useGenerateShifts } from "@/hooks/nurseHooks";
-import { createShift } from "@/app/api/shift";
+import { createShift, createShifts } from "@/app/api/shift";
 
 
 
@@ -52,13 +52,18 @@ export default function CreateProjectDialog(){
       }
 
       const newShifts = generateShifts(generateDatesFromPlanningHorizon(project_res.planning_horizon), shift_types ?? []);
+      const res = await createShifts(newShifts, project_res.id);
+      if (!res) {
+        alert(`Failed to create shifts`);
+      }
+      /* 
       for (const shift of newShifts) {
         const res = await createShift(shift, project_res.id);
         if (!res.id) {
           alert(`Failed to create shift ${shift.name}`);
         }
       }
-
+ */
     }
     catch (err: any) {
       alert("Creation failed");

@@ -7,7 +7,7 @@ import { Project } from "@/types/projectVars";
 import { editProject } from "@/app/api/project";
 import { useShifts } from "@/store/nurseStore";
 import { useGenerateShifts } from "@/hooks/nurseHooks";
-import { createShift, deleteShift, getAllShifts } from "@/app/api/shift";
+import { createShift, createShifts, deleteShift, deleteShifts, getAllShifts } from "@/app/api/shift";
 
 
 export default function ManagePlanningHorizonDialog() {
@@ -50,13 +50,8 @@ export default function ManagePlanningHorizonDialog() {
     try {
 
 
-      for (const shift of removableShifts){
-        const res = await deleteShift(shift.id, project.id);
-      }
-
-      for (const shift of newShifts) {
-        const res = await createShift(shift, project.id);
-      }
+      const res = await deleteShifts(removableShifts.map((shift) => shift.id), project.id);
+      const res_ = await createShifts(newShifts, project.id)
 
       const updatedShifts = await getAllShifts(project.id);
       setShifts(updatedShifts);

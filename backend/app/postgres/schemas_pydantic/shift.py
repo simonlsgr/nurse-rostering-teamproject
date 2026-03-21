@@ -16,6 +16,9 @@ class ShiftCreate(BaseModel):
     weight_above_demand: int = 0
 
 
+class ShiftBulkCreate(BaseModel):
+    shifts: List[ShiftCreate]
+
 class ShiftUpdate(BaseModel):
     name: str
     start_time: str
@@ -26,6 +29,8 @@ class ShiftUpdate(BaseModel):
     weight_below_demand: int
     weight_above_demand: int
 
+class ShiftBulkDelete(BaseModel):
+    shift_ids: List[UUID]
 
 class ShiftResponse(BaseModel):
     id: UUID

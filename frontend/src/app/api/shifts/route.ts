@@ -51,6 +51,8 @@ export async function POST(req: Request) {
   
   const { searchParams } = new URL(req.url);
   const projectId = searchParams.get("projectId");
+  const bulk = searchParams.get("bulk");
+  const del = searchParams.get("del");
 
 
   if (!solverUrl) {
@@ -67,7 +69,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const res = await fetch(`${solverUrl}/projects/${projectId}/shifts`, {
+  const res = await fetch(`${solverUrl}/projects/${projectId}/shifts${bulk ? (del ? `/bulk-delete` : `/bulk-create`) : ""}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
