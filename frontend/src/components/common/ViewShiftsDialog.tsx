@@ -6,7 +6,7 @@ import { Shift } from "@/types/nurseVars";
 import DynamicShiftList from "../rostering/DynamicShiftList";
 import { useShifts } from "@/store/nurseStore";
 import { editShift } from "@/app/api/shift";
-import { useSelectedProject } from "@/store/projectStore";
+import { useSelectedProject, useShiftTypes } from "@/store/projectStore";
 
 
 
@@ -19,10 +19,14 @@ export default function ViewShiftsDialog() {
   const [weightBelowDemand, setWeightBelowDemand] = useState<number>(0);
   const [weightAboveDemand, setWeightAboveDemand] = useState<number>(0);
 
+  const [selectTypeChecked, setSelectTypeChecked] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+
   const [selectedItems, setSelectedItems] = useState<Shift[]>([]);
 
   const { selectedProject } = useSelectedProject();
-  const { updateShift } = useShifts();
+  const { shifts, updateShift } = useShifts();
+  const { shiftTypes } = useShiftTypes();
 
   const handleSaveShiftParameters = () => {
     if(!selectedProject) return;
@@ -38,7 +42,7 @@ export default function ViewShiftsDialog() {
     setDemand(0); 
     setWeightBelowDemand(0); 
     setWeightAboveDemand(0);
-
+    setEditShifts(false);
   }
 
 
@@ -80,48 +84,97 @@ export default function ViewShiftsDialog() {
                   </div>
 
                   <div className="bg-white rounded-xl p-2">
-                  <div className="flex gap-2 items-center">
-                    <p> Demand: </p>
-                    <input
-                      className="border border-border rounded-md p-1 w-10 ml-[73px] mb-1"
-                      type="text"
-                      inputMode="numeric"
-                      value={demand}
-                      onChange={(e) => {
-                        const val = Number(e.target.value.replace(/\D/g, ""));
-                        setDemand(val);
-                      }}
-                      />
-                  </div>   
-                  
-                  <div className="flex gap-2 items-center">
-                    <p> W. below demand: </p>
-                    <input
-                      className="border border-border rounded-md p-1 w-10 ml-[4.5px]"
-                      type="text"
-                      inputMode="numeric"
-                      value={weightBelowDemand}
-                      onChange={(e) => {
-                        const val = Number(e.target.value.replace(/\D/g, ""));
-                        setWeightBelowDemand(val);
-                      }}
-                      />
-                  </div>
+                    <div className="flex gap-2 items-center">
+                      <p> Demand: </p>
+                      <input
+                        className="border border-border rounded-md p-1 w-10 ml-[73px] mb-1"
+                        type="text"
+                        inputMode="numeric"
+                        value={demand}
+                        onChange={(e) => {
+                          const val = Number(e.target.value.replace(/\D/g, ""));
+                          setDemand(val);
+                        }}
+                        />
+                    </div>   
+                      
+                    <div className="flex gap-2 items-center">
+                      <p> W. below demand: </p>
+                      <input
+                        className="border border-border rounded-md p-1 w-10 ml-[4.5px]"
+                        type="text"
+                        inputMode="numeric"
+                        value={weightBelowDemand}
+                        onChange={(e) => {
+                          const val = Number(e.target.value.replace(/\D/g, ""));
+                          setWeightBelowDemand(val);
+                        }}
+                        />
+                    </div>
                     
-                  <div className="flex gap-2 items-center">
-                    <p> W. above demand: </p>
-                    <input
-                      className="border border-border rounded-md p-1 w-10 m-1"
-                      type="text"
-                      inputMode="numeric"
-                      value={weightAboveDemand}
-                      onChange={(e) => {
-                        const val = Number(e.target.value.replace(/\D/g, ""));
-                        setWeightAboveDemand(val);
-                      }}
-                      />
-                  </div>               
+                    <div className="flex gap-2 items-center">
+                      <p> W. above demand: </p>
+                      <input
+                        className="border border-border rounded-md p-1 w-10 m-1"
+                        type="text"
+                        inputMode="numeric"
+                        value={weightAboveDemand}
+                        onChange={(e) => {
+                          const val = Number(e.target.value.replace(/\D/g, ""));
+                          setWeightAboveDemand(val);
+                        }}
+                        />
+                    </div>         
                   </div>
+
+                  <div className="bg-white rounded-xl p-2 w-50">
+                    <p className="font-semibold"> Quick-Select: </p> 
+
+                    <div className="flex flex-col gap-2 pl-2 pt-4">
+                      <label className="flex items-center gap-2 select-none">
+                        <input 
+                          type="checkbox"
+                          onChange={(e) => {
+                            e.target.checked ? setSelectedItems(shifts) : setSelectedItems([]);
+                          }}
+                        />
+                        <span>Select All</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={selectTypeChecked}
+                          onChange={(e) => {
+                            e.target.checked ? "" : setSelectedItems([])
+                            setSelectTypeChecked(e.target.checked)
+                          }}
+                        />
+                        <span>Select Type</span>
+
+                        <select 
+                          className="border border-gray-300 rounded-md p-1 disabled:opacity-50 w-15"
+                          disabled={!selectTypeChecked}
+                          value={selectedType}
+                          onChange={(e) => {
+                            setSelectedType(e.target.value);
+                            setSelectedItems(shifts.filter((shift) => shift.type == e.target.value));
+                          }}
+                        >
+                          <option value="">Type</option>
+
+                          {shiftTypes.map((type) => (
+                            <option key={type.id} value={type.name}>
+                              {type.name}
+                            </option>
+                          ))}
+                        </select>
+
+                      </label>
+
+                    </div>
+                  </div>
+
                   <div className="flex gap-2 items-center justify-start flex-1">
                     <div className="border border-l h-full border-gray-100 mr-4"> </div>
                     <Button 
