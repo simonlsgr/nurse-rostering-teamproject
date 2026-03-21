@@ -16,11 +16,11 @@ export default function ShiftListTopbar() {
         className="hover:bg-gray-200 rounded text-muted-foreground"
       />
  */}      
-      <MoreVertIcon 
+{/*       <MoreVertIcon 
         fontSize="small"
         className="hover:bg-gray-200 rounded"          
       /> 
-    </div>
+ */}    </div>
   
   </div>
   )

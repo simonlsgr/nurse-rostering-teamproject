@@ -2,7 +2,7 @@ import { createProject } from "@/app/api/project";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createDefaultNewProject } from "@/lib/utils";
+import { createDefaultNewProject, generateDatesFromPlanningHorizon } from "@/lib/utils";
 import { useNewProject, useProjects } from "@/store/projectStore";
 import { Project, ShiftType } from "@/types/projectVars";
 import { capitalize } from "@mui/material";
@@ -51,7 +51,7 @@ export default function CreateProjectDialog(){
         
       }
 
-      const newShifts = generateShifts(project_res, shift_types ?? []);
+      const newShifts = generateShifts(generateDatesFromPlanningHorizon(project_res.planning_horizon), shift_types ?? []);
       for (const shift of newShifts) {
         const res = await createShift(shift, project_res.id);
         if (!res.id) {

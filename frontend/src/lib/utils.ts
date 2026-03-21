@@ -100,3 +100,16 @@ export function convertShiftTypes(shiftTypes: ShiftType[]) {
 
   return result;
 }
+
+export function calculateStringDifference(
+  left: string[],
+  right: string[]
+): [string[], string[]] {
+  const leftSet = new Set(left);
+  const rightSet = new Set(right);
+
+  const leftOnly = [...leftSet].filter((item) => !rightSet.has(item));
+  const rightOnly = [...rightSet].filter((item) => !leftSet.has(item));
+
+  return [leftOnly, rightOnly];
+}

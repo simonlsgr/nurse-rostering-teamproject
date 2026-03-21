@@ -198,23 +198,6 @@ export default function ViewShiftsDialog() {
 
               )}
 
-
-{/* 
-              <Button 
-                className="flex-1 border border-border rounded-none" 
-                variant={"outline"}
-              >
-                s
-              </Button>
-
-              <Button 
-                className="flex-1 border border-border rounded-none" 
-                variant={"outline"}
-              >
-                s
-              </Button>
- */}
-
             </div>
 
         </DialogHeader>
