@@ -32,7 +32,7 @@ export async function createShifts(shifts: Shift[], projectId: string) {
 
   if (!res.ok) throw new Error(JSON.stringify(data.error));
 
-  return data as Shift;
+  return data as Shift[];
 
 }
 

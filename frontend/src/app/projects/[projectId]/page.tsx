@@ -29,6 +29,7 @@ import { useShifts } from "@/store/nurseStore";
 import { Button } from "@/components/ui/button";
 import ViewShiftsDialog from "@/components/common/ViewShiftsDialog";
 import ManagePlanningHorizonDialog from "@/components/common/ManagePlanningHorizonDialog";
+import ManageShiftTypesDialog from "@/components/common/ManageShiftTypesDialog";
 
 
 function SlideTransition(props: SlideProps) {
@@ -171,9 +172,7 @@ export default function ProjectPage(){
 
           <ManagePlanningHorizonDialog />
 
-          <Button className="bg-gray-50 rounded-none border-border" variant={"outline"}>
-            Manage Shift Types
-          </Button>
+          <ManageShiftTypesDialog />
 
         </div>
 
