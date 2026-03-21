@@ -8,7 +8,7 @@ from typing import Any
 
 from hexaly.optimizer import HxModel, HxOperator
 from nurse_rostering.data_schema import Nurse, Shift, ShiftUid, NurseUid, NurseRosteringInstance
-from nurse_rostering.utils.data_utils import group_shifts_by_date
+from nurse_rostering.utils.data_utils import get_shift_type_not_followed_by_dict, get_shiftuid_dict, group_shifts_by_date, get_types_and_length_in_instance
 
 
 class ShiftDecisionVars:
@@ -49,20 +49,38 @@ class NurseDecisionVarsTable:
     This class also provides helper methods to iterate over assignments and extract results.
     """
 
-    def __init__(self, instance: NurseRosteringInstance, model: HxModel, dates: dict[date, list[ShiftUid]]):
+    def __init__(self, instance: NurseRosteringInstance, model: HxModel):
         self.nurses = instance.nurses
         self.shifts = instance.shifts
-        self.dates = dates
+        self.dates = group_shifts_by_date(instance)
         self.model = model
+        self.instance = instance
+        
+        self._build_types_to_int()
+        self._build_types_not_followed_by_type()
+        
         self._x = []
         for _ in self.nurses:
             nurse_list = []
             for _date in sorted(self.dates):
-                shift_count = len(dates[_date])
+                shift_count = len(self.dates[_date])
                 nurse_list.append(self.model.int(0, shift_count))
             self._x.append(self.model.array(nurse_list))
         self._x = model.array(self._x)
 
+    def _build_types_to_int(self):
+        types = get_types_and_length_in_instance(self.instance).keys()
+        self.type_to_int = {}
+        for i, stype in enumerate(types):
+            self.type_to_int[stype] = i+1
+        print(self.type_to_int)
+    
+    def _build_types_not_followed_by_type(self):
+        self.type_not_followed_by_types = get_shift_type_not_followed_by_dict(self.instance)
+        print(self.type_not_followed_by_types)
+    
+    def _build_shift_uid_dict(self):
+        self.shift_uid_dict = get_shiftuid_dict(self.instance)
 
     def get_nurse_index(self, nurse_uid):
         for i in range(len(self.nurses)):
@@ -71,9 +89,9 @@ class NurseDecisionVarsTable:
         return None
 
     def get_date_index(self, _date):
-        dates = sorted(self.dates)
+        dates = sorted(self.dates.keys())
         for i in range(len(dates)):
-            if self.dates[dates[i]] == _date:
+            if dates[i] == _date:
                 return i
         return None
 
@@ -81,10 +99,12 @@ class NurseDecisionVarsTable:
         for _date, shift_uids in self.dates.items():
             for i in range(len(shift_uids)):
                 if shift_uids[i] == shift_uid:
-                    return self.get_date_index(_date), i
+                    return self.get_date_index(_date), i+1
         return None
 
-    def fix(self, nurse_uid: Nurse, shift_uid, value: bool = True):
+    
+
+    def fix(self, nurse_uid, shift_uid, value: bool = True):
         """
         Fix the assignment variable for the given shift UID to a specific value (True or False).
         Useful for setting hard constraints or testing the model.
@@ -97,9 +117,9 @@ class NurseDecisionVarsTable:
         _date, shift = date_shift
         nurse_index = self.get_nurse_index(nurse_uid)
         if value:
-            self.model.add_constraint(self._x[date][nurse_index] == shift)
+            self.model.add_constraint(self._x[_date][nurse_index] == shift)
         else:
-            self.model.add_constraint(self._x[date][nurse_index] != shift)
+            self.model.add_constraint(self._x[_date][nurse_index] != shift)
 
 
     def __getitem__(self, item):
