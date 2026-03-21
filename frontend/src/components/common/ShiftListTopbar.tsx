@@ -8,13 +8,14 @@ export default function ShiftListTopbar() {
 
   return (
     <div className="flex justify-between items-center pr-1">
-    <p className="p-2"> All Shifts: </p>
+    <p className="p-2"> Shifts: </p>
 
     <div className="flex gap-1">
-      <AddIcon 
+{/*       <AddIcon 
         fontSize="small"
         className="hover:bg-gray-200 rounded text-muted-foreground"
       />
+ */}      
       <MoreVertIcon 
         fontSize="small"
         className="hover:bg-gray-200 rounded"          

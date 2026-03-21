@@ -98,6 +98,7 @@ type ShiftsState = {
 
   shifts: Shift[];
   setShifts: (shifts: Shift[] | ((prev: Shift[]) => Shift[])) => void;
+  updateShift: (shift: Shift) => void;
 };
 
 
@@ -105,4 +106,10 @@ export const useShifts = create<ShiftsState>((set) => ({
 
   shifts: [],
   setShifts: (shifts) => set((state) => ({ shifts: typeof(shifts) === "function" ? shifts(state.shifts) : shifts})),
+  updateShift: (updatedShift: Shift) =>
+    set((state) => ({
+      shifts: state.shifts.map((n) =>
+        n.uid === updatedShift.uid ? updatedShift : n
+      ),
+    })),
 }));
