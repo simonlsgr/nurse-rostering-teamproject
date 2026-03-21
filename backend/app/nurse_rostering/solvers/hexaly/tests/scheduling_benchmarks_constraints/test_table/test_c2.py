@@ -20,6 +20,21 @@ def test_shift_rotation_infeasible_table():
         ),
         Shift(
             demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="A",
+            not_followed_by_shift_types={"B"},
+        ),
+        Shift(
+            demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
@@ -29,18 +44,15 @@ def test_shift_rotation_infeasible_table():
 
     nurse1 = create_nurse("N1")
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        ShiftRotationModuleTable().build(instance, model, [nv], dates)
+        ShiftRotationModuleTable().build(instance, model, nv)
+        
+        nv.fix(nurse1.uid, shifts[0].uid, True)
 
-        # 2018-01-01: einzige Schicht -> Index 1
-        nv.fix(datetime.date(2018, 1, 1), 1)
-
-        # 2018-01-02: einzige Schicht -> Index 1
-        nv.fix(datetime.date(2018, 1, 2), 1)
+        nv.fix(nurse1.uid, shifts[1].uid, True)
 
 
 def test_shift_rotation_feasible_table():
@@ -55,8 +67,24 @@ def test_shift_rotation_feasible_table():
         ),
         Shift(
             demand=1,
-            start_time=datetime.datetime(2018, 1, 3, 8, 0),
-            end_time=datetime.datetime(2018, 1, 3, 16, 0),
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
+            not_followed_by_shift_types={"B"},
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="A",
+            not_followed_by_shift_types={"B"},
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
             type="B",
         ),
@@ -64,15 +92,12 @@ def test_shift_rotation_feasible_table():
 
     nurse1 = create_nurse("N1")
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        ShiftRotationModuleTable().build(instance, model, [nv], dates)
+        ShiftRotationModuleTable().build(instance, model, nv)
 
-        # 2018-01-01: einzige Schicht -> Index 1
-        nv.fix(datetime.date(2018, 1, 1), 1)
+        nv.fix(nurse1.uid, shifts[0].uid, True)
 
-        # 2018-01-03: einzige Schicht -> Index 1
-        nv.fix(datetime.date(2018, 1, 3), 1)
+        nv.fix(nurse1.uid, shifts[1].uid, False)

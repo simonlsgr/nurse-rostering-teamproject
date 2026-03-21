@@ -18,6 +18,20 @@ def test_maximum_shift_types_feasible_table():
         ),
         Shift(
             demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
@@ -31,20 +45,17 @@ def test_maximum_shift_types_feasible_table():
         preferred_shifts=set(),
         blocked_shifts=set(),
         staff=True,
-        min_time_between_shifts=datetime.timedelta(hours=0),
     )
 
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        MaximumShiftTypesModuleTable().build(instance, model, [nv], dates)
+        MaximumShiftTypesModuleTable().build(instance, model, nv)
 
-        # an beiden Tagen jeweils die einzige Schicht -> Index 1
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 1)
+        nv.fix(nurse1.uid, shifts[0].uid, True)
+        nv.fix(nurse1.uid, shifts[3].uid, True)
 
 
 def test_maximum_shift_types_infeasible_table():
@@ -53,6 +64,20 @@ def test_maximum_shift_types_infeasible_table():
             demand=1,
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
             type="A",
         ),
@@ -75,15 +100,11 @@ def test_maximum_shift_types_infeasible_table():
     )
 
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(nurse1, shifts, model)
 
-        MaximumShiftTypesModuleTable().build(instance, model, [nv], dates)
+        MaximumShiftTypesModuleTable().build(instance, model, nv)
 
-        # Tag 1: Typ A
-        nv.fix(datetime.date(2018, 1, 1), 1)
-
-        # Tag 2: Typ B, aber B max = 0
-        nv.fix(datetime.date(2018, 1, 2), 1)
+        nv.fix(nurse1.uid, shifts[0])
+        nv.fix(nurse1.uid, shifts[3])

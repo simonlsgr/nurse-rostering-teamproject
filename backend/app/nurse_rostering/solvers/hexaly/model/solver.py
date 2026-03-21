@@ -38,9 +38,9 @@ from nurse_rostering.solvers.hexaly.model.modules_ip import (
 )
 from nurse_rostering.solvers.hexaly.model.modules_table import (
     OneShiftPerDayModuleTable,
-    ShiftRotationModuleTable, MaximizePreferencesTable, PreferStaffModuleTable, LimitWorkTimeModuleTable,
+    ShiftRotationModuleTable, MaximizePreferencesTable, LimitWorkTimeModuleTable,
     MaximumConsecutiveShiftsModuleTable, MinimumConsecutiveShiftsModuleTable, MinimumConsecutiveDaysOffModuleTable,
-    MaximumNumberOfWeekendsModuleTable, CoverRequirementsModuleTable, OffPreferencesTable, DaysOffModuleTable,
+    MaximumNumberOfWeekendsModuleTable, CoverRequirementsModuleTable, DaysOffModuleTable,
     MaximumShiftTypesModuleTable
 
 )
@@ -95,17 +95,15 @@ class NurseRosteringModel:
             self.modules: list[ShiftRotationModuleTable] = [
                 OneShiftPerDayModuleTable(),
                 ShiftRotationModuleTable(),
+                MaximumShiftTypesModuleTable(),
                 MaximizePreferencesTable(),
-                PreferStaffModuleTable(),
                 LimitWorkTimeModuleTable(),
                 MaximumConsecutiveShiftsModuleTable(),
                 MinimumConsecutiveShiftsModuleTable(),
                 MinimumConsecutiveDaysOffModuleTable(),
                 MaximumNumberOfWeekendsModuleTable(),
                 CoverRequirementsModuleTable(),
-                OffPreferencesTable(),
                 DaysOffModuleTable(),
-                MaximumShiftTypesModuleTable(),
             ]
 
 
@@ -214,7 +212,7 @@ class NurseRosteringModel:
                 for nurse_model in nurse_vars:
                     for shift_uid in nurse_model.extract():
                         nurses_at_shifts.setdefault(shift_uid, []).append(nurse_model.nurse.uid)
-            elif self.formulation == SolverFormulation.IP:
+            elif self.formulation == SolverFormulation.TABLE:
                 nurses_at_shifts: dict[int, list[int]] = nurse_var.extract()
 
             return NurseRosteringSolution(
@@ -223,3 +221,17 @@ class NurseRosteringModel:
                 return_status=generalize_return_status(optimizer.solution.status),
                 lower_bound=optimizer.solution.get_objective_bound(0)
             )
+            
+if __name__ == "__main__":
+    instance_nb = 2
+    time_limit = 60
+    instance_path= f"../../../examples/data_processed/Instance{instance_nb}.json"
+    
+    with open(instance_path, "r") as f:
+        data = f.read()
+    
+    instance = NurseRosteringInstance.model_validate_json(data)
+        
+    solver = NurseRosteringModel(instance,formulation=SolverFormulation.TABLE)
+    solver.solve()
+    

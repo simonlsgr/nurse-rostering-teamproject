@@ -62,8 +62,9 @@ class Nurse(BaseModel):
         ...,
         description="Indicates if the nurse is a staff member (True) or a contractor (False)",
     )
-    min_time_between_shifts: timedelta = Field(
-        ..., description="Minimum off duty time between two shifts for the same nurse"
+    min_time_between_shifts: Optional[timedelta] = Field(
+        default=None,
+        description="Minimum off duty time between two shifts for the same nurse"
     )
     preferred_shift_weight: dict[ShiftUid, NonNegativeInt] = Field(
         default={},
