@@ -55,6 +55,7 @@ export default function ProjectPage(){
         setSelectedProject(projects[projectId]);
         return;        
       }
+
       const data: Project = await getProject(projectId);
       updateProject(data);
       setSelectedProject(data);

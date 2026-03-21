@@ -16,7 +16,6 @@ export default function NurseList(){
 
 
   const { nurses } = useNurses();
-  const { shifts } = useInstance();
   
   
 

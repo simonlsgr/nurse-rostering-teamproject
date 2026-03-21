@@ -8,8 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import SearchIcon from '@mui/icons-material/Search';
 import { getAllProjects } from "../api/project";
 import { Project } from "@/types/projectVars";
-import { useProjects, useSelectedProject } from "@/store/projectStore";
-import { useShifts } from "@/store/nurseStore";
+import { useProjects, useSelectedProject, useShiftTypes } from "@/store/projectStore";
+import { useNurses, useShifts } from "@/store/nurseStore";
 
 
 export default function ProjectsView(){
@@ -20,7 +20,9 @@ export default function ProjectsView(){
   const [projects, setProjects] = useState<Project[]>(projectsRecord.values ? [projectsRecord.values] : []);
   const { setSelectedProject } = useSelectedProject();
 
+  const { setNurses } = useNurses();
   const { setShifts } = useShifts();
+  const { setShiftTypes } = useShiftTypes();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,8 @@ export default function ProjectsView(){
     setSelectedProject(null);
     loadAllProjects();
     setShifts([]);
+    setNurses([]);
+    setShiftTypes([]);
 
   }, [])
 

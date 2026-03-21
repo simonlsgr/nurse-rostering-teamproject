@@ -13,13 +13,13 @@ import FixVariablesSelections from "./FixVariablesSelection";
 import SolverSelector from "@/components/rostering/SolverSelector";
 import TimeLimitInput from "@/components/rostering/TimeLimitInput";
 import SolveButton from "@/components/rostering/SolveButton";
-import { useNurses } from "@/store/nurseStore";
+import { useNurses, useShifts } from "@/store/nurseStore";
 import SolverNameInput from "@/components/rostering/SolverNameInput";
 
 export function VariableFixer() {
 
     const nurses = useNurses((s) => s.nurses);
-    const shifts = useInstance((s) => s.shifts);
+    const shifts = useShifts((s) => s.shifts);
     const instance = useMemo(
         () => ({ nurses, shifts, staff_weight: 1 } as Instance),
         [nurses, shifts]

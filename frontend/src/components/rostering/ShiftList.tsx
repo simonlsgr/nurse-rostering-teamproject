@@ -14,7 +14,6 @@ export default function ShiftList(){
   const [query, setQuery] = useState("");
 
   const { shifts } = useShifts();
-  // const { shifts } = useInstance();
   
 
 

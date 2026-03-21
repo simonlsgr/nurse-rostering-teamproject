@@ -9,7 +9,7 @@ import { useSolverSettings } from "@/store/solverSettingsStore";
 import { solve } from "@/app/api/solver";
 import { useJobs } from "@/store/solverStore";
 import JobsList from "./JobsList";
-import { useNurses } from "@/store/nurseStore";
+import { useNurses, useShifts } from "@/store/nurseStore";
 import { useSolutionsArray } from "@/store/solutionStore";
 
 
@@ -37,7 +37,7 @@ export default function SolveButton() {
   const timeLimit = useSolverSettings(s => s.timeLimit);
   const usedSolver = useSolverSettings(s => s.usedSolver);
   const nurses = useNurses(s => s.nurses);
-  const shifts = useInstance(s => s.shifts);
+  const shifts = useShifts(s => s.shifts);
   const staff_weight = useInstance(s => s.staff_weight);
   const solutionName = useSolverSettings(s => s.solutionName);
   const setSolutionNameError = useSolverSettings(s => s.setSolutionNameError);
