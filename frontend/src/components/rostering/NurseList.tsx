@@ -16,7 +16,6 @@ export default function NurseList(){
 
 
   const { nurses } = useNurses();
-  const { shifts } = useInstance();
   
   
 
@@ -24,7 +23,7 @@ export default function NurseList(){
 
   // filtered by search
   const filteredItems = nurses.filter((nurse) =>
-    nurse.name.toLowerCase().includes(query.toLowerCase()) || nurse.uid.toString().includes(query)
+    nurse.name.toLowerCase().includes(query.toLowerCase())
   );
 
 
@@ -33,7 +32,7 @@ export default function NurseList(){
 
   return (
 
-    <div className="border-b h-[50vh] content-between border-border flex flex-col">
+    <div className="border-b h-[80vh] content-between border-border flex flex-col">
 
       <NurseListTopbar />
       

@@ -52,6 +52,7 @@ export default function CreateNurseDialog() {
    useEffect(() => {
     setSelectedPreferredShifts([]);
     setSelectedPreferredOffShifts([]);
+    setNewNurse(createDefaultNurse());
     setDates([]);
   }, [openDialog])
 

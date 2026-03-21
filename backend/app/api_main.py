@@ -24,7 +24,7 @@ from postgres.models_db.shift import Shift
 
 from postgres.schemas_pydantic.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from postgres.schemas_pydantic.shift_type import ShiftTypeCreate, ShiftTypeUpdate, ShiftTypeResponse
-from postgres.schemas_pydantic.shift import ShiftCreate, ShiftUpdate, ShiftResponse
+from postgres.schemas_pydantic.shift import ShiftCreate, ShiftBulkCreate, ShiftUpdate, ShiftBulkDelete, ShiftResponse
 from postgres.schemas_pydantic.nurse import NurseCreate, NurseResponse, NurseUpdate
 from postgres.database import engine, Base
 
@@ -309,6 +309,43 @@ def create_shift(project_id: UUID, shift_data: ShiftCreate, db: Session = Depend
     return new_shift
 
 
+@shifts_router.post("/bulk-create", response_model=List[ShiftResponse])
+def create_multiple_shifts(
+    project_id: UUID,
+    data: ShiftBulkCreate,
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    new_shifts = []
+
+    for shift_data in data.shifts:
+        shift = Shift(
+            id=shift_data.id,
+            uid=shift_data.uid,
+            project_id=project_id,
+            name=shift_data.name,
+            start_time=shift_data.start_time,
+            end_time=shift_data.end_time,
+            demand=shift_data.demand,
+            type=shift_data.type,
+            not_followed_by_shift_types=shift_data.not_followed_by_shift_types,
+            weight_below_demand=shift_data.weight_below_demand,
+            weight_above_demand=shift_data.weight_above_demand
+        )
+        new_shifts.append(shift)
+
+    db.add_all(new_shifts)
+    db.commit()
+
+    for shift in new_shifts:
+        db.refresh(shift)
+
+    return new_shifts
+
+
 @shifts_router.put("/{shift_id}", response_model=ShiftResponse)
 def update_shift(project_id: UUID, shift_id: UUID, shift_data: ShiftUpdate, db: Session = Depends(get_db)):
     shift = db.query(Shift).filter(
@@ -348,6 +385,25 @@ def delete_shift(project_id: UUID, shift_id: UUID, db: Session = Depends(get_db)
     db.commit()
 
     return {"detail": "Shift deleted successfully"}
+
+
+@shifts_router.post("/bulk-delete", response_model=dict)
+def delete_multiple_shifts(
+    project_id: UUID,
+    data: ShiftBulkDelete,
+    db: Session = Depends(get_db)
+):
+    shifts = db.query(Shift).filter(
+        Shift.project_id == project_id,
+        Shift.id.in_(data.shift_ids)
+    ).all()
+
+    for shift in shifts:
+        db.delete(shift)
+
+    db.commit()
+
+    return {"detail": f"{len(shifts)} shifts deleted successfully"}
 
 
 nurses_router = APIRouter(tags=["Nurses"], prefix="/projects/{project_id}/nurses")

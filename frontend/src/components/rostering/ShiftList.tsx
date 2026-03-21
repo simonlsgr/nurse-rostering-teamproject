@@ -8,20 +8,44 @@ import { Search } from 'lucide-react';
 import ShiftListTopbar from "../common/ShiftListTopbar";
 import ShiftCard from "../ui/ShiftCard";
 import { useShifts } from "@/store/nurseStore";
+import { Shift } from "@/types/nurseVars";
+import { formatDate } from "@/lib/utils";
 
-export default function ShiftList(){
+type ShiftListProps = {
+
+  editShifts: boolean;
+  setEditShifts: any;
+  selectedItems: Shift[];
+  setSelectedItems: any;
+}
+
+
+export default function ShiftList({ editShifts, setEditShifts, selectedItems, setSelectedItems }: ShiftListProps){
 
   const [query, setQuery] = useState("");
 
   const { shifts } = useShifts();
-  // const { shifts } = useInstance();
   
+
+  const toggleItem = (shift: Shift) => {
+    setSelectedItems((prev: Shift[]) =>
+      prev.some(n => n.uid === shift.uid)
+        ? prev.filter((n) => n.uid !== shift.uid)
+        : [...prev, shift]
+    );
+  };
 
 
   // filtered by search
   const filteredItems = shifts.filter((shift) =>
-    shift.name.toLowerCase().includes(query.toLowerCase()) || shift.uid.toString().includes(query)
+    shift.name.toLowerCase().includes(query.toLowerCase()) || formatDate(shift.start_time, "date").includes(query)
   );
+
+  const sortedItems = [
+    ...filteredItems.filter((shift) => selectedItems?.some((n: Shift) => n.uid === shift.uid)),
+    ...filteredItems.filter((shift) => !selectedItems?.some((n: Shift) => n.uid === shift.uid)),
+  ];
+
 
   return (
 
@@ -43,7 +67,7 @@ export default function ShiftList(){
       <p className="border-b m-2 border-border"></p>
 
       <div className="overflow-auto flex-1">
-      {filteredItems.map((shift) => (
+      {(sortedItems ? sortedItems : filteredItems).map((shift) => (
         <AnimatePresence key={shift.uid} mode="popLayout">
           <motion.div
             key={shift.uid}
@@ -53,8 +77,15 @@ export default function ShiftList(){
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.17 }}
             className="select-none"
+            onClick={() => editShifts ? toggleItem(shift) : ""}
           >
-            <ShiftCard shift={shift} key={shift.uid}/>
+            <ShiftCard 
+              shift={shift} 
+              key={shift.uid} 
+              selectable={editShifts}
+              selected={editShifts ? (selectedItems?.filter((s: Shift) => s.uid == shift.uid)[0] ? true : false) : false}
+              editDemand={true}
+            />
           </motion.div>
         </AnimatePresence>
       ))}

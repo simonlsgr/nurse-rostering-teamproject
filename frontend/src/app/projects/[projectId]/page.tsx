@@ -26,6 +26,9 @@ import { Slide, SlideProps, Snackbar } from "@mui/material";
 import { getShiftTypes } from "@/app/api/shiftType";
 import { getAllShifts } from "@/app/api/shift";
 import { useShifts } from "@/store/nurseStore";
+import { Button } from "@/components/ui/button";
+import ViewShiftsDialog from "@/components/common/ViewShiftsDialog";
+import ManagePlanningHorizonDialog from "@/components/common/ManagePlanningHorizonDialog";
 
 
 function SlideTransition(props: SlideProps) {
@@ -55,6 +58,7 @@ export default function ProjectPage(){
         setSelectedProject(projects[projectId]);
         return;        
       }
+
       const data: Project = await getProject(projectId);
       updateProject(data);
       setSelectedProject(data);
@@ -161,8 +165,18 @@ export default function ProjectPage(){
 
         <div className="mt-2 mb-2 text-muted-foreground"></div>
 
-        <ShiftList />
-        
+        <div className="w-full p-4 flex flex-col align-end gap-4">
+
+          <ViewShiftsDialog />
+
+          <ManagePlanningHorizonDialog />
+
+          <Button className="bg-gray-50 rounded-none border-border" variant={"outline"}>
+            Manage Shift Types
+          </Button>
+
+        </div>
+
 
       </div>
       

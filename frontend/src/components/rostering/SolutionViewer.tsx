@@ -9,7 +9,7 @@ import { InfeasibilityDetails } from "src/types/feasibilityHelperVars";
 import { NurseTable } from "../rostering/RosteringTable";
 import { instanceSolutionToTableData } from "@/lib/roster/dataWrangler";
 import { calculateObjective, checkFeasibility } from "@/lib/roster/modelChecker";
-import { useNurses } from "@/store/nurseStore";
+import { useNurses, useShifts } from "@/store/nurseStore";
 
 
 
@@ -18,7 +18,7 @@ import { useNurses } from "@/store/nurseStore";
 export function SolutionViewer() {
 
     const nurses = useNurses((s) => s.nurses);
-    const shifts = useInstance((s) => s.shifts);
+    const shifts = useShifts((s) => s.shifts);
     const instance = useMemo(
         () => ({ nurses, shifts, staff_weight: 1 } as Instance),
         [nurses, shifts]
