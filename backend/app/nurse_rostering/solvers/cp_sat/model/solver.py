@@ -29,7 +29,7 @@ class NurseRosteringModel:
     """
 
     def __init__(
-        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[Any, Any] | None = None, formulation: SolverFormulation | None = SolverFormulation.IP
+        self, instance: NurseRosteringInstance, model: cp_model.CpModel | None = None, hints: dict[ShiftUid, list[NurseUid]] | None = None, formulation: SolverFormulation | None = SolverFormulation.IP
     ):
         if formulation not in (SolverFormulation.IP, SolverFormulation.AUTOMATON):
             raise RuntimeError("CP-SAT only supports IP and AUTOMATON formulation")
