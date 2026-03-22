@@ -111,5 +111,3 @@ def test_maximum_shift_types_infeasible_table():
         nv.fix(nurse1.uid, shifts[3].uid)
         
         
-if __name__ == "__main__":
-    test_maximum_shift_types_feasible_table()
