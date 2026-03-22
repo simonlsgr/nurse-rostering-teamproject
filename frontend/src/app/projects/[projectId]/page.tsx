@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import ViewShiftsDialog from "@/components/common/ViewShiftsDialog";
 import ManagePlanningHorizonDialog from "@/components/common/ManagePlanningHorizonDialog";
 import ManageShiftTypesDialog from "@/components/common/ManageShiftTypesDialog";
+import ManageConstraintsDialog from "@/components/common/ManageConstraintsDialog";
 
 
 function SlideTransition(props: SlideProps) {
@@ -166,13 +167,15 @@ export default function ProjectPage(){
 
         <div className="mt-2 mb-2 text-muted-foreground"></div>
 
-        <div className="w-full p-4 flex flex-col align-end gap-4">
+        <div className="w-full p-4 flex flex-col align-end gap-3">
 
           <ViewShiftsDialog />
 
           <ManagePlanningHorizonDialog />
 
           <ManageShiftTypesDialog />
+
+          <ManageConstraintsDialog />
 
         </div>
 

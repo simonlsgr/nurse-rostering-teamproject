@@ -3,8 +3,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "../ui/button";
 import ShiftTypesEditor from "./ShiftTypesEditor";
 import { useSelectedProject, useShiftTypes } from "@/store/projectStore";
+import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
+import NotFollowedByShiftTypesEditor from "./NotFollowedByShiftTypesEditor";
 import { ShiftType } from "@/types/projectVars";
-import { createShiftType, deleteShiftType } from "@/app/api/shiftType";
+import { createShiftType, deleteShiftType, editShiftType } from "@/app/api/shiftType";
 import { useShifts } from "@/store/nurseStore";
 import { createShift, createShifts, deleteShifts, editShift, getAllShifts } from "@/app/api/shift";
 import { Shift } from "@/types/nurseVars";
@@ -12,7 +14,7 @@ import { useGenerateShifts } from "@/hooks/nurseHooks";
 import { generateDatesFromPlanningHorizon } from "@/lib/utils";
 
 
-export default function ManageShiftTypesDialog() {
+export default function ManageConstraintsDialog() {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   
   const { shiftTypes, setShiftTypes } = useShiftTypes();
@@ -54,18 +56,16 @@ export default function ManageShiftTypesDialog() {
 
   }
 
-  const removeConstraintFromShifts = async (shiftType: string) => {
+  const adjustConstraintsFromShifts = async (shiftType: ShiftType) => {
     
     if(!selectedProject) return;
 
     try {
 
-      const affectedShifts = shifts.filter((shift) => shift.not_followed_by_shift_types.includes(shiftType));
-
-      const editedShifts: Shift[] = affectedShifts.map((shift) => {
+      const editedShifts: Shift[] = shifts.filter((s) => s.type == shiftType.name).map((shift) => {
         return {
           ...shift,
-          not_followed_by_shift_types: shift.not_followed_by_shift_types.filter((type) => type !== shiftType)
+          not_followed_by_shift_types: shiftType.not_followed_by_shift_types
         }
       });
 
@@ -73,44 +73,27 @@ export default function ManageShiftTypesDialog() {
         const res = await editShift(editedShift, selectedProject.id);
       }
 
-      // we do this later anyways (in handleUpdateShiftTypes)
-      // const freshShifts = await getAllShifts(selectedProject.id);
-      // setShifts(freshShifts);
-
     } catch (err: any) {
-      alert(err ?? `Could not delete associated shifts of type ${shiftType}`);
+      alert(err ?? `Could not edit associated shifts of type ${shiftType.name}`);
     }
 
 
   }
 
 
-  const handleUpdateShiftTypes = async (oldShiftTypes: ShiftType[]) => {
+  const handleUpdateShiftTypes = async (editedShiftTypes: ShiftType[]) => {
 
     if (!selectedProject) return;
 
-    const adjustedShiftTypesIds = adjustedShiftTypes.map((shift) => shift.id);
-    const oldShiftTypesIds = oldShiftTypes.map((shift) => shift.id);
-
     try {
-      const deletedShiftTypes = oldShiftTypes.filter((shift) => !adjustedShiftTypesIds.includes(shift.id))
-      const newShiftTypes = adjustedShiftTypes.filter((shift) => !oldShiftTypesIds.includes(shift.id))
 
-      for (const shiftType of deletedShiftTypes){
-        const res = await deleteShiftType(shiftType.id, selectedProject.id)
-        removeShiftsOfType(shiftType.name);
-        removeConstraintFromShifts(shiftType.name);
+      for (const shiftType of editedShiftTypes){
+        const res = await editShiftType(shiftType, selectedProject.id)
+        adjustConstraintsFromShifts(shiftType);
       }
 
-      for (const shiftType of newShiftTypes) {
-        const res = await createShiftType(shiftType, selectedProject.id);
-      }
-      const newShifts = generateShifts(generateDatesFromPlanningHorizon(selectedProject.planning_horizon), newShiftTypes);
-
-      const res = await createShifts(newShifts, selectedProject.id);
       const freshShifts = await getAllShifts(selectedProject.id);
       setShifts(freshShifts);
-
       setShiftTypes(adjustedShiftTypes);
 
     } catch (err: any) {
@@ -126,23 +109,22 @@ export default function ManageShiftTypesDialog() {
       <DialogTrigger asChild>
 
         <Button className="bg-gray-50 rounded-none border-border" variant={"outline"}>
-            Manage Shift Types
+            Edit Constraints
         </Button>
 
       </DialogTrigger>
       <DialogContent className="!w-[48vw] !max-w-[1200px] h-[calc(60vh)] overflow-hidden">
         <DialogHeader className="h-min">
-          <DialogTitle>Manage Shift Types</DialogTitle>
+          <DialogTitle>Edit Constraints</DialogTitle>
         </DialogHeader>
 
         <div className="bg-gray-100 rounded-2xl p-3 overflow-auto flex flex-col gap-4 h-[43vh]">
 
           <div className="bg-white rounded-xl p-3 overflow-auto">
-            <ShiftTypesEditor actualShiftTypes={adjustedShiftTypes} setActualShiftTypes={setAdjustedShiftTypes}/>
+            <NotFollowedByShiftTypesEditor actualShiftTypes={adjustedShiftTypes} setActualShiftTypes={setAdjustedShiftTypes}  />
           </div>
 
         </div>
-
 
 
 
@@ -156,7 +138,7 @@ export default function ManageShiftTypesDialog() {
           
           <Button 
             variant={"outline"}
-            onClick={() => { handleUpdateShiftTypes(shiftTypes); setOpenDialog(false); }}
+            onClick={() => { handleUpdateShiftTypes(adjustedShiftTypes); setOpenDialog(false); }}
             >
             Save
           </Button>

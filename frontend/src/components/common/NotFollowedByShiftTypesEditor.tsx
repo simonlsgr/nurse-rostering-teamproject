@@ -19,16 +19,38 @@ type EditorProps = {
 
 
 export default function NotFollowedByShiftTypesEditor({ actualShiftTypes, setActualShiftTypes }: EditorProps) {
+  
+  const getConstraintsFromTypes = (shiftTypes: ShiftType[]) => {
+    let constraints: Constraint[] = []
+  
+    for (const shiftType of shiftTypes) {
+      if (shiftType.not_followed_by_shift_types.length >= 1) {
+  
+        shiftType.not_followed_by_shift_types.forEach((type) => {
+          const rightType = shiftTypes.filter((st) => st.name == type)[0];
+          if (rightType) {
+            constraints.push({beforeId: shiftType.id, afterId: rightType.id});
+          }
+        });
+      }
+    }
+  
+    return constraints;
+  
+  }
 
   const [shiftTypes, setShiftTypes] = useState<ShiftType[]>(actualShiftTypes);
-  const [constraints, setConstraints] = useState<Constraint[]>([]);
+  const [constraints, setConstraints] = useState<Constraint[]>(getConstraintsFromTypes(actualShiftTypes));
   const [selectedLeft, setSelectedLeft] = useState<string>("");
   const [selectedRight, setSelectedRight] = useState<string>("");
+
+  const [buttonPressed, setButtonPressed] = useState<boolean>(false);
 
 
   useEffect(() => {
 
     setShiftTypes(actualShiftTypes);
+    setConstraints(getConstraintsFromTypes(actualShiftTypes));
 
   }, [actualShiftTypes])
 
@@ -36,8 +58,7 @@ export default function NotFollowedByShiftTypesEditor({ actualShiftTypes, setAct
 
     updateShiftConstraints(constraints);
 
-  }, [constraints]);
-
+  }, [buttonPressed]);
 
 
   const addConstraint = () => {
@@ -64,26 +85,21 @@ export default function NotFollowedByShiftTypesEditor({ actualShiftTypes, setAct
 
 
   const updateShiftConstraints = (constraints: Constraint[]) => {
-/*     setNewProject(prev => {
-      if (!prev.shift_types) return prev;
+
   
-      const updatedShiftTypes = prev.shift_types.map(shift => {
-        // constraints for this shift
-        const forbidden = constraints
-          .filter(c => c.beforeId === shift.id)
-          .map(c => c.afterId);
-  
-        return {
-          ...shift,
-          not_followed_by_shift_types: forbidden.map((id) => shiftTypes.filter((type) => type.id == id)[0].name)
-        };
-      });
-  
+    const updatedShiftTypes = actualShiftTypes.map(shift => {
+      // constraints for this shift
+      const forbidden = constraints
+        .filter(c => c.beforeId === shift.id)
+        .map(c => c.afterId);
+
       return {
-        ...prev,
-        shift_types: updatedShiftTypes
+        ...shift,
+        not_followed_by_shift_types: forbidden.map((id) => shiftTypes.filter((type) => type.id == id)[0].name)
       };
-    }); */
+    });
+
+    setActualShiftTypes(updatedShiftTypes);
   };
 
 
@@ -128,7 +144,7 @@ export default function NotFollowedByShiftTypesEditor({ actualShiftTypes, setAct
         </select>
         
         <button
-          onClick={addConstraint}
+          onClick={() => {addConstraint(); setButtonPressed(!buttonPressed);}}
           disabled={!selectedLeft || !selectedRight}
           className={`px-3 py-2 rounded ${
             !selectedLeft || !selectedRight ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white"
@@ -180,7 +196,7 @@ export default function NotFollowedByShiftTypesEditor({ actualShiftTypes, setAct
                 </span>
               </div>
               <button
-                onClick={() => removeConstraint(index)}
+                onClick={() => {removeConstraint(index); setButtonPressed(!buttonPressed);}}
                 className="text-red-500 hover:bg-red-100 px-2 py-1 rounded"
               >
                 <Trash2 />
@@ -198,3 +214,21 @@ export default function NotFollowedByShiftTypesEditor({ actualShiftTypes, setAct
   </div>
   )
 }
+
+
+/* const getConstraintsFromTypes = (shiftTypes: ShiftType[]) => {
+  let constraints: Constraint[] = []
+
+  for (const shiftType of shiftTypes) {
+    if (shiftType.not_followed_by_shift_types.length >= 1) {
+
+      shiftType.not_followed_by_shift_types.forEach((type) => {
+        constraints.push({beforeId: shiftType.id, afterId: shiftTypes.filter((st) => st.name == type)[0].id});
+      })
+    }
+  }
+
+  return constraints;
+
+}
+ */
