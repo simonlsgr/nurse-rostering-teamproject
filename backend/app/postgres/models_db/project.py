@@ -35,6 +35,11 @@ class Project(Base):
         passive_deletes=True
     )
 
+    solutions = relationship(
+        "SolutionEntry",
+        back_populates="project",
+        passive_deletes=True
+    )
 
     @property
     def planning_horizon(self):

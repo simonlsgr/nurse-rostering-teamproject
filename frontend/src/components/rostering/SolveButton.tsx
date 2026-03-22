@@ -56,7 +56,7 @@ export default function SolveButton() {
   async function handleSolve() {
 
     try {
-      console.log(nurses);
+
       setLoading(true);
       setError(null);
       if (usedSolver !== "" && solutionName != "") {
@@ -111,9 +111,9 @@ export default function SolveButton() {
   return (
 
     <div>
-      <div className="p-4">
+      <div className="p-4 flex">
       <Button
-        className="bg-gray-800 text-white rounded-2xl h-10 w-full text-lg"
+        className="bg-gray-800 text-white rounded-2xl h-10 w-100 text-lg"
         onClick={handleSolve}
         disabled={loading}
       >

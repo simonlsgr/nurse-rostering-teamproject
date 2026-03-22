@@ -21,11 +21,13 @@ from postgres.models_db.project import Project
 from postgres.models_db.nurse import Nurse
 from postgres.models_db.shift_type import ShiftType
 from postgres.models_db.shift import Shift
+from postgres.models_db.solution_entry import SolutionEntry
 
 from postgres.schemas_pydantic.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from postgres.schemas_pydantic.shift_type import ShiftTypeCreate, ShiftTypeUpdate, ShiftTypeResponse
 from postgres.schemas_pydantic.shift import ShiftCreate, ShiftBulkCreate, ShiftUpdate, ShiftBulkDelete, ShiftResponse
 from postgres.schemas_pydantic.nurse import NurseCreate, NurseResponse, NurseUpdate
+from postgres.schemas_pydantic.solution_entry import SolutionEntryCreate, SolutionEntryResponse, SolutionEntryUpdate
 from postgres.database import engine, Base
 
 
@@ -503,6 +505,91 @@ def update_nurse(
     return nurse
 
 
+solutions_router = APIRouter(tags=["Solutions"], prefix="/projects/{project_id}/solutions")
+
+@solutions_router.get("", response_model=List[SolutionEntryResponse])
+def get_solutions(project_id: UUID, db: Session = Depends(get_db)):
+    solutions = db.query(SolutionEntry).filter(
+        SolutionEntry.project_id == project_id
+    ).all()
+
+    return solutions
+
+@solutions_router.get("/{solution_id}", response_model=SolutionEntryResponse)
+def get_solution(project_id: UUID, solution_id: UUID, db: Session = Depends(get_db)):
+    solution = db.query(SolutionEntry).filter(
+        SolutionEntry.project_id == project_id,
+        SolutionEntry.id == solution_id
+    ).first()
+
+    if not solution:
+        raise HTTPException(status_code=404, detail="Solution not found")
+
+    return solution
+
+@solutions_router.post("", response_model=SolutionEntryResponse)
+def create_solution(
+    project_id: UUID,
+    data: SolutionEntryCreate,
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    new_solution = SolutionEntry(
+        project_id=project_id,
+        solution_name=data.solution_name,
+        solution=data.solution,
+        solver=data.solver,
+        return_status=data.return_status
+    )
+
+    db.add(new_solution)
+    db.commit()
+    db.refresh(new_solution)
+
+    return new_solution
+
+@solutions_router.put("/{solution_id}", response_model=SolutionEntryResponse)
+def update_solution(
+    project_id: UUID,
+    solution_id: UUID,
+    data: SolutionEntryUpdate,
+    db: Session = Depends(get_db)
+):
+    solution = db.query(SolutionEntry).filter(
+        SolutionEntry.project_id == project_id,
+        SolutionEntry.id == solution_id
+    ).first()
+
+    if not solution:
+        raise HTTPException(status_code=404, detail="Solution not found")
+
+    solution.solution_name = data.solution_name
+    solution.solution = data.solution
+    solution.solver = data.solver
+    solution.return_status = data.return_status
+
+    db.commit()
+    db.refresh(solution)
+
+    return solution
+
+@solutions_router.delete("/{solution_id}", response_model=dict)
+def delete_solution(project_id: UUID, solution_id: UUID, db: Session = Depends(get_db)):
+    solution = db.query(SolutionEntry).filter(
+        SolutionEntry.project_id == project_id,
+        SolutionEntry.id == solution_id
+    ).first()
+
+    if not solution:
+        raise HTTPException(status_code=404, detail="Solution not found")
+
+    db.delete(solution)
+    db.commit()
+
+    return {"detail": "Solution deleted successfully"}
 
 
 Base.metadata.create_all(bind=engine) # for dev-purposes, change this later
@@ -511,3 +598,4 @@ app.include_router(projects_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(shift_types_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(shifts_router, prefix="/nurse_rostering_solver/v0")
 app.include_router(nurses_router, prefix="/nurse_rostering_solver/v0")
+app.include_router(solutions_router, prefix="/nurse_rostering_solver/v0")

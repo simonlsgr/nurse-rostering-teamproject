@@ -85,13 +85,19 @@ export function VariableFixer() {
             </div>
             {/* <p>{feasible ? "feasible" : "infeasible"}</p>
             <p>{JSON.stringify(fixedVariables)}</p> */}
-            <div className="flex flex-row gap-5 items-end">
-                <SolverNameInput />
-                <SolverSelector />
-                <TimeLimitInput />
+            <div className="rounded-2xl bg-gray-100 p-3">
+
+              <div className="bg-white rounded-xl p-2">
+                <p className="text-xl font-semibold p-2 w-60 border-b border-border"> Enter solver parameters: </p>
+                <div className="flex flex-row gap-5 items-end">
+                    <SolverNameInput />
+                    <SolverSelector />
+                    <TimeLimitInput />
+                </div>
+                <SolveButton />
+              </div>
             </div>
 
-        <SolveButton />
         </div>
     )
 }
