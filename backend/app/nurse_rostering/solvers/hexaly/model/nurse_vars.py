@@ -128,14 +128,15 @@ class NurseDecisionVarsTable:
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
         result = {}
-        for i in range(len(self._x)):
-            for j in range(len(self._x[i])):
+        for nurse in self.instance.nurses:
+            nurse_index = self.get_nurse_index(nurse.uid)
+            for j in range(len(self.dates.keys())):
                 _date = sorted(self.dates)[j]
-                value = self._x[i][j].value
+                value = self._x.value[nurse_index][j]
                 if not value:
                     continue
                 shift_uid = self.dates[_date][value-1]
-                result.setdefault(shift_uid, []).append(self.nurses[i].uid)
+                result.setdefault(shift_uid, []).append(nurse.uid)
         return result
 
 
