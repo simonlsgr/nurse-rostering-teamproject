@@ -14,24 +14,56 @@ def test_minimum_consecutive_days_off_feasible_table():
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 3, 8, 0),
             end_time=datetime.datetime(2018, 1, 3, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 3, 8, 0),
+            end_time=datetime.datetime(2018, 1, 3, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 4, 8, 0),
             end_time=datetime.datetime(2018, 1, 4, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 4, 8, 0),
+            end_time=datetime.datetime(2018, 1, 4, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
     ]
 
@@ -45,18 +77,20 @@ def test_minimum_consecutive_days_off_feasible_table():
     )
 
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        MinimumConsecutiveDaysOffModuleTable().build(instance, model, [nv], dates)
-
+        MinimumConsecutiveDaysOffModuleTable().build(instance, model, nv)
+        
         # 1 0 0 1 -> zwei freie Tage in Folge, also erlaubt
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 0)
-        nv.fix(datetime.date(2018, 1, 3), 0)
-        nv.fix(datetime.date(2018, 1, 4), 1)
+
+        nv.fix(nurse1.uid, shifts[0].uid, True)
+        nv.fix(nurse1.uid, shifts[2].uid, False)
+        nv.fix(nurse1.uid, shifts[3].uid, False)
+        nv.fix(nurse1.uid, shifts[4].uid, False)
+        nv.fix(nurse1.uid, shifts[5].uid, False)
+        nv.fix(nurse1.uid, shifts[6].uid, True)
 
 
 def test_minimum_consecutive_days_off_infeasible_table():
@@ -66,24 +100,56 @@ def test_minimum_consecutive_days_off_infeasible_table():
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 3, 8, 0),
             end_time=datetime.datetime(2018, 1, 3, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 3, 8, 0),
+            end_time=datetime.datetime(2018, 1, 3, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 4, 8, 0),
             end_time=datetime.datetime(2018, 1, 4, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 4, 8, 0),
+            end_time=datetime.datetime(2018, 1, 4, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
     ]
 
@@ -97,14 +163,14 @@ def test_minimum_consecutive_days_off_infeasible_table():
     )
 
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        MinimumConsecutiveDaysOffModuleTable().build(instance, model, [nv], dates)
-
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 0)
-        nv.fix(datetime.date(2018, 1, 3), 1)
-        nv.fix(datetime.date(2018, 1, 4), 1)
+        MinimumConsecutiveDaysOffModuleTable().build(instance, model, nv)
+        
+        nv.fix(nurse1.uid, shifts[0].uid, True)
+        nv.fix(nurse1.uid, shifts[2].uid, False)
+        nv.fix(nurse1.uid, shifts[3].uid, False)
+        nv.fix(nurse1.uid, shifts[4].uid, True)
+        nv.fix(nurse1.uid, shifts[6].uid, True)
