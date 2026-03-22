@@ -18,28 +18,28 @@ class ShiftDecisionVars:
         self.nurses = nurses
         self.number_of_nurses = len(self.nurses)
         self.nurses_assigned = model.list(self.number_of_nurses)
-        
+
     def fix(self, nurse_uid: int, value: bool):
         nurse_index = -1
         for idx, nurse in enumerate(self.nurses):
             if nurse.uid == nurse_uid:
                 nurse_index = idx
                 break
-                
+
         if nurse_index < 0 or nurse_index >= self.number_of_nurses:
             raise ValueError(
                 f"Nurse index {nurse_index} is out of bounds for shift {self.shift.uid}."
             )
         self.model.add_constraint(self.model.contains(self.nurses_assigned, nurse_index) == int(value))
-    
+
     # def assigns_nurse(self, nurse_index: int):
     #     return self.model.contains(self.nurses_assigned, nurse_index)
-    
+
     def extract(self) -> list[NurseUid]:
         nurses_assigned_list = list(self.nurses_assigned.value) or []
         return [nurse.uid for idx, nurse in enumerate(self.nurses) if idx in nurses_assigned_list]
-    
-            
+
+
 
 class NurseDecisionVarsTable:
     """
@@ -55,10 +55,10 @@ class NurseDecisionVarsTable:
         self.dates = group_shifts_by_date(instance)
         self.model = model
         self.instance = instance
-        
+
         self._build_types_to_int()
         self._build_types_not_followed_by_type()
-        
+
         self._x = []
         for _ in self.nurses:
             nurse_list = []
@@ -73,10 +73,10 @@ class NurseDecisionVarsTable:
         self.type_to_int = {}
         for i, stype in enumerate(types):
             self.type_to_int[stype] = i+1
-    
+
     def _build_types_not_followed_by_type(self):
         self.type_not_followed_by_types = get_shift_type_not_followed_by_dict(self.instance)
-    
+
     def _build_shift_uid_dict(self):
         self.shift_uid_dict = get_shiftuid_dict(self.instance)
 
@@ -100,7 +100,7 @@ class NurseDecisionVarsTable:
                     return self.get_date_index(_date), i+1
         return None
 
-    
+
 
     def fix(self, nurse_uid, shift_uid, value: bool = True):
         """
@@ -128,14 +128,15 @@ class NurseDecisionVarsTable:
         Extract a list of shift UIDs that this nurse is assigned to in the solution.
         """
         result = {}
-        for i in range(len(self._x)):
-            for j in range(len(self._x[i])):
+        for nurse in self.instance.nurses:
+            nurse_index = self.get_nurse_index(nurse.uid)
+            for j in range(len(self.dates.keys())):
                 _date = sorted(self.dates)[j]
-                value = self._x[i][j].value
+                value = self._x.value[nurse_index][j]
                 if not value:
                     continue
                 shift_uid = self.dates[_date][value-1]
-                result.setdefault(shift_uid, []).append(self.nurses[i].uid)
+                result.setdefault(shift_uid, []).append(nurse.uid)
         return result
 
 

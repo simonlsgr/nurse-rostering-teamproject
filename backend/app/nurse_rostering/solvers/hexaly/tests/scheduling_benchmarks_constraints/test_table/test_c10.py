@@ -272,8 +272,8 @@ def test_cover_requirements_prefers_lower_penalty_choice_table():
     with hx.HexalyOptimizer() as optimizer:
         model = optimizer.model
 
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
-        goal = CoverRequirementsModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        goal = CoverRequirementsModuleTable().build(instance, model, [nv])
 
         model.minimize(goal)
         model.close()
@@ -281,4 +281,4 @@ def test_cover_requirements_prefers_lower_penalty_choice_table():
 
         assert optimizer.solution.status == hx.HxSolutionStatus.OPTIMAL
         assert goal.value == 1
-        assert nv.is_assigned_to(datetime.date(2018, 1, 1)).value == 2
+        assert nv.(datetime.date(2018, 1, 1)).value == 2

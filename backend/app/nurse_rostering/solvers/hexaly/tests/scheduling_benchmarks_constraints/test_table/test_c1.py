@@ -33,7 +33,7 @@ def test_one_shift_per_day_infeasible_table():
     dates = group_shifts_by_date(instance)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, instance.shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance.shifts, model)
 
         OneShiftPerDayModuleTable().build(instance, model, [nv], dates)
 
