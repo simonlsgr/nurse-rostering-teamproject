@@ -32,7 +32,7 @@ export default function NurseList(){
 
   return (
 
-    <div className="border-b h-[80vh] content-between border-border flex flex-col">
+    <div className="border-b h-[77vh] content-between border-border flex flex-col">
 
       <NurseListTopbar />
       
