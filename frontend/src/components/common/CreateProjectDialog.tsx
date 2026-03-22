@@ -32,6 +32,16 @@ export default function CreateProjectDialog(){
 
 
   const handleCreateProject = async () => {
+    if (!newProject) return;
+
+    const horizon = newProject.planning_horizon ?? ["",""];
+    const startDate = horizon[0];
+    const endDate = horizon[1];
+    if (startDate && endDate &&  endDate.length == startDate.length && endDate < startDate) {
+      alert("End date cannot be before start date");
+      return;
+    }
+
 
     try {
 

@@ -11,11 +11,7 @@ export default function PlanningHorizonInput(){
 
 
   useEffect(() => {
-    if (startDate && endDate && endDate < startDate) {
-      alert("End date cannot be before start date");
-      return;
-    }
-
+    
     setNewProject(prev => ({
       ...prev,
       planning_horizon: [startDate, endDate]

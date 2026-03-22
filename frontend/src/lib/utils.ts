@@ -113,3 +113,72 @@ export function calculateStringDifference(
 
   return [leftOnly, rightOnly];
 }
+
+
+type ValidationResult = {
+  valid: boolean;
+  error?: string;
+};
+
+export function validateNursesImport(
+  nurses: Nurse[],
+  shiftTypes: ShiftType[],
+  planningHorizon?: [string, string]
+): ValidationResult {
+
+  const seen = new Set<number>();
+
+  for (let i = 0; i < nurses.length; i++) {
+    const uid = nurses[i].uid;
+
+    if (seen.has(uid)) {
+      return {
+        valid: false,
+        error: `Duplicate uid found: ${uid} (index ${i})`
+      };
+    }
+
+    seen.add(uid);
+  }
+
+  const validShiftTypes = new Set(shiftTypes.map(st => st.name));
+
+  for (let i = 0; i < nurses.length; i++) {
+    const nurse = nurses[i];
+
+    const keys = Object.keys(nurse.maximum_number_of_shifts_per_type || {});
+
+    for (const key of keys) {
+      if (!validShiftTypes.has(key)) {
+        return {
+          valid: false,
+          error: `Invalid shift type "${key}" in nurse "${nurse.name}" (index ${i})`
+        };
+      }
+    }
+  }
+
+  if (planningHorizon) {
+    const [start, end] = planningHorizon;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    for (let i = 0; i < nurses.length; i++) {
+      const nurse = nurses[i];
+
+      for (const day of nurse.days_off || []) {
+        const d = new Date(day);
+
+        if (d < startDate || d > endDate) {
+          return {
+            valid: false,
+            error: `Day off ${day} of nurse "${nurse.name}" is outside planning horizon`
+          };
+        }
+      }
+    }
+  }
+
+  return { valid: true };
+}
