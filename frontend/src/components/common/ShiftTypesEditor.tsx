@@ -5,6 +5,7 @@ import { useNewProject } from "@/store/projectStore";
 import { Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import DeleteShiftTypeDialog from "./DeleteShiftTypeDialog";
+import { EditShiftTypeDialog } from "./EditShiftTypeDialog";
 
 
 type ShiftTypesEditorProps = {
@@ -41,6 +42,13 @@ export default function ShiftTypesEditor({ actualShiftTypes, setActualShiftTypes
     setActualShiftTypes(shiftTypes);
 
   }, [shiftTypes])
+
+
+  const setShiftType = (editedShift: ShiftType) => {
+
+    const other_shifts = shiftTypes.filter((shiftType) => shiftType.id !== editedShift.id);
+    setShiftTypes([editedShift, ...other_shifts]);
+  }
 
 
   const calculateEndTime = (duration: string) => {
@@ -155,7 +163,10 @@ export default function ShiftTypesEditor({ actualShiftTypes, setActualShiftTypes
               </p>
             </div>
         
-            <DeleteShiftTypeDialog shiftType={shift} deleteShiftType={deleteShift} />
+            <div className="flex gap-3 items-center">
+              <EditShiftTypeDialog shiftType={shift} />
+              <DeleteShiftTypeDialog shiftType={shift} deleteShiftType={deleteShift} />
+            </div>
 
           </div>
         </motion.div>
