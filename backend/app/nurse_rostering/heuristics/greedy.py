@@ -138,7 +138,7 @@ class NurseRosteringGreedyHeuristic:
         except:
             return NurseRosteringSolution(
             nurses_at_shifts=self.nurses_at_shifts,
-            objective_value=0,
+            objective_value=objective_value,
             return_status=SolverReturnStatus.UNKNOWN,
             lower_bound=None,
         )
@@ -151,10 +151,13 @@ class NurseRosteringGreedyHeuristic:
 
 if __name__ == "__main__":
     
-    with open("backend/app/nurse_rostering/examples/data_processed/Instance2.json", "r") as f:
-        instance_data = f.read()
-    instance = NurseRosteringInstance.model_validate_json(instance_data)
+    for i in range(1,25):
     
-    h = NurseRosteringGreedyHeuristic(instance)
-    
-    h.solve()
+        with open(f"../examples/data_processed/Instance{i}.json", "r") as f:
+            instance_data = f.read()
+        instance = NurseRosteringInstance.model_validate_json(instance_data)
+
+        h = NurseRosteringGreedyHeuristic(instance)
+        sol = h.solve()
+
+        print(i, sol.return_status)
