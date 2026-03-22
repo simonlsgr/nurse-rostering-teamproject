@@ -19,6 +19,13 @@ def get_shift_type_dict(instance: NurseRosteringInstance) -> dict[ShiftUid, list
     return shift_type_dict
 
 
+def get_shift_type_not_followed_by_dict(instance: NurseRosteringInstance) -> dict[str, list[str]]:
+    shift_type_dict = {}
+    for shift in instance.shifts:
+        shift_type_dict[shift.type] = shift.not_followed_by_shift_types
+    return shift_type_dict
+
+
 def get_weekends(instance):
     shifts_by_date = group_shifts_by_date(instance)
     all_dates = sorted(shifts_by_date.keys())
@@ -44,6 +51,6 @@ def get_types_and_length_in_instance(instance: NurseRosteringInstance) -> dict[s
     for date, shiftids in group_shifts_by_date(instance).items():
         for shiftid in shiftids:
             types[shiftuid_dict[shiftid].type] = shiftuid_dict[shiftid].length
-        return types
+    return types
             
         
