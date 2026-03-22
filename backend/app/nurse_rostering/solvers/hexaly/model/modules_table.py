@@ -239,30 +239,17 @@ class MaximumNumberOfWeekendsModuleTable(ShiftAssignmentModuleTable):
             max_weekends = nurse.maximum_weekends
             if max_weekends is None:
                 continue
-            sat, sun = weekends[0]
-            sat_index = nurse_shift_vars.get_date_index(sat)
-            sun_index = nurse_shift_vars.get_date_index(sun)
             expr = 0
-            if sat in nurse_shift_vars.dates:
-                expr += model.iif(nurse_shift_vars[nurse_index][sat_index] + nurse_shift_vars[nurse_index][sun_index] >= 1, 1, 0)
-            else:
-                expr += model.iif(nurse_shift_vars[nurse_index][sun_index] >= 1, 1, 0)
-            if len(weekends) > 1:
-                expr += model.sum(
-                    model.iif(
-                        nurse_shift_vars[nurse_index][nurse_shift_vars.get_date_index(weekends[i][0])] + 
-                        nurse_shift_vars[nurse_index][nurse_shift_vars.get_date_index(weekends[i][1])] 
-                        >= 1, 1, 0)
-                    for i in range(1, len(weekends)-1)
-                )
-                sat, sun = weekends[0]
-                sat_index = nurse_shift_vars.get_date_index(sat)
-                sun_index = nurse_shift_vars.get_date_index(sun)
-                if sun in nurse_shift_vars.dates:
-                    expr += model.iif(nurse_shift_vars[nurse_index][sat_index] + nurse_shift_vars[nurse_index][sun_index] >= 1, 1, 0)
-                else:
-                    expr += model.iif(nurse_shift_vars[nurse_index][sat_index] >= 1, 1, 0)
-            model.add_constraint(expr <= max_weekends)
+
+            model.add_constraint(
+                model.sum(
+                    (
+                        nurse_shift_vars[nurse_index][i*7+5] + 
+                        nurse_shift_vars[nurse_index][i*7+6]
+                    ) >= 1
+                    for i in range(0, instance.planning_horizon_in_days//7)
+                ) <= max_weekends
+            )
         return 0
 
 
