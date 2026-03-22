@@ -171,9 +171,9 @@ class NurseRosteringModel:
 
             elif self.formulation == SolverFormulation.TABLE:
                 dates = group_shifts_by_date(self.instance)
-                nurse_var = NurseDecisionVarsTable(self.instance, model, dates)
+                nurse_var = NurseDecisionVarsTable(self.instance, model)
                 objective = model.sum(
-                    module.build(self.instance, model, nurse_var, dates)  # type: ignore
+                    module.build(self.instance, model, nurse_var)  # type: ignore
                     for module in self.modules
                 )
 

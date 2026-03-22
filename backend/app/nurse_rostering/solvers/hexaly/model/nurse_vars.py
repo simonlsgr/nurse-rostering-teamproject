@@ -73,11 +73,9 @@ class NurseDecisionVarsTable:
         self.type_to_int = {}
         for i, stype in enumerate(types):
             self.type_to_int[stype] = i+1
-        print(self.type_to_int)
     
     def _build_types_not_followed_by_type(self):
         self.type_not_followed_by_types = get_shift_type_not_followed_by_dict(self.instance)
-        print(self.type_not_followed_by_types)
     
     def _build_shift_uid_dict(self):
         self.shift_uid_dict = get_shiftuid_dict(self.instance)
@@ -117,9 +115,9 @@ class NurseDecisionVarsTable:
         _date, shift = date_shift
         nurse_index = self.get_nurse_index(nurse_uid)
         if value:
-            self.model.add_constraint(self._x[_date][nurse_index] == shift)
+            self.model.add_constraint(self._x[nurse_index][_date] == shift)
         else:
-            self.model.add_constraint(self._x[_date][nurse_index] != shift)
+            self.model.add_constraint(self._x[nurse_index][_date] != shift)
 
 
     def __getitem__(self, item):

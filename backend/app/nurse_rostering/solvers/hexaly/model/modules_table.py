@@ -44,7 +44,6 @@ class ShiftRotationModuleTable(ShiftAssignmentModuleTable):
         """
         
         for nurse in instance.nurses:
-            print(nurse_shift_vars.type_to_int)
             nurse_index = nurse_shift_vars.get_nurse_index(nurse.uid)
             for _date, shift_uids in nurse_shift_vars.dates.items():
                 date_index = nurse_shift_vars.get_date_index(_date)
@@ -52,7 +51,6 @@ class ShiftRotationModuleTable(ShiftAssignmentModuleTable):
                     continue
                 following_date = _date+timedelta(days=1)
                 if following_date not in nurse_shift_vars.dates:
-                    print("break")
                     continue        
                 following_date_index = nurse_shift_vars.get_date_index(following_date)
                 for stype, stype_int in nurse_shift_vars.type_to_int.items():
@@ -78,13 +76,14 @@ class MaximumShiftTypesModuleTable(ShiftAssignmentModuleTable):
         for nurse in instance.nurses:
             nurse_index = nurse_shift_vars.get_nurse_index(nurse.uid)
             for stype, max_shifts_of_type in nurse.maximum_number_of_shifts_per_type.items():
-                of_type_t = model.lambda_function(lambda t: model.iif(nurse_shift_vars.type_to_int[stype] == t,1,0))
-                model.constraint(
-                    model.sum(
-                        nurse_shift_vars[nurse_index],
-                        of_type_t
-                    ) <= max_shifts_of_type
-                )
+                if max_shifts_of_type is not None:
+                    of_type_t = model.lambda_function(lambda t: nurse_shift_vars.type_to_int[stype] == t)
+                    model.constraint(
+                        model.sum(
+                            nurse_shift_vars[nurse_index],
+                            of_type_t
+                        ) <= max_shifts_of_type
+                    )
         
         return 0
 
@@ -149,7 +148,6 @@ class LimitWorkTimeModuleTable(ShiftAssignmentModuleTable):
             
             for d in range(instance.planning_horizon_in_days):
                 for stype, type_int in nurse_shift_vars.type_to_int.items():
-                    print(type_int)
                     working_time += (nurse_shift_vars[nurse_index][d] == type_int) * durations_by_type[stype]
             
             if min_time is not None:

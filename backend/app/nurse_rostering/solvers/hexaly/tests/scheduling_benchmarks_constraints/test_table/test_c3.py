@@ -102,9 +102,14 @@ def test_maximum_shift_types_infeasible_table():
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model)
+        nv = NurseDecisionVarsTable(instance, model)
 
         MaximumShiftTypesModuleTable().build(instance, model, nv)
+        
 
-        nv.fix(nurse1.uid, shifts[0])
-        nv.fix(nurse1.uid, shifts[3])
+        nv.fix(nurse1.uid, shifts[0].uid)
+        nv.fix(nurse1.uid, shifts[3].uid)
+        
+        
+if __name__ == "__main__":
+    test_maximum_shift_types_feasible_table()
