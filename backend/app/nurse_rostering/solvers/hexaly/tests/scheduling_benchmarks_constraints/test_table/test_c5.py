@@ -14,18 +14,42 @@ def test_maximum_consecutive_shifts_feasible_table():
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 3, 8, 0),
             end_time=datetime.datetime(2018, 1, 3, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 3, 8, 0),
+            end_time=datetime.datetime(2018, 1, 3, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
     ]
 
@@ -39,16 +63,15 @@ def test_maximum_consecutive_shifts_feasible_table():
     )
 
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        MaximumConsecutiveShiftsModuleTable().build(instance, model, [nv], dates)
+        MaximumConsecutiveShiftsModuleTable().build(instance, model, nv)
 
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 1)
-        nv.fix(datetime.date(2018, 1, 3), 1)
+        nv.fix(nurse1.uid, shifts[0].uid, True)
+        nv.fix(nurse1.uid, shifts[2].uid, True)
+        nv.fix(nurse1.uid, shifts[4].uid, True)
 
 
 def test_maximum_consecutive_shifts_infeasible_table():
@@ -58,18 +81,42 @@ def test_maximum_consecutive_shifts_infeasible_table():
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 1, 8, 0),
+            end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 8, 0),
+            end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 3, 8, 0),
             end_time=datetime.datetime(2018, 1, 3, 16, 0),
             name="Morning Shift",
+            type="A",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 3, 8, 0),
+            end_time=datetime.datetime(2018, 1, 3, 16, 0),
+            name="Morning Shift",
+            type="B",
         ),
     ]
 
@@ -83,13 +130,16 @@ def test_maximum_consecutive_shifts_infeasible_table():
     )
 
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse1, shifts, model, dates)
+        nv = NurseDecisionVarsTable(instance, model)
 
-        MaximumConsecutiveShiftsModuleTable().build(instance, model, [nv], dates)
+        MaximumConsecutiveShiftsModuleTable().build(instance, model, nv)
+        print(shifts[0])
+        print(shifts[2])
+        print(shifts[4])
 
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 1)
-        nv.fix(datetime.date(2018, 1, 3), 1)
+        nv.fix(nurse1.uid, shifts[0].uid, True)
+        nv.fix(nurse1.uid, shifts[2].uid, True)
+        nv.fix(nurse1.uid, shifts[4].uid, True)
+        

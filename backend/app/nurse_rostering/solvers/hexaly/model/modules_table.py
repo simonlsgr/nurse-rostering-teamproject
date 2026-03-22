@@ -165,10 +165,12 @@ class MaximumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
         for nurse in instance.nurses:
             nurse_index = nurse_shift_vars.get_nurse_index(nurse.uid)
             for d in range(instance.planning_horizon_in_days-nurse.maximum_consecutive_shifts):
+                for j in range(d, d + nurse.maximum_consecutive_shifts):
+                    print(j)
                 model.constraint(
                     model.sum(
                         nurse_shift_vars[nurse_index][j] > 0 
-                        for j in range(d, d + nurse.maximum_consecutive_shifts)
+                        for j in range(d, d + nurse.maximum_consecutive_shifts + 1)
                     ) <= nurse.maximum_consecutive_shifts
                 )
         return 0
