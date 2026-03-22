@@ -1,4 +1,4 @@
-import { Nurse } from "@/types/nurseVars";
+import { Nurse, Shift } from "@/types/nurseVars";
 import { NewProject, ShiftType } from "@/types/projectVars";
 import { clsx, type ClassValue } from "clsx"
 import { labelDayButton } from "react-day-picker";
@@ -181,4 +181,11 @@ export function validateNursesImport(
   }
 
   return { valid: true };
+}
+
+
+export function sortShiftsByStartTime(shifts: Shift[]): Shift[] {
+  return [...shifts].sort((a, b) =>
+    a.start_time.localeCompare(b.start_time)
+  );
 }

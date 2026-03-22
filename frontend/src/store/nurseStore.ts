@@ -1,4 +1,4 @@
-import { createDefaultNurse } from "@/lib/utils";
+import { createDefaultNurse, sortShiftsByStartTime } from "@/lib/utils";
 import { Nurse, Shift } from "@/types/nurseVars";
 import { create } from "zustand";
 
@@ -105,11 +105,26 @@ type ShiftsState = {
 export const useShifts = create<ShiftsState>((set) => ({
 
   shifts: [],
-  setShifts: (shifts) => set((state) => ({ shifts: typeof(shifts) === "function" ? shifts(state.shifts) : shifts})),
+
+  setShifts: (shifts) =>
+    set((state) => {
+      const newShifts =
+        typeof shifts === "function"
+          ? shifts(state.shifts)
+          : shifts;
+
+      return {
+        shifts: sortShiftsByStartTime(newShifts),
+      };
+    }),
+
   updateShift: (updatedShift: Shift) =>
     set((state) => ({
-      shifts: state.shifts.map((n) =>
-        n.uid === updatedShift.uid ? updatedShift : n
+      shifts: sortShiftsByStartTime(
+        state.shifts.map((s) =>
+          s.uid === updatedShift.uid ? updatedShift : s
+        )
       ),
     })),
+
 }));

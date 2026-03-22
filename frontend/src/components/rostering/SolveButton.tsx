@@ -80,10 +80,8 @@ export default function SolveButton() {
         payload["webhook_url"] = "http://host.docker.internal:3000/api/webhooks/job_status"
         
         
-        
         const data = await solve(payload)
         setResult(data);
-        console.log(data);
         addSolution({ solutionId: data.task_id, solution_name: solutionName, solution: {}, solver: solver_names[usedSolver], return_status: "TBD" });
         setJobs({
           ...jobs,

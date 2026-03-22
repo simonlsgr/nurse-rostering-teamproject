@@ -52,7 +52,6 @@ export function SolutionViewer() {
           loadActiveSolution(first.solutionId, first.solution_name, first.solution, first.solver, first.return_status);
         }
 
-        console.log(solutionsArray);
       }, [solutionsArray, activeSolutionId, loadActiveSolution]);
 
 
