@@ -51,14 +51,13 @@ class NurseRosteringModel:
     """
     A compact and extensible solver for the nurse rostering problem using Hexaly.
     """
-    
+
     def __init__(
-        self, instance: NurseRosteringInstance, model = None, formulation: SolverFormulation = SolverFormulation.TABLE
+            self, instance: NurseRosteringInstance, model=None, formulation: SolverFormulation = SolverFormulation.TABLE
     ):
         self.instance = instance
         self.formulation = formulation
-        
-        
+
         if self.formulation == SolverFormulation.SET:
             self.modules: list[ShiftAssignmentModuleSet] = [
                 OneShiftPerDayModuleSet(),
@@ -93,7 +92,7 @@ class NurseRosteringModel:
 
         elif self.formulation == SolverFormulation.TABLE:
             self.modules: list[ShiftRotationModuleTable] = [
-                OneShiftPerDayModuleTable(),
+                # OneShiftPerDayModuleTable(),
                 ShiftRotationModuleTable(),
                 MaximumShiftTypesModuleTable(),
                 MaximizePreferencesTable(),
@@ -106,18 +105,13 @@ class NurseRosteringModel:
                 DaysOffModuleTable(),
             ]
 
-
-
-
-        
     def solve(
-        self,
-        log_search_progress: bool = True,
-        max_time_in_seconds: int = 60,
-        **solver_params,
+            self,
+            log_search_progress: bool = True,
+            max_time_in_seconds: int = 60,
+            **solver_params,
     ) -> NurseRosteringSolution:
 
-        
         with hexaly.optimizer.HexalyOptimizer() as optimizer:
             meta_params: dict[str, Any] = {}
             for key, value in solver_params.items():
@@ -127,11 +121,11 @@ class NurseRosteringModel:
                     continue
                 else:
                     setattr(optimizer.param, key, value)
-            
+
             callback = meta_params.get("callback")
             if callback is not None:
                 optimizer.add_callback(callback.cbType, callback.call)
-            
+
             model = optimizer.model
             objective = 0
             dates = {}
@@ -142,7 +136,7 @@ class NurseRosteringModel:
                     ShiftDecisionVars(shift, self.instance.nurses, model)
                     for shift in self.instance.shifts
                 ]
-                
+
                 objective = model.sum(
                     module.build(self.instance, model, self.shift_vars)  # type: ignore
                     for module in self.modules
@@ -160,49 +154,56 @@ class NurseRosteringModel:
 
                 _set_nurses_to_shifts(nurses_at_shifts_forced=meta_params.get("nurses_at_shifts_forced"))
             elif self.formulation == SolverFormulation.IP:
+
                 nurse_vars = [
                     NurseDecisionVarsIP(nurse, self.instance.shifts, model) for nurse in self.instance.nurses
                 ]
-                
+
+                if meta_params.get("nurses_at_shifts_forced"):
+                    for shift_uid, nurse_uids in meta_params.get("nurses_at_shifts_forced").items():
+                        for nv in nurse_vars:
+                            if nv.nurse.uid in nurse.uids:
+                                nv.fix(shift_uid, True)
+
                 objective = model.sum(
                     module.build(self.instance, model, nurse_vars)  # type: ignore
                     for module in self.modules
                 )
 
             elif self.formulation == SolverFormulation.TABLE:
-                dates = group_shifts_by_date(self.instance)
                 nurse_var = NurseDecisionVarsTable(self.instance, model)
+
+                if meta_params.get("nurses_at_shifts_forced"):
+                    for shift_uid, nurse_uids in meta_params.get("nurses_at_shifts_forced").items():
+                        for nurse_uid in nurse_uids:
+                            nurse_var.fix(nurse_uid, shift_uid, True)
+
                 objective = model.sum(
                     module.build(self.instance, model, nurse_var)  # type: ignore
                     for module in self.modules
                 )
 
-                
-                
-                
-            
             model.minimize(objective)
-            
+            optimizer.param.set_nb_displayed_violated_constraints(1000)
+
             model.close()
-            
             optimizer.param.time_limit = max_time_in_seconds
             optimizer.param.verbosity = 2 if log_search_progress else 0
-            
-                
 
             optimizer.solve()
 
-            if optimizer.solution.status in (hexaly.optimizer.HxSolutionStatus.INFEASIBLE, hexaly.optimizer.HxSolutionStatus.INCONSISTENT):
+            if optimizer.solution.status in (hexaly.optimizer.HxSolutionStatus.INFEASIBLE,
+                                             hexaly.optimizer.HxSolutionStatus.INCONSISTENT):
                 return NurseRosteringSolution(
                     nurses_at_shifts={},
                     objective_value=-1,
                     return_status=generalize_return_status(optimizer.solution.status),
                     lower_bound=-1
                 )
-                
+
             nurses_at_shifts: dict[int, list[int]] = {}
-            
-            if self.formulation == SolverFormulation.SET:    
+
+            if self.formulation == SolverFormulation.SET:
                 for shift_var in self.shift_vars:
                     for n_idx, nurse in enumerate(shift_var.nurses):
                         if n_idx in shift_var.nurses_assigned.value:
@@ -221,17 +222,36 @@ class NurseRosteringModel:
                 return_status=generalize_return_status(optimizer.solution.status),
                 lower_bound=optimizer.solution.get_objective_bound(0)
             )
-            
+
+
 if __name__ == "__main__":
     instance_nb = 2
     time_limit = 60
-    instance_path= f"../../../examples/data_processed/Instance{instance_nb}.json"
-    
+    instance_path = f"../../../examples/data_processed/Instance{instance_nb}.json"
+
     with open(instance_path, "r") as f:
         data = f.read()
-    
+
+    from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel as CPSolver
+
     instance = NurseRosteringInstance.model_validate_json(data)
-        
-    solver = NurseRosteringModel(instance,formulation=SolverFormulation.TABLE)
-    solver.solve()
-    
+
+    cpsolver = CPSolver(instance)
+    cpsol = cpsolver.solve(log_search_progress=False, max_time_in_seconds=2)
+    print("solved")
+
+    for shiftuid, nurseuids in cpsol.nurses_at_shifts.items():
+        for shift in instance.shifts:
+            if shift.uid == shiftuid:
+                print(shift.name, end=": ")
+                for nurseuid in nurseuids:
+                    for nurse in instance.nurses:
+                        if nurse.uid == nurseuid:
+                            print(instance.nurses.index(nurse), end=", ")
+                print()
+
+    solver = NurseRosteringModel(instance, formulation=SolverFormulation.TABLE)
+    sol = solver.solve(
+        max_time_in_seconds=5)  # , meta_param_nurses_at_shifts_forced=cpsol.nurses_at_shifts)#{instance.shifts[0].uid: [instance.nurses[0].uid]})
+    print(sol)
+
