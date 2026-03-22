@@ -183,7 +183,7 @@ class MinimumConsecutiveShiftsModuleTable(ShiftAssignmentModuleTable):
         
         for nurse in instance.nurses:
             nurse_index = nurse_shift_vars.get_nurse_index(nurse.uid)
-            for s in range(nurse.minimum_consecutive_shifts-1):
+            for s in range(1,nurse.minimum_consecutive_shifts):
                 for d in range(instance.planning_horizon_in_days - (s + 1)):
                     model.constraint(
                         (nurse_shift_vars[nurse_index][d] > 0) +
