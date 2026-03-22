@@ -13,18 +13,21 @@ def _make_days_off_instance(days_off):
             demand=1,
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            type="A",
             name="Morning Shift 1",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
+            type="A",
             name="Morning Shift 2",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 3, 8, 0),
             end_time=datetime.datetime(2018, 1, 3, 16, 0),
+            type="A",
             name="Morning Shift 3",
         ),
     ]
@@ -39,80 +42,84 @@ def _make_days_off_instance(days_off):
     )
 
     instance = NurseRosteringInstance(nurses=[nurse], shifts=shifts)
-    dates = group_shifts_by_date(instance)
-    return instance, nurse, shifts, dates
+    return instance
 
 
 def test_days_off_feasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(
+    instance = _make_days_off_instance(
         days_off={datetime.date(2018, 1, 2)}
     )
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 0)
-        nv.fix(datetime.date(2018, 1, 3), 1)
+        nv.fix(nuid, instance.shifts[0].uid, True)
+        nv.fix(nuid, instance.shifts[1].uid, False)
+        nv.fix(nuid, instance.shifts[2].uid, True)
 
 
 def test_days_off_infeasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(
+    instance = _make_days_off_instance(
         days_off={datetime.date(2018, 1, 2)}
     )
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 1)
-        nv.fix(datetime.date(2018, 1, 3), 0)
+        nv.fix(nuid, instance.shifts[0].uid, True)
+        nv.fix(nuid, instance.shifts[1].uid, True)
+        nv.fix(nuid, instance.shifts[2].uid, False)
 
 
 def test_days_off_multiple_days_feasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(
+    instance = _make_days_off_instance(
         days_off={datetime.date(2018, 1, 1), datetime.date(2018, 1, 3)}
     )
-
+    
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 0)
-        nv.fix(datetime.date(2018, 1, 2), 1)
-        nv.fix(datetime.date(2018, 1, 3), 0)
+        nv.fix(nuid, instance.shifts[0].uid, False)
+        nv.fix(nuid, instance.shifts[1].uid, True)
+        nv.fix(nuid, instance.shifts[2].uid, False)
 
 
 def test_days_off_multiple_days_infeasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(
+    instance = _make_days_off_instance(
         days_off={datetime.date(2018, 1, 1), datetime.date(2018, 1, 3)}
     )
-
+    
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 0)
-        nv.fix(datetime.date(2018, 1, 3), 0)
+        nv.fix(nuid, instance.shifts[0].uid, True)
+        nv.fix(nuid, instance.shifts[1].uid, False)
+        nv.fix(nuid, instance.shifts[2].uid, False)
 
 
 def test_days_off_no_days_off_feasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(days_off=set())
+    instance = _make_days_off_instance(days_off=set())
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 2), 1)
-        nv.fix(datetime.date(2018, 1, 3), 1)
+        nv.fix(nuid, instance.shifts[0].uid, True)
+        nv.fix(nuid, instance.shifts[1].uid, True)
+        nv.fix(nuid, instance.shifts[2].uid, True)
 
 
 def test_days_off_all_days_off_feasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(
+    instance = _make_days_off_instance(
         days_off={
             datetime.date(2018, 1, 1),
             datetime.date(2018, 1, 2),
@@ -121,16 +128,17 @@ def test_days_off_all_days_off_feasible_table():
     )
 
     with AssertModelFeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 0)
-        nv.fix(datetime.date(2018, 1, 2), 0)
-        nv.fix(datetime.date(2018, 1, 3), 0)
+        nv.fix(nuid, instance.shifts[0].uid, False)
+        nv.fix(nuid, instance.shifts[1].uid, False)
+        nv.fix(nuid, instance.shifts[2].uid, False)
 
 
 def test_days_off_all_days_off_infeasible_table():
-    instance, nurse, shifts, dates = _make_days_off_instance(
+    instance = _make_days_off_instance(
         days_off={
             datetime.date(2018, 1, 1),
             datetime.date(2018, 1, 2),
@@ -139,12 +147,13 @@ def test_days_off_all_days_off_infeasible_table():
     )
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = instance.nurses[0].uid
 
-        nv.fix(datetime.date(2018, 1, 1), 0)
-        nv.fix(datetime.date(2018, 1, 2), 1)
-        nv.fix(datetime.date(2018, 1, 3), 0)
+        nv.fix(nuid, instance.shifts[0].uid, False)
+        nv.fix(nuid, instance.shifts[1].uid, True)
+        nv.fix(nuid, instance.shifts[2].uid, False)
 
 
 def test_days_off_with_multiple_shifts_same_day_infeasible_table():
@@ -153,19 +162,29 @@ def test_days_off_with_multiple_shifts_same_day_infeasible_table():
             demand=1,
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
+            type="E",
             name="Morning Shift 1",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 1, 16, 0),
             end_time=datetime.datetime(2018, 1, 2, 0, 0),
+            type="L",
             name="Evening Shift 1",
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 2, 8, 0),
             end_time=datetime.datetime(2018, 1, 2, 16, 0),
-            name="Morning Shift 2",
+            type="E",
+            name="Morning Shift 1",
+        ),
+        Shift(
+            demand=1,
+            start_time=datetime.datetime(2018, 1, 2, 16, 0),
+            end_time=datetime.datetime(2018, 1, 3, 0, 0),
+            type="L",
+            name="Evening Shift 1",
         ),
     ]
 
@@ -179,11 +198,12 @@ def test_days_off_with_multiple_shifts_same_day_infeasible_table():
     )
 
     instance = NurseRosteringInstance(nurses=[nurse], shifts=shifts)
-    dates = group_shifts_by_date(instance)
 
     with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(nurse, shifts, model, dates)
-        DaysOffModuleTable().build(instance, model, [nv], dates)
-
-        nv.fix(datetime.date(2018, 1, 1), 2)
-        nv.fix(datetime.date(2018, 1, 2), 0)
+        nv = NurseDecisionVarsTable(instance, model)
+        DaysOffModuleTable().build(instance, model, nv)
+        nuid = nurse.uid
+        
+        nv.fix(nuid, shifts[1].uid, True)
+        nv.fix(nuid, shifts[2].uid, False)
+        nv.fix(nuid, shifts[3].uid, False)
