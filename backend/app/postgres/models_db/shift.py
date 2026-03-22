@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, BigInteger, ForeignKey
+from sqlalchemy import Column, String, Integer, BigInteger, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
 from ..database import Base
@@ -9,7 +9,7 @@ class Shift(Base):
     __tablename__ = "shifts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    uid = Column(BigInteger, nullable=False, unique=True)
+    uid = Column(BigInteger, nullable=False)
 
     project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
     
@@ -23,3 +23,7 @@ class Shift(Base):
     not_followed_by_shift_types = Column(ARRAY(String), nullable=False, default=list)
     weight_below_demand = Column(Integer, nullable=False, default=0)
     weight_above_demand = Column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        UniqueConstraint("project_id", "uid", name="uq_shift_uid_per_project"),
+    )
