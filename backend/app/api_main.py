@@ -519,7 +519,7 @@ def get_solutions(project_id: UUID, db: Session = Depends(get_db)):
 def get_solution(project_id: UUID, solution_id: UUID, db: Session = Depends(get_db)):
     solution = db.query(SolutionEntry).filter(
         SolutionEntry.project_id == project_id,
-        SolutionEntry.id == solution_id
+        SolutionEntry.solutionId == solution_id
     ).first()
 
     if not solution:
@@ -539,6 +539,7 @@ def create_solution(
 
     new_solution = SolutionEntry(
         project_id=project_id,
+        solutionId=data.solutionId,
         solution_name=data.solution_name,
         solution=data.solution,
         solver=data.solver,
@@ -560,7 +561,7 @@ def update_solution(
 ):
     solution = db.query(SolutionEntry).filter(
         SolutionEntry.project_id == project_id,
-        SolutionEntry.id == solution_id
+        SolutionEntry.solutionId == solution_id
     ).first()
 
     if not solution:
@@ -580,7 +581,7 @@ def update_solution(
 def delete_solution(project_id: UUID, solution_id: UUID, db: Session = Depends(get_db)):
     solution = db.query(SolutionEntry).filter(
         SolutionEntry.project_id == project_id,
-        SolutionEntry.id == solution_id
+        SolutionEntry.solutionId == solution_id
     ).first()
 
     if not solution:

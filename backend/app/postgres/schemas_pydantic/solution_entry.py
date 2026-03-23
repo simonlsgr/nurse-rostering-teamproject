@@ -4,6 +4,7 @@ from uuid import UUID
 from datetime import datetime
 
 class SolutionEntryCreate(BaseModel):
+    solutionId: UUID
     solution_name: str
     solution: Dict[str, Any]
     solver: str
@@ -16,7 +17,7 @@ class SolutionEntryUpdate(BaseModel):
     return_status: str
 
 class SolutionEntryResponse(BaseModel):
-    id: UUID
+    solutionId: UUID
     solution_name: str
     solution: Dict[str, Any]
     solver: str
