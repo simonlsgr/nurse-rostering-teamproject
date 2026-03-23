@@ -38,7 +38,7 @@ export function toGermanTime(time: string){
 }
 
 export function generateUID(): number {
-  return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 }
 
 export function createDefaultNurse(): Nurse {
