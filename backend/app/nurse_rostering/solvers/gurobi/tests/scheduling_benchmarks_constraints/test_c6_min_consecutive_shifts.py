@@ -87,8 +87,8 @@ def test_maximum_consecutive_shifts_infeasible():
     with AssertModelInfeasible() as model:
         nurse_vars = NurseDecisionVars(nurse1, shifts, model)
         MinimumConsecutiveShiftsModule().build(instance, model, [nurse_vars])
-        nurse_vars.fix(shifts[0].uid, True)
-        nurse_vars.fix(shifts[1].uid, False)
+        nurse_vars.fix(shifts[0].uid, False)
+        nurse_vars.fix(shifts[1].uid, True)
         nurse_vars.fix(shifts[2].uid, False)
         
         
