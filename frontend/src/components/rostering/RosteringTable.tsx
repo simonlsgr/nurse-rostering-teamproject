@@ -141,7 +141,12 @@ export function NurseTable({
   const { shiftTypes } = useShiftTypes();
 
   const dates = generateDatesFromPlanningHorizon(selectedProject?.planning_horizon ?? ["", ""]);
-
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("de-DE", {
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+    });
   const shift_types = convertShiftTypes(shiftTypes);
   // const shift_types = getShiftTypes(instance);
 
@@ -153,8 +158,14 @@ export function NurseTable({
       accessorKey: "nid",
     },
     ...dates.map((date) => ({
-      header: date,
+      // header: date,
       accessorKey: date,
+      header: () => (
+        <div className="text-center">
+          {formatDate(date)}
+        </div>
+      ),
+    
     })),
   ],
     [dates]);

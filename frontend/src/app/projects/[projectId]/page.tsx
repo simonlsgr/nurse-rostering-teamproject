@@ -33,6 +33,7 @@ import ManageShiftTypesDialog from "@/components/common/ManageShiftTypesDialog";
 import ManageConstraintsDialog from "@/components/common/ManageConstraintsDialog";
 import { editSolution } from "@/app/api/solutionEntry";
 import { Solution } from "@/types/nurseVars";
+import { useSolverSettings } from "@/store/solverSettingsStore";
 
 
 function SlideTransition(props: SlideProps) {
@@ -54,6 +55,7 @@ export default function ProjectPage(){
   const { shiftTypes, setShiftTypes } = useShiftTypes();
   const { shifts, setShifts } = useShifts();
 
+  const { setactivateFixedVariables, setFixedVariablesFeasible, setUsedSolver, setUsedSolverError, setTimeLimit, setSolutionNameError, editSolutionName} = useSolverSettings();
 
   const loadProject = async () => {
     try {
@@ -118,6 +120,18 @@ export default function ProjectPage(){
 
   }
 
+  const resetSolverSettings = () => {
+    
+    setactivateFixedVariables(false);
+    setFixedVariablesFeasible(true);
+    setUsedSolver("");
+    setUsedSolverError(false);
+    setTimeLimit(60);
+    setSolutionNameError(false);
+    editSolutionName("");
+
+  }
+
   useEffect(() => {
     loadProject();
   }, []);
@@ -129,6 +143,7 @@ export default function ProjectPage(){
     loadSolutionsArray();
     loadShiftTypes();
     loadShifts();
+    resetSolverSettings();
 
   }, [selectedProject]);
 

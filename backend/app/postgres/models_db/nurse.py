@@ -4,7 +4,8 @@ from sqlalchemy import (
     String,
     Boolean,
     ForeignKey,
-    BigInteger
+    BigInteger,
+    UniqueConstraint
 )
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from sqlalchemy.orm import relationship
@@ -26,7 +27,7 @@ class Nurse(Base):
     )
     project = relationship("Project", back_populates="nurses")
 
-    uid = Column(BigInteger, nullable=False, unique=True)
+    uid = Column(BigInteger, nullable=False)
     name = Column(String, nullable=False)
 
     preferred_shifts = Column(ARRAY(BigInteger), nullable=False, default=list)
@@ -52,3 +53,7 @@ class Nurse(Base):
     maximum_weekends = Column(Integer, nullable=False)
 
     maximum_number_of_shifts_per_type = Column(JSONB, nullable=False, default=dict)
+
+    __table_args__ = (
+        UniqueConstraint("project_id", "uid", name="uq_nurse_uid_per_project"),
+    )
