@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const res = await fetch(`${solverUrl}/projects/${projectId}/solution${solutionId ? `/${solutionId}` : ""}`, {
+  const res = await fetch(`${solverUrl}/projects/${projectId}/solutions${solutionId ? `/${solutionId}` : ""}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
