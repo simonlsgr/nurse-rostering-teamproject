@@ -64,7 +64,20 @@ export default function ManagePlanningHorizonDialog() {
 
 
   const handleUpdatePlanningHorizon = async () => {
+    
+    if (startDate && endDate &&  endDate.length == startDate.length && endDate < startDate) {
+      alert("End date cannot be before start date");
+      setStartDate(start);
+      setEndDate(end);
+      return;
+    }
 
+    if (formatDate(startDate, "weekday") !== "Mo" || formatDate(endDate, "weekday") !== "So"){
+      alert("Start date has to be a monday and end date a sunday");
+      setStartDate(start);
+      setEndDate(end);
+      return;
+    }
 
     try {
 

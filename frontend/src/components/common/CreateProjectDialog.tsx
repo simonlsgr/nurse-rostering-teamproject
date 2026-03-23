@@ -1,22 +1,20 @@
 import { createProject } from "@/app/api/project";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { createDefaultNewProject, generateDatesFromPlanningHorizon } from "@/lib/utils";
+import { createDefaultNewProject, formatDate, generateDatesFromPlanningHorizon } from "@/lib/utils";
 import { useNewProject, useProjects } from "@/store/projectStore";
 import { NewProject, Project, ShiftType } from "@/types/projectVars";
-import { capitalize } from "@mui/material";
 import { useEffect, useState } from "react";
 import PlanningHorizonInput from "./PlanningHorizonInput";
 import ShiftTypesInput from "./ShiftTypesInput";
 import NotFollowedByShiftTypesInput from "./NotFollowedByShiftTypesInput";
 import { createShiftType } from "@/app/api/shiftType";
 import { useGenerateShifts } from "@/hooks/nurseHooks";
-import { createShift, createShifts } from "@/app/api/shift";
+import { createShifts } from "@/app/api/shift";
 import ProjectJSONInput from "./ProjectJSONInput";
 import { Shift } from "@/types/nurseVars";
 import { createNurse } from "@/app/api/nurse";
-
+import { Braces } from 'lucide-react';
 
 
 export default function CreateProjectDialog(){
@@ -161,6 +159,11 @@ export default function CreateProjectDialog(){
       return;
     }
 
+    if (formatDate(startDate, "weekday") !== "Mo" || formatDate(endDate, "weekday") !== "So"){
+      alert("Start date has to be a monday and end date a sunday");
+      return;
+    }
+
 
     try {
 
@@ -226,31 +229,31 @@ export default function CreateProjectDialog(){
     </DialogTrigger>
     <DialogContent className="!max-w-none w-[48vw] h-[80vh] bg-gray-100">
       <DialogHeader className="h-min">
-        <DialogTitle>
+        <DialogTitle className="flex items-center justify-between">
           Create a new project
-        </DialogTitle>
-        <div className="flex justify-end">
 
-        {!inputJson && (
-          <Button 
-          variant={"outline"}
-          className="border-border rounded-none h-7 w-min mr-2"
-          onClick={() => setInputJson(true)}
-          >
-              Use JSON
-            </Button>
-          )}
+          <div className="flex justify-end">
 
-          {inputJson && (
-            <Button 
-            variant={"outline"}
-            onClick={() => setInputJson(false)}
-            className="border-border rounded-none h-7 w-min mr-2"
+          {!inputJson && (
+            <Braces 
+            className="border-border rounded-xl h-7 w-min mr-6 hover:bg-white p-1 text-muted-foreground"
+            onClick={() => setInputJson(true)}
             >
-              Use Interface
-            </Button>
-          )}
-          </div>
+                Use JSON
+            </Braces>
+            )}
+
+            {inputJson && (
+              <Button 
+              variant={"outline"}
+              onClick={() => setInputJson(false)}
+              className="border-border rounded-none h-7 w-min mr-6"
+              >
+                Use Interface
+              </Button>
+            )}
+            </div>
+        </DialogTitle>
       </DialogHeader>
 
       {!inputJson && (
@@ -293,7 +296,6 @@ export default function CreateProjectDialog(){
 
       )}
 
-      {JSON.stringify(newProject.planning_horizon)}
       <DialogFooter className="mt-4 flex items-end">
         <Button
           variant="outline"
@@ -316,8 +318,8 @@ const projectJsonTemplate = `{
   "name": "",
   "nurses": [
 
-    ],
+  ],
   "shifts: [
   
-    ],
+  ],
 }`;
