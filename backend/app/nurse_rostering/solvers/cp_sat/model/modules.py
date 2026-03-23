@@ -26,7 +26,7 @@ class ShiftAssignmentModule(abc.ABC):
 class OneShiftPerDayModule(ShiftAssignmentModule):
     """1st constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
     
-    def build(self, instance, model, nurse_shift_vars, preferred_shift_vars: PreferredCoverDecisionVars = None):
+    def build(self, instance, model, nurse_shift_vars):
         """
         Enforce that each nurse works at most one shift per day.
         """
@@ -263,7 +263,7 @@ class CoverRequirementsModule(ShiftAssignmentModule):
     def build(self, instance, model, nurse_shift_vars):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
         shifts_by_date = group_shifts_by_date(instance)
-        preferred_cover_vars = PreferredCoverDecisionVars(shifts=instance.shifts, model=model)
+        preferred_cover_vars = PreferredCoverDecisionVars(instance, model=model)
         expr = 0
         for date, shifts in shifts_by_date.items():
             for shift_uid in shifts:

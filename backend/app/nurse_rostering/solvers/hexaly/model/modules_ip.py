@@ -246,7 +246,7 @@ class CoverRequirementsModuleIP(ShiftAssignmentModuleIP):
     def build(self, instance, model, nurse_shift_vars):
         shift_by_uid = {shift.uid: shift for shift in instance.shifts}
         shifts_by_date = group_shifts_by_date(instance)
-        preferred_cover_vars = PreferredCoverDecisionVarsIP(shifts=instance.shifts, model=model)
+        preferred_cover_vars = PreferredCoverDecisionVarsIP(instance, model=model)
         expr = 0
         for date, shifts in shifts_by_date.items():
             for shift_uid in shifts:

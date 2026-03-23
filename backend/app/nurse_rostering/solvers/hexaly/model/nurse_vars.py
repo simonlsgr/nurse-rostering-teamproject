@@ -221,14 +221,16 @@ class NurseWorksAtWeekendVarsIP:
         return self._x[weekend]
     
 class PreferredCoverDecisionVarsIP:
-    def __init__(self, shifts: list[Shift], model: HxModel):
+    def __init__(self, instance: NurseRosteringInstance, model: HxModel):
+        
+        max_demand = max([shift.demand for shift in instance.shifts])+1
         
         self.total_below_preferred = {
-            shift.uid: model.int(0, len(shifts))
-            for shift in shifts
+            shift.uid: model.int(0, max_demand)
+            for shift in instance.shifts
         }
         self.total_above_preferred = {
-            shift.uid: model.int(0, len(shifts))
-            for shift in shifts
+            shift.uid: model.int(0, max_demand)
+            for shift in instance.shifts
         }
         self.cover_vars = (self.total_below_preferred, self.total_above_preferred)

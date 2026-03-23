@@ -4,19 +4,21 @@ This module provides a basic container to manage the variables for a single nurs
 
 from collections.abc import Iterable
 from ortools.sat.python import cp_model
-from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
+from nurse_rostering.data_schema import Nurse, Shift, ShiftUid, NurseRosteringInstance
 
 
 class PreferredCoverDecisionVars:
-    def __init__(self, shifts: list[Shift], model: cp_model.CpModel):
+    def __init__(self, instance: NurseRosteringInstance, model: cp_model.CpModel):
+        
+        max_demand = max([shift.demand for shift in instance.shifts])+1
         
         self.total_below_preferred = {
-            shift.uid: model.new_int_var(0, len(shifts), f"total_below_preferred_{shift.uid}")
-            for shift in shifts
+            shift.uid: model.new_int_var(0, max_demand, f"total_below_preferred_{shift.uid}")
+            for shift in instance.shifts
         }
         self.total_above_preferred = {
-            shift.uid: model.new_int_var(0, len(shifts), f"total_above_preferred_{shift.uid}")
-            for shift in shifts
+            shift.uid: model.new_int_var(0, max_demand, f"total_above_preferred_{shift.uid}")
+            for shift in instance.shifts
         }
         self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
 
