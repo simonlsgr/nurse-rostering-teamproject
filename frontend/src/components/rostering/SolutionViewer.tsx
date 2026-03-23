@@ -10,7 +10,12 @@ import { NurseTable } from "../rostering/RosteringTable";
 import { instanceSolutionToTableData } from "@/lib/roster/dataWrangler";
 import { calculateObjective, checkFeasibility } from "@/lib/roster/modelChecker";
 import { useNurses, useShifts } from "@/store/nurseStore";
+import { Trash, Trash2 } from "lucide-react";
 
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Button } from "../ui/button";
+import { deleteSolution } from "@/app/api/solutionEntry";
+import { useSelectedProject } from "@/store/projectStore";
 
 
 
@@ -24,7 +29,10 @@ export function SolutionViewer() {
         [nurses, shifts]
     );
 
+    const { selectedProject } = useSelectedProject();
 
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [deleteId, setDeleteId] = useState<string>("");
 
 
     // used to display the solution
@@ -34,7 +42,7 @@ export function SolutionViewer() {
     const activeSolutionReturnStatus = useSolution((s) => s.return_status);
     const setActiveSolution = useSolution((s) => s.setSolution);
     const loadActiveSolution = useSolution((s) => s.loadSolution);
-    
+    const { solutions, setSolutions } = useSolutionsArray();
 
 
 
@@ -94,7 +102,17 @@ export function SolutionViewer() {
 
 
 
+    const deleteSolutionEntry = async (solutionId: string) => {
+      if(!selectedProject) return;
+      try {
 
+        const res = await deleteSolution(solutionId, selectedProject.id);
+        setSolutions(solutions.filter((entry) => entry.solutionId !== solutionId));
+
+      } catch (err: any) {
+        alert(err ?? "Failed to delete solution");
+      }
+    }
 
 
     function updateSolutionToView() {
@@ -145,7 +163,19 @@ export function SolutionViewer() {
                 >
                     
                     {solutionsArray.map((s) => (
-                        <MenuItem key={s.solutionId} value={s.solutionId}>{s.solution_name}</MenuItem>
+                        <MenuItem key={s.solutionId} value={s.solutionId} className="flex gap-1 group !justify-between">
+                          <p>{s.solution_name}</p> 
+                          <div 
+                            className={`opacity-0 group-hover:opacity-100 hover:bg-gray-200 rounded ${activeSolutionId == s.solutionId ? "hidden": ""} ${s.solution_name == "Empty Solution" ? "hidden" : ""}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteId(s.solutionId);
+                              setOpenDialog(true);
+                            }}
+                            >
+                            <Trash className="p-1" />
+                          </div>
+                        </MenuItem>
                     ))}
                 </Select>
                 </FormControl>
@@ -172,6 +202,38 @@ export function SolutionViewer() {
                 }
 
             </div>
+
+
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+
+              <DialogContent className="!w-[20vw] !max-w-[1200px] h-[calc(20vh)]">
+                <DialogHeader className="h-min">
+                  <DialogTitle>Delete Solution</DialogTitle>
+                </DialogHeader>
+
+                <div>
+                  Delete this solution?
+                </div>
+
+                <DialogFooter className="mt-4 flex items-end">
+                  <Button
+                    onClick={() => setOpenDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button 
+                    variant={"destructive"}
+                    onClick={() => {deleteSolutionEntry(deleteId); setOpenDialog(false);} }
+                  >
+                    Delete
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+
+
         </div>
 
     )
