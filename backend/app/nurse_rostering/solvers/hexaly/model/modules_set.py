@@ -34,6 +34,11 @@ class OneShiftPerDayModuleSet(ShiftAssignmentModuleSet):
             day = sv.shift.start_time.date()
             shifts_by_day.setdefault(day, []).append(sv) 
 
+        # potential improvement
+        # for day, svs in shifts_by_day.items():
+        #     model.add_constraint(
+        #         model.disjoint(sv.nurses_assigned for sv in svs)   
+        #     )
         for day, svs in shifts_by_day.items():
             for nurse_index in range(len(instance.nurses)):
                 model.add_constraint(

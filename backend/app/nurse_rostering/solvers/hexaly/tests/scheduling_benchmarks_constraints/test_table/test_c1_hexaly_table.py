@@ -1,6 +1,4 @@
 import datetime
-
-from nurse_rostering.solvers.hexaly.model.modules_set import OneShiftPerDayModuleSet
 from nurse_rostering.solvers.hexaly.model.modules_table import OneShiftPerDayModuleTable
 from nurse_rostering.solvers.hexaly.model.nurse_vars import ShiftDecisionVars, NurseDecisionVarsTable
 from nurse_rostering.data_schema import Shift
@@ -18,24 +16,32 @@ def test_one_shift_per_day_infeasible_table():
             start_time=datetime.datetime(2018, 1, 1, 8, 0),
             end_time=datetime.datetime(2018, 1, 1, 16, 0),
             name="Morning Shift",
+            type="A"
         ),
         Shift(
             demand=1,
             start_time=datetime.datetime(2018, 1, 1, 16, 0),
             end_time=datetime.datetime(2018, 1, 2, 0, 0),
             name="Evening Shift",
+            type="B"
         ),
     ]
 
-    nurse1 = create_nurse("N1", min_time_between_shifts=datetime.timedelta(hours=0))
+    nurse1 = create_nurse("N1")
     instance = NurseRosteringInstance(nurses=[nurse1], shifts=shifts)
 
-    dates = group_shifts_by_date(instance)
+    with hx.HexalyOptimizer() as optimizer:
+        model = optimizer.model
+        nv = NurseDecisionVarsTable(instance, model)
 
-    with AssertModelInfeasible() as model:
-        nv = NurseDecisionVarsTable(instance.shifts, model)
+        OneShiftPerDayModuleTable().build(instance, model, nv)
 
-        OneShiftPerDayModuleTable().build(instance, model, [nv], dates)
-
-        nv.fix(datetime.date(2018, 1, 1), 1)
-        nv.fix(datetime.date(2018, 1, 1), 2)
+        nv.fix(nurse1.uid, shifts[0].uid, True)
+        nv.fix(nurse1.uid, shifts[1].uid, True)
+        
+        model.minimize(0)
+        model.close()
+        
+        optimizer.solve()
+        
+        assert (optimizer.solution.status == hx.HxSolutionStatus.INCONSISTENT)

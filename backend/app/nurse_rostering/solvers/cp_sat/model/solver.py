@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars, PreferredCoverDecisionVars
+from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars
 from nurse_rostering.data_schema import NurseRosteringInstance, NurseRosteringSolution, NurseUid, ShiftUid, SolverFormulation
 from typing import Any
 

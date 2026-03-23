@@ -1,15 +1,15 @@
 import datetime
 
-from nurse_rostering.solvers.gurobi.model.modules import MinimumConsecutiveShiftsModule
-from nurse_rostering.solvers.gurobi.model.nurse_vars import NurseDecisionVars
+from nurse_rostering.solvers.cp_sat.model.modules import MinimumConsecutiveShiftsModule
+from nurse_rostering.solvers.cp_sat.model.nurse_vars import NurseDecisionVars
 from nurse_rostering.data_schema import Shift, Nurse
 from nurse_rostering.utils._generate import create_shifts, create_nurse
-from nurse_rostering.solvers.gurobi.utils.testing import AssertModelFeasible, AssertModelInfeasible
+from cpsat_utils.testing import AssertModelFeasible, AssertModelInfeasible
 from nurse_rostering.data_schema import NurseRosteringInstance
 
 
 
-def test_maximum_consecutive_shifts_feasible():
+def test_minimum_consecutive_shifts_feasible():
     
     shifts = [
         Shift(
@@ -52,7 +52,7 @@ def test_maximum_consecutive_shifts_feasible():
         
         
 
-def test_maximum_consecutive_shifts_infeasible():
+def test_minimum_consecutive_shifts_infeasible():
     shifts = [
         Shift(
             demand=1, 
@@ -87,8 +87,8 @@ def test_maximum_consecutive_shifts_infeasible():
     with AssertModelInfeasible() as model:
         nurse_vars = NurseDecisionVars(nurse1, shifts, model)
         MinimumConsecutiveShiftsModule().build(instance, model, [nurse_vars])
-        nurse_vars.fix(shifts[0].uid, True)
-        nurse_vars.fix(shifts[1].uid, False)
+        nurse_vars.fix(shifts[0].uid, False)
+        nurse_vars.fix(shifts[1].uid, True)
         nurse_vars.fix(shifts[2].uid, False)
         
         

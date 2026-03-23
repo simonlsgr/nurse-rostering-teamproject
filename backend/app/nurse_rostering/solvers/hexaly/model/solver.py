@@ -232,26 +232,9 @@ if __name__ == "__main__":
     with open(instance_path, "r") as f:
         data = f.read()
 
-    from nurse_rostering.solvers.cp_sat.model.solver import NurseRosteringModel as CPSolver
-
     instance = NurseRosteringInstance.model_validate_json(data)
 
-    cpsolver = CPSolver(instance)
-    cpsol = cpsolver.solve(log_search_progress=False, max_time_in_seconds=2)
-    print("solved")
-
-    for shiftuid, nurseuids in cpsol.nurses_at_shifts.items():
-        for shift in instance.shifts:
-            if shift.uid == shiftuid:
-                print(shift.name, end=": ")
-                for nurseuid in nurseuids:
-                    for nurse in instance.nurses:
-                        if nurse.uid == nurseuid:
-                            print(instance.nurses.index(nurse), end=", ")
-                print()
-
-    solver = NurseRosteringModel(instance, formulation=SolverFormulation.TABLE)
-    sol = solver.solve(
-        max_time_in_seconds=5)  # , meta_param_nurses_at_shifts_forced=cpsol.nurses_at_shifts)#{instance.shifts[0].uid: [instance.nurses[0].uid]})
+    solver = NurseRosteringModel(instance, formulation=SolverFormulation.IP)
+    sol = solver.solve(max_time_in_seconds=time_limit)  # , meta_param_nurses_at_shifts_forced=cpsol.nurses_at_shifts)#{instance.shifts[0].uid: [instance.nurses[0].uid]})
     print(sol)
 

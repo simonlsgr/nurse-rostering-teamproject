@@ -273,7 +273,7 @@ class CoverRequirementsModuleTable(ShiftAssignmentModuleTable):
     """10th constraint in https://www.schedulingbenchmarks.org/papers/computational_results_on_new_staff_scheduling_benchmark_instances.pdf"""
 
     def build(self, instance, model, nurse_shift_vars):
-        preferred_cover_vars = PreferredCoverDecisionVarsIP(shifts=instance.shifts, model=model)
+        preferred_cover_vars = PreferredCoverDecisionVarsIP(instance, model=model)
 
         expr = 0
         for shift in instance.shifts:

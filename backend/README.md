@@ -1,4 +1,112 @@
-# Run the docker container
+# Backend
+
+This backend is a FastAPI-based API for the nurse rostering prototype.
+
+It does two main jobs:
+
+1. store and manage rostering data in Postgres
+2. run optimization jobs and return solutions
+
+## What it contains
+
+The main backend code is inside `app/`.
+
+### `api_main.py`
+
+This is the FastAPI entry point.
+
+It exposes:
+
+- job endpoints for submitting optimization runs and checking status
+- CRUD endpoints for projects
+- CRUD endpoints for shift types
+- CRUD endpoints for shifts
+- CRUD endpoints for nurses
+
+The API prefix used for the CRUD part is `nurse_rostering_solver/v0`.
+
+### `api_tasks.py`
+
+This file handles background optimization jobs.
+
+The code routes a job to one of several solver options that exist in the repo:
+
+- Gurobi
+- Hexaly
+- CP-SAT
+- greedy heuristic
+
+It also supports sending a webhook when a job finishes.
+
+### `postgres/`
+
+This folder contains the database layer:
+
+- SQLAlchemy models
+- Pydantic schemas
+- DB session setup
+
+The database models cover the core planning objects like projects, nurses, shift types, and shifts.
+
+
+### `nurse_rostering/`
+
+This is where the actual rostering logic lives.
+
+The folder is broader than just one solver file. It also has:
+
+- heuristics
+- utilities
+- examples
+- benchmarks
+- solver-specific subfolders
+- a large shared data schema
+
+So this part is the the research / modeling core of the project.
+
+## Infrastructure setup
+
+The backend is set up to run through Docker Compose.
+
+From the current config, the stack includes:
+
+- the FastAPI app
+- Redis
+- RQ worker processes
+- Postgres
+- a Hexaly-related service/setup
+
+The API is exposed on port `8080`.
+
+## Environment and licenses
+
+There is a `.env.example` file for Postgres credentials.
+
+The current setup also expects:
+
+- a Gurobi license at `~/gurobi.lic`
+- a Hexaly license at `backend/hexaly_installation/license.dat`
+
+Without those, not every solver path will work.
+
+## Dependencies
+
+The requirements file shows that this backend mixes web/API tooling and optimization tooling.
+
+Examples:
+
+- FastAPI / Uvicorn
+- SQLAlchemy
+- Redis / RQ
+- OR-Tools
+- Gurobi
+- Hexaly
+
+The backend is not just a thin web wrapper, but also the place where the optimization stack lives.
+
+INSERT OLD README 
+
+# Setup
 
 ## Prequisites
 Make sure you have Docker installed on your machine.
@@ -23,7 +131,6 @@ To connect with the postgres database, you have to provide a user, password and 
 When first running the container, the user will be created and saved on the volume. Changing these values later without adjusting the volume will lead to an authentication error.
 
 
-
 ## Instructions
 
 To run the backend Docker container, follow these steps:
@@ -43,4 +150,3 @@ To run the backend Docker container, follow these steps:
   ```
   docker compose down
   ```
-

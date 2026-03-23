@@ -5,19 +5,21 @@ This module provides a basic container to manage the variables for a single nurs
 from collections.abc import Iterable
 import gurobipy as gp
 from gurobipy import GRB
-from nurse_rostering.data_schema import Nurse, Shift, ShiftUid
+from nurse_rostering.data_schema import Nurse, Shift, ShiftUid, NurseRosteringInstance
 
 
 class PreferredCoverDecisionVars:
-    def __init__(self, shifts: list[Shift], model: gp.Model):
+    def __init__(self, instance: NurseRosteringInstance, model: gp.Model):
+        
+        max_demand = max([shift.demand for shift in instance.shifts])+1
         
         self.total_below_preferred = {
-            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=len(shifts), name=f"total_below_preferred_{shift.uid}")
-            for shift in shifts
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=max_demand, name=f"total_below_preferred_{shift.uid}")
+            for shift in instance.shifts
         }
         self.total_above_preferred = {
-            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=len(shifts), name=f"total_above_preferred_{shift.uid}")
-            for shift in shifts
+            shift.uid: model.addVar(vtype=GRB.INTEGER, lb=0, ub=max_demand, name=f"total_above_preferred_{shift.uid}")
+            for shift in instance.shifts
         }
         self.cover_vars = (self.total_below_preferred, self.total_above_preferred)
 

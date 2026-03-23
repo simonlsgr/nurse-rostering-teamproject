@@ -1,3 +1,97 @@
+# Frontend
+
+This frontend is a Next.js app for the nurse rostering prototype.
+
+It is the UI layer for looking at projects, editing planning data, starting solver runs, and opening returned solutions.
+
+## What the UI does
+
+The current frontend is centered around two main views:
+
+- a project list page
+- a project detail page
+
+The root route redirects to `/projects`, so the project list is the real entry point.
+
+From here, the UI lets you move into a single project and work with its rostering data.
+
+Inside a project, the code shows controls and views for things like:
+
+- nurses
+- shifts
+- shift types
+- planning horizon
+- constraints
+- solver choice
+- time limit
+- jobs
+- solutions
+- variable fixing
+
+The frontend is not just a read-only dashboard. It is also the editor/control surface for building and solving an instance.
+
+## Main folders
+
+### `src/app/`
+
+This contains the routes.
+
+Important pages are:
+
+- `page.tsx` - redirects to `/projects`
+- `projects/page.tsx` - project overview list
+- `projects/[projectId]/page.tsx` - single project workspace
+
+There is also an `api/` folder with frontend-side API files used by the UI.
+
+### `src/components/`
+
+This is where most of the UI lives.
+
+The structure is split into:
+
+- `common/` - dialogs and editors
+- `layout/` - larger page sections like sidebar and jobs view
+- `rostering/` - nurse/shift/solution/solver components
+- `ui/` - reusable smaller UI pieces
+
+A lot of the actual project interaction happens through these dialog-based components.
+
+### `src/store/`
+
+The frontend uses Zustand for state.
+
+There are stores for things like:
+
+- selected project
+- project list
+- nurses and shifts
+- current instance
+- solver settings
+- messages / job ids
+- loaded solutions
+
+Meaning the app keeps a fair amount of working state on the client side.
+
+### `src/hooks/`
+
+The hooks folder is used for loading data into the stores.
+
+
+## API flow
+
+The frontend-side API helpers call routes under `/api/...`.
+
+For example, the project API helper covers create, read, update, and delete for projects.
+
+The jobs helper also reads finished jobs from a webhook/job-status route.
+
+On the project page, the code polls for finished jobs and then fetches the related solution data.
+
+The UI is built around asynchronous solver runs instead of assuming an instant result.
+
+# Setup
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
