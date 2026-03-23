@@ -102,7 +102,7 @@ export default function CreateNurseDialog() {
                 className="border border-border rounded-md p-1 mb-2"
                 type="text"
                 inputMode="numeric"
-                value={newNurse[key][type.name]}
+                value={newNurse[key][type.name] ?? ""}
                 onChange={(e) => {
                   const val = Number(e.target.value.replace(/\D/g, ""));
                   setNewNurse(prev => ({

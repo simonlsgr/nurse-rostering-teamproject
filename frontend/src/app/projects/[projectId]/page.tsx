@@ -21,7 +21,7 @@ import { VariableFixer } from "@/components/rostering/VariableFixer";
 import { useMessages } from "@/store/messagesStore";
 import { fetchFinishedJobs } from "@/app/api/jobs";
 import { fetchSolution } from "@/app/api/solution";
-import { useSolutionsArray } from "@/store/solutionStore";
+import { SolutionEntry, useSolutionsArray } from "@/store/solutionStore";
 import { Slide, SlideProps, Snackbar } from "@mui/material";
 import { getShiftTypes } from "@/app/api/shiftType";
 import { getAllShifts } from "@/app/api/shift";
@@ -31,6 +31,8 @@ import ViewShiftsDialog from "@/components/common/ViewShiftsDialog";
 import ManagePlanningHorizonDialog from "@/components/common/ManagePlanningHorizonDialog";
 import ManageShiftTypesDialog from "@/components/common/ManageShiftTypesDialog";
 import ManageConstraintsDialog from "@/components/common/ManageConstraintsDialog";
+import { editSolution } from "@/app/api/solutionEntry";
+import { Solution } from "@/types/nurseVars";
 
 
 function SlideTransition(props: SlideProps) {
@@ -97,6 +99,24 @@ export default function ProjectPage(){
     }
   }
 
+  const handleUpdateSolutionEntry = async (solutionId: string, solution: Solution, status: string) => {
+    if(!selectedProject) return;
+
+    try {
+
+      const solutionEntry = solutions.filter((entry) => entry.solutionId == solutionId)[0];
+      if(!solutionEntry) return;
+
+      const updatedSolution: SolutionEntry = {...solutionEntry, solution: solution, return_status: status }
+      const res = await editSolution(updatedSolution, selectedProject.id);
+
+    } catch (err: any) {
+      alert(err ?? "Failed to update solution");
+    }
+
+
+
+  }
 
   useEffect(() => {
     loadProject();
@@ -140,6 +160,7 @@ export default function ProjectPage(){
         
         updateSolution(jobId, data.nurses_at_shifts);
         updateReturnStatus(jobId, data.return_status);
+        handleUpdateSolutionEntry(jobId, data.nurses_at_shifts, data.return_status);
         removeJobId(jobId);
 
         setNotificationSolutionName(solutions.find((s) => s.solutionId === jobId)?.solution_name || "");

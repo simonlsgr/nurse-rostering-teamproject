@@ -11,6 +11,8 @@ import { useJobs } from "@/store/solverStore";
 import JobsList from "./JobsList";
 import { useNurses, useShifts } from "@/store/nurseStore";
 import { useSolutionsArray } from "@/store/solutionStore";
+import { createSolution } from "@/app/api/solutionEntry";
+import { useSelectedProject } from "@/store/projectStore";
 
 
 type SolverMap = Record<string, string>;
@@ -29,7 +31,7 @@ export default function SolveButton() {
 
 
   const { jobs, setJobs } = useJobs();
-  
+  const { selectedProject } = useSelectedProject();
   const setSolverError = useSolverSettings(s => s.setUsedSolverError)
   const activateFixedVariables = useSolverSettings(s => s.activateFixedVariables);
   const fixedVariablesFeasible = useSolverSettings(s => s.fixedVariablesFeasible);
@@ -54,7 +56,7 @@ export default function SolveButton() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSolve() {
-
+    if(!selectedProject) return;
     try {
 
       setLoading(true);
@@ -82,7 +84,9 @@ export default function SolveButton() {
         
         const data = await solve(payload)
         setResult(data);
-        addSolution({ solutionId: data.task_id, solution_name: solutionName, solution: {}, solver: solver_names[usedSolver], return_status: "TBD" });
+        const sol = { solutionId: data.task_id, solution_name: solutionName, solution: {}, solver: solver_names[usedSolver], return_status: "TBD" }
+        addSolution(sol);
+        const res = await createSolution(sol, selectedProject.id);
         setJobs({
           ...jobs,
           [data.task_id]: {...data, name: solutionName}
