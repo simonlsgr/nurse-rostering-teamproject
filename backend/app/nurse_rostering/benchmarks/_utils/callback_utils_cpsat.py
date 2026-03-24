@@ -3,27 +3,31 @@ from ortools.sat.python import cp_model
 import pandas as pd
 
 class CPSatSolutionCallback(cp_model.CpSolverSolutionCallback):
-    def __init__(self, timer, formulation: SolverFormulation):
+    def __init__(self, timer, formulation: SolverFormulation, delay = 0, string=""):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.timer = timer
         self.formulation = formulation
         self.data = []
+        self.string = string
+        self.delay = delay
 
     def on_solution_callback(self):
         
         obj = self.ObjectiveValue()
-        self.data.append(["objective", "cpsat-"+self.formulation.lower(), obj, self.timer.time()])
+        self.data.append(["objective", "cpsat-"+self.formulation.lower()+"-"+self.string, obj, self.timer.time()+self.delay])
 
 
 class CPSatBoundCallback:
-    def __init__(self, solver, timer, formulation: SolverFormulation) -> None:
+    def __init__(self, solver, timer, formulation: SolverFormulation, delay=0, string="") -> None:
         self.timer = timer
         self.solver = solver
         self.formulation = formulation
         self.data = []
+        self.delay = delay
+        self.string = string
 
     def __call__(self, bound):
-        self.data.append(["bound", "cpsat-"+self.formulation.lower(), bound, self.timer.time()])
+        self.data.append(["bound", "cpsat-"+self.formulation.lower()+"-"+self.string, bound, self.timer.time()+self.delay])
         
 
 def combine_cpsat_output(df) -> pd.DataFrame:
