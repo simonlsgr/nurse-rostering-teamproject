@@ -122,9 +122,11 @@ export default function SolveButton() {
         {loading ? "Solving..." : "Solve"}
       </Button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+
       {result && (
         <p className="text-green-600 mt-2 ml-8">Job dispatched! </p>
       )}
+
     </div>
     </div>
 

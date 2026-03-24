@@ -2,12 +2,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load CSV
-df = pd.read_csv("./output/gap_instance_13_20260317_200324.csv")
+instance = 13
+df = pd.read_csv(f"./merged/instance_{instance}.csv")
 
 # Convert columns to numeric, handling missing values
 df["time"] = pd.to_numeric(df["time"], errors="coerce")
 df["objective"] = pd.to_numeric(df["objective"], errors="coerce")
 df["bound"] = pd.to_numeric(df["bound"], errors="coerce")
+df = df[df["bound"] >= 0]
+_time = 60
+df = df[df["time"] <= _time]
 
 # Plot
 plt.figure(figsize=(12, 6))
@@ -32,4 +36,4 @@ plt.title("Solver Objective and Bound over Time")
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+plt.savefig(f"plots/plot_instance_{instance}.png", dpi=300)
