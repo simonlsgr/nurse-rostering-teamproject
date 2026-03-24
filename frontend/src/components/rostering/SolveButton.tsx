@@ -122,11 +122,11 @@ export default function SolveButton() {
         {loading ? "Solving..." : "Solve"}
       </Button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
-      {result && (
+      {/* {result && (
         <pre className="mt-4 bg-gray-100 p-2 rounded overflow-auto">
           {JSON.stringify(result, null, 2)}
         </pre>
-      )}
+      )} */}
     </div>
     </div>
 
